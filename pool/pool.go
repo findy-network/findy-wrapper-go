@@ -24,10 +24,10 @@ package pool
 
 import (
 	"github.com/golang/glog"
-	"github.com/optechlab/findy-go/dto"
-	"github.com/optechlab/findy-go/internal/c2go"
-	"github.com/optechlab/findy-go/internal/ctx"
-	"github.com/optechlab/findy-go/plugin"
+	"github.com/findy-network/findy-wrapper-go/dto"
+	"github.com/findy-network/findy-wrapper-go/internal/c2go"
+	"github.com/findy-network/findy-wrapper-go/internal/ctx"
+	"github.com/findy-network/findy-wrapper-go/plugin"
 )
 
 var (

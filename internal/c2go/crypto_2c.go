@@ -7,8 +7,8 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/optechlab/findy-go"
-	"github.com/optechlab/findy-go/internal/ctx"
+	"github.com/findy-network/findy-wrapper-go"
+	"github.com/findy-network/findy-wrapper-go/internal/ctx"
 )
 
 // findy_crypto_sign

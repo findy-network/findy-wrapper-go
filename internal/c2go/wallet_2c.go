@@ -7,7 +7,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/optechlab/findy-go/internal/ctx"
+	"github.com/findy-network/findy-wrapper-go/internal/ctx"
 )
 
 func WalletGenerateKey(seed string) ctx.Channel {

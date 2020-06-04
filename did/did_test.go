@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/optechlab/findy-go/helpers"
+	"github.com/findy-network/findy-wrapper-go/helpers"
 	"github.com/stretchr/testify/assert"
 )
 

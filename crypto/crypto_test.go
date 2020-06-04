@@ -4,10 +4,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/optechlab/findy-go"
-	"github.com/optechlab/findy-go/did"
-	"github.com/optechlab/findy-go/dto"
-	"github.com/optechlab/findy-go/helpers"
+	"github.com/findy-network/findy-wrapper-go"
+	"github.com/findy-network/findy-wrapper-go/did"
+	"github.com/findy-network/findy-wrapper-go/dto"
+	"github.com/findy-network/findy-wrapper-go/helpers"
 )
 
 var connectionRequest = `  {

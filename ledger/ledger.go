@@ -5,8 +5,8 @@ We suggest that you read indy SDK documentation for more information.
 package ledger
 
 import (
-	"github.com/optechlab/findy-go/internal/c2go"
-	"github.com/optechlab/findy-go/internal/ctx"
+	"github.com/findy-network/findy-wrapper-go/internal/c2go"
+	"github.com/findy-network/findy-wrapper-go/internal/ctx"
 )
 
 /*

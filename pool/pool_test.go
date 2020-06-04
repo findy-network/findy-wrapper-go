@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	_ "github.com/optechlab/findy-go/addons/echo"
-	_ "github.com/optechlab/findy-go/addons/mem"
-	"github.com/optechlab/findy-go/pool"
+	_ "github.com/findy-network/findy-wrapper-go/addons/echo"
+	_ "github.com/findy-network/findy-wrapper-go/addons/mem"
+	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/optechlab/findy-go/pool"
+	"github.com/findy-network/findy-wrapper-go/pool"
 )
 
 const echoName = "FINDY_ECHO_LEDGER"

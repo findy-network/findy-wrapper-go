@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/optechlab/findy-go/addons/mem" // we need this here
+	_ "github.com/findy-network/findy-wrapper-go/addons/mem" // we need this here
 
-	"github.com/optechlab/findy-go/pool"
-	"github.com/optechlab/findy-go/wallet"
+	"github.com/findy-network/findy-wrapper-go/pool"
+	"github.com/findy-network/findy-wrapper-go/wallet"
 )
 
 func createPool(t *testing.T, maxTimeout time.Duration, poolName string) {

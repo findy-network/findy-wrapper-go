@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/optechlab/findy-go/dto"
+	"github.com/findy-network/findy-wrapper-go/dto"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/optechlab/findy-go"
-	"github.com/optechlab/findy-go/did"
-	"github.com/optechlab/findy-go/helpers"
-	"github.com/optechlab/findy-go/ledger"
+	"github.com/findy-network/findy-wrapper-go"
+	"github.com/findy-network/findy-wrapper-go/did"
+	"github.com/findy-network/findy-wrapper-go/helpers"
+	"github.com/findy-network/findy-wrapper-go/ledger"
 )
 
 func TestIssuerCreateSchema(t *testing.T) {

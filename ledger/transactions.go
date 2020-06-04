@@ -5,8 +5,8 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
-	"github.com/optechlab/findy-go/dto"
-	"github.com/optechlab/findy-go/pool"
+	"github.com/findy-network/findy-wrapper-go/dto"
+	"github.com/findy-network/findy-wrapper-go/pool"
 )
 
 // ReadCredDef reads cred def from ledgers by cred def ID. If multiple ledger

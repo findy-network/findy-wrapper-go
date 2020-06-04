@@ -2,8 +2,8 @@
 package config
 
 import (
-	"github.com/optechlab/findy-go/dto"
-	"github.com/optechlab/findy-go/internal/c2go"
+	"github.com/findy-network/findy-wrapper-go/dto"
+	"github.com/findy-network/findy-wrapper-go/internal/c2go"
 )
 
 // Set is wrapper function for libindy to set runtime configuration. Please see

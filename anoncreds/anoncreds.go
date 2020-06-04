@@ -13,8 +13,8 @@ import (
 	"math"
 	"math/big"
 
-	"github.com/optechlab/findy-go/internal/c2go"
-	"github.com/optechlab/findy-go/internal/ctx"
+	"github.com/findy-network/findy-wrapper-go/internal/c2go"
+	"github.com/findy-network/findy-wrapper-go/internal/ctx"
 )
 
 // These are for indy/anoncreds.rs which seems to be the only specs for these

@@ -6,9 +6,9 @@ package did
 
 import "C"
 import (
-	"github.com/optechlab/findy-go/dto"
-	"github.com/optechlab/findy-go/internal/c2go"
-	"github.com/optechlab/findy-go/internal/ctx"
+	"github.com/findy-network/findy-wrapper-go/dto"
+	"github.com/findy-network/findy-wrapper-go/internal/c2go"
+	"github.com/findy-network/findy-wrapper-go/internal/ctx"
 )
 
 // Create creates a DID to a wallet with empty seed which means that seed is

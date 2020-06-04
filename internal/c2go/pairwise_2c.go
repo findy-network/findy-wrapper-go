@@ -7,7 +7,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/optechlab/findy-go/internal/ctx"
+	"github.com/findy-network/findy-wrapper-go/internal/ctx"
 )
 
 func FindyIsPairwiseExists(wallet int, theirDID string) ctx.Channel {

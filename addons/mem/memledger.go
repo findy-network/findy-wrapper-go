@@ -6,7 +6,7 @@ package mem
 import (
 	"sync"
 
-	"github.com/optechlab/findy-go/pool"
+	"github.com/findy-network/findy-wrapper-go/pool"
 )
 
 const addonName = "FINDY_MEM_LEDGER"

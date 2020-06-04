@@ -42,7 +42,7 @@ When a null string is needed for an argument, the predefined type must be used.
 package findy
 
 import (
-	"github.com/optechlab/findy-go/internal/ctx"
+	"github.com/findy-network/findy-wrapper-go/internal/ctx"
 )
 
 // NullString is constant to pass null strings to the packet.

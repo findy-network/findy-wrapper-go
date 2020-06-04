@@ -5,8 +5,8 @@ We suggest that you read indy SDK documentation for more information.
 package pairwise
 
 import (
-	"github.com/optechlab/findy-go/internal/c2go"
-	"github.com/optechlab/findy-go/internal/ctx"
+	"github.com/findy-network/findy-wrapper-go/internal/c2go"
+	"github.com/findy-network/findy-wrapper-go/internal/ctx"
 )
 
 // Exists returns true if pairwise exists in the wallet.

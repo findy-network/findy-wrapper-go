@@ -9,9 +9,9 @@ import (
 	"unsafe"
 
 	"github.com/golang/glog"
-	"github.com/optechlab/findy-go/internal/ctx"
+	"github.com/findy-network/findy-wrapper-go/internal/ctx"
 
-	"github.com/optechlab/findy-go/dto"
+	"github.com/findy-network/findy-wrapper-go/dto"
 )
 
 func buildResult(cmdHandle uint32, err int32, setter func(r *dto.Result)) {

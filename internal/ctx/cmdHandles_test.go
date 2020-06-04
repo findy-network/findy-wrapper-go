@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/optechlab/findy-go/dto"
+	"github.com/findy-network/findy-wrapper-go/dto"
 )
 
 func fillChannel(cmd uint32, ch Channel) {
