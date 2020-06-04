@@ -8,8 +8,8 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/golang/glog"
 	"github.com/findy-network/findy-wrapper-go/internal/ctx"
+	"github.com/golang/glog"
 
 	"github.com/findy-network/findy-wrapper-go/dto"
 )

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/golang/glog"
 	"github.com/findy-network/findy-wrapper-go/dto"
+	"github.com/golang/glog"
 )
 
 // Channel is channel type for findy API. Instead of callbacks findy API returns

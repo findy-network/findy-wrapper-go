@@ -23,11 +23,11 @@ multiple ledger pool names at once.
 package pool
 
 import (
-	"github.com/golang/glog"
 	"github.com/findy-network/findy-wrapper-go/dto"
 	"github.com/findy-network/findy-wrapper-go/internal/c2go"
 	"github.com/findy-network/findy-wrapper-go/internal/ctx"
 	"github.com/findy-network/findy-wrapper-go/plugin"
+	"github.com/golang/glog"
 )
 
 var (
