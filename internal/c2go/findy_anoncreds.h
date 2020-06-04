@@ -1,0 +1,24 @@
+extern indy_error_t findy_issuer_create_schema(indy_handle_t command_handle, char *issuer_did, char *name, char *version, char *attr_names);
+extern indy_error_t findy_issuer_create_and_store_credential_def(indy_handle_t command_handle, indy_handle_t wallet_handle, char *issuer_did, char *schema_json, char *tag, char *signature_type, char *config_json);
+extern indy_error_t findy_issuer_create_and_store_revoc_reg(indy_handle_t command_handle, indy_handle_t wallet_handle, char *issuer_did, char *revoc_def_type, char *tag, char *cred_def_id, char *config_json, indy_handle_t tails_writer_handle);
+extern indy_error_t findy_issuer_create_credential_offer(indy_handle_t command_handle, indy_handle_t wallet_handle, char *cred_def_id);
+extern indy_error_t findy_issuer_create_credential(indy_handle_t command_handle, indy_handle_t wallet_handle, char *cred_offer_json, char *cred_req_json, char *cred_values_json, char *rev_reg_id, indy_handle_t blob_storage_reader_handle);
+extern indy_error_t findy_issuer_revoke_credential(indy_handle_t command_handle, indy_handle_t wallet_handle, indy_handle_t blob_storage_reader_handle, char *rev_reg_id, char *cred_revoc_id);
+/* extern indy_error_t indy_issuer_recover_credential(indy_handle_t command_handle, indy_handle_t wallet_handle, indy_handle_t blob_storage_reader_handle, char *rev_reg_id, char *cred_revoc_id);*/
+extern indy_error_t findy_issuer_merge_revocation_registry_deltas(indy_handle_t command_handle, char *rev_reg_delta_json, char *other_rev_reg_delta_json);
+extern indy_error_t findy_prover_create_master_secret(indy_handle_t command_handle, indy_handle_t wallet_handle, char *master_secret_id);
+extern indy_error_t findy_prover_create_credential_req(indy_handle_t command_handle, indy_handle_t wallet_handle, char *prover_did, char *cred_offer_json, char *cred_def_json, char *master_secret_id);
+extern indy_error_t findy_prover_store_credential(indy_handle_t command_handle, indy_handle_t wallet_handle, char *cred_id, char *cred_req_metadata_json, char *cred_json, char *cred_def_json, char *rev_reg_def_json);
+extern indy_error_t findy_prover_get_credentials(indy_handle_t command_handle, indy_handle_t wallet_handle, char *filter_json);
+extern indy_error_t findy_prover_get_credential(indy_handle_t command_handle, indy_handle_t wallet_handle, char *cred_id);
+extern indy_error_t findy_prover_search_credentials(indy_handle_t command_handle, indy_handle_t wallet_handle, char *query_json);
+extern indy_error_t findy_prover_fetch_credentials(indy_handle_t command_handle, indy_handle_t search_handle, indy_u32_t count);
+extern indy_error_t findy_prover_close_credentials_search(indy_handle_t command_handle, indy_handle_t search_handle);
+extern indy_error_t findy_prover_get_credentials_for_proof_req(indy_handle_t command_handle, indy_handle_t wallet_handle, char *proof_request_json);
+extern indy_error_t findy_prover_search_credentials_for_proof_req(indy_handle_t command_handle, indy_handle_t wallet_handle, char *proof_request_json, char *extra_query_json);
+extern indy_error_t findy_prover_fetch_credentials_for_proof_req(indy_handle_t command_handle, indy_handle_t search_handle, char*item_referent, indy_u32_t count);
+extern indy_error_t findy_prover_close_credentials_search_for_proof_req(indy_handle_t command_handle, indy_handle_t search_handle);
+extern indy_error_t findy_prover_create_proof(indy_handle_t command_handle, indy_handle_t wallet_handle, char *proof_req_json, char *requested_credentials_json, char *master_secret_name, char *schemas_json, char *credential_defs_json, char *rev_states_json);
+extern indy_error_t findy_verifier_verify_proof(indy_handle_t command_handle, char *proof_request_json, char *proof_json, char *schemas_json, char *credential_defs_jsons, char *rev_reg_defs_json, char *rev_regs_json);
+extern indy_error_t findy_create_revocation_state(indy_handle_t command_handle, indy_handle_t blob_storage_reader_handle, char *rev_reg_def_json, char *rev_reg_delta_json, indy_u64_t timestamp, char *cred_rev_id);
+extern indy_error_t findy_update_revocation_state(indy_handle_t command_handle, indy_handle_t blob_storage_reader_handle, char *rev_state_json, char *rev_reg_def_json, char *rev_reg_delta_json, indy_u64_t timestamp, char *cred_rev_id);

@@ -1,0 +1,23 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: optechlab/indy-golang:1.14.2
+      - image: optechlab/indy-pool:1.12.1
+
+    working_directory: /go/src/github.com/optechlab/findy-go
+
+    steps:
+      - checkout
+
+      - run: make deps
+
+      # Static analysis and test
+      - run: make check
+      - run: make test
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test

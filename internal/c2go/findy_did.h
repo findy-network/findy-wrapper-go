@@ -1,0 +1,13 @@
+extern indy_error_t findy_create_and_store_my_did(indy_handle_t command_handle, indy_handle_t wallet_handle, char *did_json);
+extern indy_error_t findy_replace_keys_start(indy_handle_t command_handle, indy_handle_t wallet_handle, char *did, char *identity_json);
+extern indy_error_t findy_replace_keys_apply(indy_handle_t command_handle, indy_handle_t wallet_handle, char *did);
+extern indy_error_t findy_store_their_did(indy_handle_t command_handle, indy_handle_t wallet_handle, char *identity_json);
+extern indy_error_t findy_key_for_did(indy_handle_t command_handle, indy_handle_t pool_handle, indy_handle_t wallet_handle, char *did);
+extern indy_error_t findy_key_for_local_did(indy_handle_t command_handle, indy_handle_t wallet_handle, char *did);
+extern indy_error_t findy_set_endpoint_for_did(indy_handle_t command_handle, indy_handle_t wallet_handle, char *did, char *address, char *transport_key);
+extern indy_error_t findy_get_endpoint_for_did(indy_handle_t command_handle, indy_handle_t wallet_handle, indy_handle_t pool_handle, char *did);
+extern indy_error_t findy_set_did_metadata(indy_handle_t command_handle, indy_handle_t wallet_handle, char *did, char *metadata);
+extern indy_error_t findy_get_did_metadata(indy_handle_t command_handle, indy_handle_t wallet_handle, char *did);
+extern indy_error_t findy_get_my_did_with_meta(indy_handle_t command_handle, indy_handle_t wallet_handle, char *my_did);
+extern indy_error_t findy_list_my_dids_with_meta(indy_handle_t command_handle, indy_handle_t wallet_handle);
+extern indy_error_t findy_abbreviate_verkey(indy_handle_t command_handle, char *did, char *full_verkey);
