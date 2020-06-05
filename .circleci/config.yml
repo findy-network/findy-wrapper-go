@@ -5,7 +5,7 @@ jobs:
       - image: optechlab/indy-golang:1.14.2
       - image: optechlab/indy-pool:1.12.1
 
-    working_directory: /go/src/github.com/optechlab/findy-go
+    working_directory: /go/src/github.com/findy-network/findy-wrapper-go
 
     steps:
       - checkout
