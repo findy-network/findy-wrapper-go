@@ -1,0 +1,11 @@
+extern indy_error_t findy_create_key(indy_handle_t command_handle, indy_handle_t wallet_handle, char *key_json);
+extern indy_error_t findy_set_key_metadata(indy_handle_t command_handle, indy_handle_t wallet_handle, char *verkey, char *metadata);
+extern indy_error_t findy_get_key_metadata(indy_handle_t command_handle, indy_handle_t wallet_handle, char *verkey);
+extern indy_error_t findy_crypto_sign(indy_handle_t command_handle, indy_handle_t wallet_handle, char *signer_vk, indy_u8_t *message_raw, indy_u32_t message_len);
+extern indy_error_t findy_crypto_verify(indy_handle_t command_handle, char *signer_vk, indy_u8_t *message_raw, indy_u32_t message_len, indy_u8_t *signature_raw, indy_u32_t signature_len);
+extern indy_error_t findy_crypto_auth_crypt(indy_handle_t command_handle, indy_handle_t wallet_handle, char *sender_vk, char *recipient_vk, indy_u8_t *message_raw, indy_u32_t message_len);
+extern indy_error_t findy_crypto_auth_decrypt(indy_handle_t command_handle, indy_handle_t wallet_handle, char *recipient_vk, indy_u8_t*encrypted_msg_raw, indy_u32_t encrypted_msg_len);
+extern indy_error_t findy_crypto_anon_crypt(indy_handle_t command_handle, char *recipient_vk, indy_u8_t *message_raw, indy_u32_t message_len);
+extern indy_error_t findy_crypto_anon_decrypt(indy_handle_t command_handle, indy_handle_t wallet_handle, char *recipient_vk, indy_u8_t*encrypted_msg, indy_u32_t encrypted_len);
+extern indy_error_t findy_pack_message(indy_handle_t command_handle, indy_handle_t wallet_handle, indy_u8_t*message, indy_u32_t message_len, char *receiver_keys, char *sender);
+extern indy_error_t findy_unpack_message(indy_handle_t command_handle, indy_handle_t wallet_handle, indy_u8_t*jwe_msg, indy_u32_t jwe_len);
