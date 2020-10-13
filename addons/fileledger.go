@@ -1,8 +1,4 @@
-// Package file is a ledger addon which implements transient ledger. It writes
-// ledger data to JSON file and reads it from there. It's convenient for unit
-// test and some development cases.
-
-package file
+package addons
 
 import (
 	"encoding/json"
@@ -16,22 +12,25 @@ import (
 	"github.com/lainio/err2"
 )
 
-const addonName = "FINDY_FILE_LEDGER"
+const fileName = "FINDY_FILE_LEDGER"
 
-var filename = fullFilename(addonName)
+var filename = fullFilename(fileName)
 
-type addon struct {
+// file is a ledger addon which implements transient ledger. It writes
+// ledger data to JSON file and reads it from there. It's convenient for unit
+// test and some development cases.
+type file struct {
 	mem struct {
 		sync.RWMutex
 		ory map[string]string
 	}
 }
 
-func (m *addon) Close() {
+func (m *file) Close() {
 	//resetMemory()
 }
 
-func (m *addon) Open(name string) bool {
+func (m *file) Open(name string) bool {
 	filename = fullFilename(name)
 	if fileExists() {
 		err2.Check(m.load(filename))
@@ -41,7 +40,7 @@ func (m *addon) Open(name string) bool {
 	return true
 }
 
-func (m *addon) Write(ID, data string) (err error) {
+func (m *file) Write(ID, data string) (err error) {
 	defer err2.Return(&err)
 	m.mem.Lock()
 	defer m.mem.Unlock()
@@ -50,13 +49,13 @@ func (m *addon) Write(ID, data string) (err error) {
 	return nil
 }
 
-func (m *addon) Read(ID string) (name string, value string, err error) {
+func (m *file) Read(ID string) (name string, value string, err error) {
 	m.mem.RLock()
 	defer m.mem.RUnlock()
 	return ID, m.mem.ory[ID], nil
 }
 
-func (m *addon) load(filename string) error {
+func (m *file) load(filename string) error {
 	m.mem.Lock()
 	defer m.mem.Unlock()
 	if filename == "" {
@@ -71,7 +70,7 @@ func (m *addon) load(filename string) error {
 	return nil
 }
 
-func (m *addon) save(filename string) (err error) {
+func (m *file) save(filename string) (err error) {
 	var data []byte
 	if data, err = json.MarshalIndent(m.mem.ory, "", "\t"); err != nil {
 		return err
@@ -88,17 +87,17 @@ func newFromData(data []byte) (r *map[string]string) {
 	return
 }
 
-var ledger = &addon{mem: struct {
+var fileLedger = &file{mem: struct {
 	sync.RWMutex
 	ory map[string]string
 }{}}
 
 func init() {
-	pool.RegisterPlugin(addonName, ledger)
+	pool.RegisterPlugin(fileName, fileLedger)
 }
 
 func resetMemory() {
-	ledger.mem.ory = make(map[string]string)
+	fileLedger.mem.ory = make(map[string]string)
 }
 
 func writeJSONFile(name string, json []byte) error {

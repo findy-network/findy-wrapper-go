@@ -4,8 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	_ "github.com/findy-network/findy-wrapper-go/addons/echo"
-	_ "github.com/findy-network/findy-wrapper-go/addons/mem"
+	_ "github.com/findy-network/findy-wrapper-go/addons"
 	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/stretchr/testify/assert"
 )
@@ -58,7 +57,7 @@ func TestCloseLedger(t *testing.T) {
 
 func TestListPlugins(t *testing.T) {
 	names := pool.ListPlugins()
-	assert.Len(t, names, 2)
+	assert.Len(t, names, 3)
 }
 
 func TestList(t *testing.T) {
