@@ -125,6 +125,12 @@ func fullFilename(fn ...string) string {
 	args := make([]string, len(fn)+2)
 	args[0] = home
 	args[1] = workerSubPath
+
+	// first make sure we have proper base folder for our file
+	pathBase := filepath.Join(args...)
+	err2.Check(os.MkdirAll(pathBase, os.ModePerm)) // this panics if err
+
+	// second build the whole file name by adding our filename args
 	args = append(args, fn...)
 	base := filepath.Join(args...)
 	base += ".json"
