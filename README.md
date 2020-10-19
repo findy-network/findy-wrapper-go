@@ -1,15 +1,21 @@
-# findy-go
+# findy-wrapper-go
 
 This is a Go wrapper for [indy-sdk](https://github.com/hyperledger/indy-sdk). It
 wraps most of the **libindy**'s functions and data types, but it doesn't try to be
 complete. We have written it incrementally and wrapped only those functions that
 we need at the moment.
 
+We haven't extended this wrapper with helper classes. It only tries to offer Go
+programming interface above the existing libindy API. [findy-agent](https://github.com/findy-network/findy-agent) 
+extends this API with SSI/DID abstractions and offers more high-level API for
+SSI/DID development. For the most applications **findy-agent** is the suitable
+framework to start. 
+
 ## Get Started
 
 1. [Install](https://github.com/hyperledger/indy-sdk/#installing-the-sdk) libindy-dev.
 2. Clone the repo: `git clone https://github.com/findy-network/findy-go`
-3. Install needed Go pacakges: `make deps`
+3. Install needed Go packages: `make deps`
 4. Build the package: `make build`
 
 If build system cannot find indy libs and headers, set following environment 

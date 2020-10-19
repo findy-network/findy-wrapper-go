@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/findy-network/findy-wrapper-go/addons/mem" // we need this here
+	_ "github.com/findy-network/findy-wrapper-go/addons" // we need this here
 
 	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/findy-network/findy-wrapper-go/wallet"

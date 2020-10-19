@@ -1,6 +1,5 @@
-// Package echo is a ledger addon to offer implementation which writes a log
-// about all of the ledger read/write.
-package echo
+// Package addons includes ledger addons.
+package addons
 
 import (
 	"fmt"
@@ -11,25 +10,27 @@ import (
 
 const echoName = "FINDY_ECHO_LEDGER"
 
-type ledger struct {
+// echo offers implementation which writes a log
+// about all of the ledger read/write.
+type echo struct {
 	mem struct {
 		sync.RWMutex
 		ory map[string]string
 	}
 }
 
-func (m *ledger) Close() {
+func (m *echo) Close() {
 	fmt.Println("Closing Echo ledger")
-	resetMemory()
+	resetEcho()
 }
 
-func (m *ledger) Open(name string) bool {
+func (m *echo) Open(name string) bool {
 	fmt.Println("Opening Echo ledger")
-	resetMemory()
+	resetEcho()
 	return name == echoName
 }
 
-func (m *ledger) Write(ID, data string) error {
+func (m *echo) Write(ID, data string) error {
 	m.mem.Lock()
 	defer m.mem.Unlock()
 	fmt.Printf("Ledger WRITE [%s] <- (%s)", ID, data)
@@ -37,14 +38,14 @@ func (m *ledger) Write(ID, data string) error {
 	return nil
 }
 
-func (m *ledger) Read(ID string) (name string, value string, err error) {
+func (m *echo) Read(ID string) (name string, value string, err error) {
 	m.mem.RLock()
 	defer m.mem.RUnlock()
 	fmt.Printf("Ledger READ [%s] -> (%s)", ID, m.mem.ory[ID])
 	return ID, m.mem.ory[ID], nil
 }
 
-var impl = &ledger{mem: struct {
+var impl = &echo{mem: struct {
 	sync.RWMutex
 	ory map[string]string
 }{}}
@@ -53,6 +54,6 @@ func init() {
 	pool.RegisterPlugin(echoName, impl)
 }
 
-func resetMemory() {
+func resetEcho() {
 	impl.mem.ory = make(map[string]string)
 }

@@ -43,7 +43,7 @@ func FromJSONStr(str string, dto interface{}) {
 func FromJSON(bytes []byte, dto interface{}) {
 	err := json.Unmarshal(bytes, dto)
 	if err != nil {
-		glog.Error("Error marshalling from JSON: ", err.Error())
+		glog.Errorf("%s: from JSON:\n%s\n", err.Error(), string(bytes))
 		panic(err)
 	}
 }
