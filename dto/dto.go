@@ -23,7 +23,7 @@ func NewErrorJSON(js string) (msg *ErrorJSON) {
 	}
 	err := json.Unmarshal([]byte(js), &msg)
 	if err != nil {
-		fmt.Println("err marshalling from JSON: ", err.Error())
+		fmt.Println("err marshaling from JSON: ", err.Error())
 		return nil
 	}
 	return
@@ -40,10 +40,10 @@ func FromJSONStr(str string, dto interface{}) {
 }
 
 // FromJSON is a helper to convert byte JSON to a data object.
-func FromJSON(bytes []byte, dto interface{}) {
-	err := json.Unmarshal(bytes, dto)
+func FromJSON(b []byte, dto interface{}) {
+	err := json.Unmarshal(b, dto)
 	if err != nil {
-		glog.Errorf("%s: from JSON:\n%s\n", err.Error(), string(bytes))
+		glog.Errorf("%s: from JSON:\n%s\n", err.Error(), string(b))
 		panic(err)
 	}
 }
@@ -52,7 +52,7 @@ func FromJSON(bytes []byte, dto interface{}) {
 func ToJSONBytes(dto interface{}) []byte {
 	output, err := json.Marshal(dto)
 	if err != nil {
-		fmt.Println("err marshalling to JSON:", err)
+		fmt.Println("err marshaling to JSON:", err)
 		return nil
 	}
 	return output
@@ -214,8 +214,8 @@ func (r Result) Str2() string {
 }
 
 // SetBytes sets bytes part of the Result.
-func (r *Result) SetBytes(bytes []byte) {
-	r.Data.Bytes = bytes
+func (r *Result) SetBytes(b []byte) {
+	r.Data.Bytes = b
 }
 
 // Bytes returns bytes.

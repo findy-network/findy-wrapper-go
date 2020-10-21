@@ -12,7 +12,7 @@ type Config struct {
 	ID string `json:"id"`
 
 	// StorageType is optional, only use if indy_register_wallet_storage() is
-	// called. 'Default' value is for local files sytem wallets.
+	// called. 'Default' value is for local files system wallets.
 	StorageType string `json:"storage_type,omitempty"`
 
 	// StorageConfig is optional, use when the wallet root path needs to be set.

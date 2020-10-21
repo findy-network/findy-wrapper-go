@@ -5,6 +5,7 @@ import (
 
 	"github.com/findy-network/findy-wrapper-go/dto"
 	"github.com/findy-network/findy-wrapper-go/pool"
+
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
 )
@@ -13,7 +14,6 @@ import (
 // plugins is used, it returns where it can find data first.
 func ReadCredDef(handle int, submitter,
 	credDefID string) (cdID, cd string, err error) {
-
 	defer err2.Annotate("read cred def", &err)
 
 	cdID, cd, err = pool.Read(credDefID)
@@ -107,7 +107,7 @@ func ReadSchema(handle int, submitter, ID string) (sID, s string, err error) {
 
 // WriteSchema writes schema to ledger. If multiple ledger plugins is in use, it
 // writes to all of them.
-func WriteSchema(handle int, wallet int, submitter string, scJSON string) (err error) {
+func WriteSchema(handle, wallet int, submitter, scJSON string) (err error) {
 	defer err2.Annotate("write schema", &err)
 
 	writePluginLedgers(scJSON)
@@ -152,7 +152,6 @@ func checkWriteResponse(r string) error {
 // did_get_key().
 func WriteDID(handle, wallet int,
 	submitterDID, targetDID, verKey, alias, role string) (err error) {
-
 	defer err2.Annotate("write DID", &err)
 
 	pool.Write(submitterDID, targetDID)

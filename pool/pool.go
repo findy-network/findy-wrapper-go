@@ -40,8 +40,8 @@ var (
 )
 
 // RegisterPlugin is interface for ledger plugins to register them selves.
-func RegisterPlugin(name string, plugin plugin.Ledger) {
-	registeredPlugins[name] = plugin
+func RegisterPlugin(name string, p plugin.Ledger) {
+	registeredPlugins[name] = p
 }
 
 // CreateConfig is indy SDK wrapper to create ledger pool configuration. See

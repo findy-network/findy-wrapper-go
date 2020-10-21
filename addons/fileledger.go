@@ -100,8 +100,8 @@ func resetMemory() {
 	fileLedger.mem.ory = make(map[string]string)
 }
 
-func writeJSONFile(name string, json []byte) error {
-	err := ioutil.WriteFile(name, json, 0644)
+func writeJSONFile(name string, b []byte) error {
+	err := ioutil.WriteFile(name, b, 0644)
 	return err
 }
 
