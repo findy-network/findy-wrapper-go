@@ -1,19 +1,9 @@
 linters-settings:
-#  depguard:
-#    list-type: blacklist
-#    packages:
-#      # logging is allowed only by logutils.Log, logrus
-#      # is allowed to use only in logutils package
-#      - github.com/sirupsen/logrus
-#    packages-with-error-message:
-#      - github.com/sirupsen/logrus: "logging is allowed only by logutils.Log"
   dupl:
     threshold: 100
   funlen:
     lines: 100
     statements: 50
-#  gci:
-#    local-prefixes: github.com/findy-network/findy-wrapper-go
   goconst:
     min-len: 2
     min-occurrences: 2
@@ -32,8 +22,6 @@ linters-settings:
       - wrapperFunc
   gocyclo:
     min-complexity: 15
-#  goimports:
-#    local-prefixes: github.com/findy-network/findy-wrapper-go
   golint:
     min-confidence: 0
   gomnd:
@@ -43,13 +31,6 @@ linters-settings:
         checks: argument,case,condition,return
   govet:
     check-shadowing: true
-    settings:
-      printf:
-        funcs:
-          - (github.com/golang/glog).Infof
-          - (github.com/golang/glog).Warnf
-          - (github.com/golang/glog).Errorf
-          - (github.com/golang/glog).Fatalf
   lll:
     line-length: 140
   maligned:
@@ -62,8 +43,6 @@ linters-settings:
     require-explanation: false # don't require an explanation for nolint directives
     require-specific: false # don't require nolint directives to be specific about which linter is being skipped
 linters:
-  # please, do not use `enable-all`: it's deprecated and will be removed soon.
-  # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
   disable-all: true
   enable:
     - bodyclose
@@ -76,14 +55,14 @@ linters:
     - funlen
 #    - gochecknoinits
     - goconst
-    - gocritic
+#    - gocritic
     - gocyclo
     - gofmt
     - goimports
     - golint
-    - gomnd
+#    - gomnd
     - goprintffuncname
-    - gosec
+#    - gosec
     - gosimple
     - govet
     - ineffassign
@@ -104,43 +83,23 @@ linters:
     - unused
     - varcheck
     - whitespace
-  # don't enable:
-  # - asciicheck
-  # - gochecknoglobals
-  # - gocognit
-  # - godot
-  # - godox
-  # - goerr113
-  # - maligned
-  # - nestif
-  # - prealloc
-  # - testpackage
-  # - wsl
 issues:
-  # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
     - path: _test\.go
       linters:
         - dupl
         - funlen
         - gocyclo
-        - gocritic
-        - gomnd
         - lll
         - scopelint
         - whitespace
     - path: Testing
       linters:
-        - gocritic
-        - gomnd
         - lll
-    # https://github.com/go-critic/go-critic/issues/926
     - linters:
         - gocritic
       text: "unnecessaryDefer:"
 run:
-# golangci.com configuration
-# https://github.com/golangci/golangci/wiki/Configuration
 service:
   golangci-lint-version: 1.31.x # use the fixed version to not introduce new linters unexpectedly
   prepare:
