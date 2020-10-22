@@ -6,11 +6,11 @@ jobs:
     runs-on: ubuntu-latest
     container: optechlab/indy-golang:1.15.0
     steps:
+      - name: create
+        run: ls -la /go/src && mkdir -p /go/src/github.com/findy-network
       - uses: actions/checkout@v2
-        with:
-          path: findy-network/findy-wrapper-go
       - name: move
-        run: mv findy-network /go/src/github.com
+        run: cd .. && ls -la && mv findy-wrapper-go /go/src/github.com/findy-network && ls -la /go/src/github.com/findy-network
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
