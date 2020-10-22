@@ -3,6 +3,7 @@ on: push
 jobs:
   test:
     runs-on: ubuntu-latest
+    container: optechlab/indy-golang:1.15.0
     steps:
       - name: setup
         uses: actions/setup-go@v2
