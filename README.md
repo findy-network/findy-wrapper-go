@@ -1,5 +1,9 @@
 # findy-wrapper-go
 
+![lint](https://github.com/findy-network/findy-wrapper-go/workflows/golangci-lint/badge.svg?branch=dev)
+![test](https://github.com/findy-network/findy-wrapper-go/workflows/test/badge.svg?branch=dev)
+
+
 This is a Go wrapper for [indy-sdk](https://github.com/hyperledger/indy-sdk). It
 wraps most of the **libindy**'s functions and data types, but it doesn't try to be
 complete. We have written it incrementally and wrapped only those functions that
