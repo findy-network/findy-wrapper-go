@@ -13,27 +13,6 @@ import (
 	"github.com/findy-network/findy-wrapper-go/wallet"
 )
 
-func createPool(t *testing.T, maxTimeout time.Duration, poolName string) {
-	err := os.RemoveAll(os.Getenv("HOME") + "/.indy_client")
-	if err != nil {
-		t.Log(err.Error())
-	}
-	currentPath, _ := os.Getwd()
-	genesisPath := currentPath + "/../.circleci/genesis_transactions"
-	config := pool.Config{
-		GenesisTxn: genesisPath,
-	}
-	t.Log("Genesis path " + genesisPath)
-	select {
-	case r := <-pool.CreateConfig(poolName, config):
-		if r.Err() != nil {
-			t.Log("Pool create error, already exists?")
-		}
-	case <-time.After(maxTimeout):
-		t.Fatal("Timeout exceeded")
-	}
-}
-
 // OpenTestPool is a helper function for tests to open a ledger pool.
 func OpenTestPool(t *testing.T) int {
 	r := <-pool.SetProtocolVersion(2)
@@ -45,10 +24,6 @@ func OpenTestPool(t *testing.T) int {
 	poolName := os.Getenv("FINDY_POOL")
 	if poolName == "" {
 		poolName = "FINDY_MEM_LEDGER"
-	}
-
-	if os.Getenv("CI") == "true" {
-		createPool(t, maxTimeout, "myNewPool")
 	}
 
 	select {
