@@ -26,7 +26,7 @@ func NewData(js string) []Data {
 	js = strings.Replace(js, "\\", "\"", -1)
 	err := json.Unmarshal([]byte(js), &a)
 	if err != nil {
-		glog.Error("err marshaling from JSON: ", err.Error())
+		glog.Error("err marshalling from JSON: ", err.Error())
 		return nil
 	}
 	return a

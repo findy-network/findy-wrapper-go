@@ -33,7 +33,7 @@ func buildResult(cmdHandle uint32, err int32, setter func(r *dto.Result)) {
 // MARK: C-callbacks, these are called from findy_glue.c
 
 //export strStrUllHandler
-func strStrUllHandler(cmdHandle uint32, err int32, cstr1, cstr2 *C.char, ull C.ulonglong) {
+func strStrUllHandler(cmdHandle uint32, err int32, cstr1 *C.char, cstr2 *C.char, ull C.ulonglong) {
 	str1 := C.GoString(cstr1)
 	str2 := C.GoString(cstr2)
 	buildResult(cmdHandle, err, func(r *dto.Result) {
@@ -44,7 +44,7 @@ func strStrUllHandler(cmdHandle uint32, err int32, cstr1, cstr2 *C.char, ull C.u
 }
 
 //export strStrStrHandler
-func strStrStrHandler(cmdHandle uint32, err int32, cstr1, cstr2, cstr3 *C.char) {
+func strStrStrHandler(cmdHandle uint32, err int32, cstr1 *C.char, cstr2 *C.char, cstr3 *C.char) {
 	str1 := C.GoString(cstr1)
 	str2 := C.GoString(cstr2)
 	str3 := C.GoString(cstr3)
@@ -56,7 +56,7 @@ func strStrStrHandler(cmdHandle uint32, err int32, cstr1, cstr2, cstr3 *C.char) 
 }
 
 //export strStrHandler
-func strStrHandler(cmdHandle uint32, err int32, cstr1, cstr2 *C.char) {
+func strStrHandler(cmdHandle uint32, err int32, cstr1 *C.char, cstr2 *C.char) {
 	str1 := C.GoString(cstr1)
 	str2 := C.GoString(cstr2)
 	buildResult(cmdHandle, err, func(r *dto.Result) {
@@ -88,10 +88,10 @@ func boolHandler(cmdHandle uint32, err int32, value C.bool) {
 }
 
 //export handleU32Handler
-func handleU32Handler(cmdHandle uint32, err, handle int32, l uint32) {
+func handleU32Handler(cmdHandle uint32, err, handle int32, len uint32) {
 	buildResult(cmdHandle, err, func(r *dto.Result) {
 		r.SetHandle(int(handle))
-		r.SetU64(uint64(l))
+		r.SetU64(uint64(len))
 	})
 }
 

@@ -49,6 +49,6 @@ func Export(handle int, exportCfg Credentials) ctx.Channel {
 
 // Import creates a new wallet from previously exported (Export function)
 // wallet's export file. See more info of Config and Credentials.
-func Import(config Config, credentials, importCfg Credentials) ctx.Channel {
+func Import(config Config, credentials Credentials, importCfg Credentials) ctx.Channel {
 	return c2go.FindyImportWallet(dto.ToJSON(config), dto.ToJSON(credentials), dto.ToJSON(importCfg))
 }
