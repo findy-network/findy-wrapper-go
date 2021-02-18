@@ -42,11 +42,11 @@ const schemaDataToWrite = `
 
 const txnIDForNym = "2TEvwu4PeDbfzvAy6e3HgQ"
 const nymDataToWrite = "UFg64enRj3o3w8arQAJn9U"
-const nymDataToWriteJson = `{"id":"2TEvwu4PeDbfzvAy6e3HgQ","data":"UFg64enRj3o3w8arQAJn9U"}`
+const nymDataToWriteJSON = `{"id":"2TEvwu4PeDbfzvAy6e3HgQ","data":"UFg64enRj3o3w8arQAJn9U"}`
 
 var authToken string
 var baseAddress string
-var mockApiLedger *httptest.Server
+var mockAPILedger *httptest.Server
 
 // Store the current env setting before running tests
 func TestApiLedger_StartMockedLedgerAPI(t *testing.T) {
@@ -63,15 +63,19 @@ func TestApiLedger_Open(t *testing.T) {
 // Test CRED DEF writing and reading
 func TestApiLedger_CRedDef(t *testing.T) {
 
-	// Comment this mockApiLedger setting out if you want to test against Ledger API
+	// Comment this mockAPILedger setting out if you want to test against Ledger API
 	// ****************************************************************
-	mockApiLedger = httptest.NewServer(
+	mockAPILedger = httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-			w.Write([]byte(CleanString(claimDataToWrite)))
+			_, err := w.Write([]byte(CleanString(claimDataToWrite)))
+			if err != nil {
+				fmt.Println("mock server failed to reply")
+				assert.True(t, false)
+			}
 		}),
 	)
-	defer mockApiLedger.Close()
-	tempBaseAddress := fmt.Sprint(mockApiLedger.URL, "/")
+	defer mockAPILedger.Close()
+	tempBaseAddress := fmt.Sprint(mockAPILedger.URL, "/")
 	// Set env to testServer for unit testing against mocked Ledger API
 	os.Setenv("AuthToken", "aff62524-e503-11e9-81b4-2a2ae2dbcce4")
 	os.Setenv("BaseAddress", tempBaseAddress)
@@ -97,15 +101,19 @@ func TestApiLedger_CRedDef(t *testing.T) {
 
 // Test SCHEMA writing and reading
 func TestApiLedger_Schema(t *testing.T) {
-	// Comment this mockApiLedger setting out if you want to test against Ledger API
+	// Comment this mockAPILedger setting out if you want to test against Ledger API
 	// ****************************************************************
-	mockApiLedger = httptest.NewServer(
+	mockAPILedger = httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-			w.Write([]byte(CleanString(schemaDataToWrite)))
+			_, err := w.Write([]byte(CleanString(schemaDataToWrite)))
+			if err != nil {
+				fmt.Println("mock server failed to reply")
+				assert.True(t, false)
+			}
 		}),
 	)
-	defer mockApiLedger.Close()
-	tempBaseAddress := fmt.Sprint(mockApiLedger.URL, "/")
+	defer mockAPILedger.Close()
+	tempBaseAddress := fmt.Sprint(mockAPILedger.URL, "/")
 	// Set env to testServer for unit testing against mocked Ledger API
 	os.Setenv("AuthToken", "aff62524-e503-11e9-81b4-2a2ae2dbcce4")
 	os.Setenv("BaseAddress", tempBaseAddress)
@@ -130,15 +138,19 @@ func TestApiLedger_Schema(t *testing.T) {
 
 // Test NYM writing and reading
 func TestApiLedger_Nym(t *testing.T) {
-	// Comment this mockApiLedger setting out if you want to test against Ledger API
+	// Comment this mockAPILedger setting out if you want to test against Ledger API
 	// ****************************************************************
-	mockApiLedger = httptest.NewServer(
+	mockAPILedger = httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-			w.Write([]byte(nymDataToWriteJson))
+			_, err := w.Write([]byte(nymDataToWriteJSON))
+			if err != nil {
+				fmt.Println("mock server failed to reply")
+				assert.True(t, false)
+			}
 		}),
 	)
-	defer mockApiLedger.Close()
-	tempBaseAddress := fmt.Sprint(mockApiLedger.URL, "/")
+	defer mockAPILedger.Close()
+	tempBaseAddress := fmt.Sprint(mockAPILedger.URL, "/")
 	// Set env to testServer for unit testing against mocked Ledger API
 	os.Setenv("AuthToken", "aff62524-e503-11e9-81b4-2a2ae2dbcce4")
 	os.Setenv("BaseAddress", tempBaseAddress)

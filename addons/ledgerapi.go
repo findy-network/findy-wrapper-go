@@ -2,6 +2,7 @@ package addons
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,12 +10,14 @@ import (
 	"os"
 	"regexp"
 	"sync"
+	"time"
 
 	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/lainio/err2"
 )
 
 const apiLedgerName = "FINDY_API_LEDGER"
+const nymPath = "nym/"
 
 // api is a ledger addon which implements reading / writing data to the DB based ledger API.
 // It writes ledger data to memory before returning it and if it's stored in memory it serves
@@ -27,7 +30,7 @@ type api struct {
 }
 
 type nymTransaction struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Data string `json:"data"`
 }
 
@@ -65,41 +68,39 @@ func (a *api) Write(ID, data string) (err error) {
 	baseAddress := os.Getenv("BaseAddress")
 
 	const path = "store"
-	// fmt.Println("dataa: ", data)
 	data = CleanString(data) // do some data cleaning if needed
-	fmt.Println("dataa siivottuna: ", data)
-	a.mem.ory[ID] = string(data) // store the data to the memory cache
+	a.mem.ory[ID] = data     // store the data to the memory cache
 
 	var jsonEncodedData []byte
 
 	if isJSON(data) {
 		// data contain json string so it must be either schema or cred def
-		var err error
-		jsonEncodedData, err = json.Marshal(data)
-		if err != nil {
+		var error error
+		jsonEncodedData, error = json.Marshal(data)
+		if error != nil {
 			err2.Check(err)
 		}
-		fmt.Println("dataa json encoodattuna: ", string(jsonEncodedData))
 	} else {
 		// data does not contain json string so it must be nym hash
 		// put the data into json, which contains ID and dataType
-		nymJson := &nymTransaction{
-			Id:   ID,
+		nymJSON := &nymTransaction{
+			ID:   ID,
 			Data: data,
 		}
 
-		var err error
-		jsonEncodedData, err = json.Marshal(nymJson)
-		if err != nil {
+		var error error
+		jsonEncodedData, error = json.Marshal(nymJSON)
+		if error != nil {
 			err2.Check(err)
 		}
-		// fmt.Println("dataa json encoodattuna: ", string(jsonEncodedData))
 	}
 
 	// Build the http POST request towards ledger API
 	client := &http.Client{}
 	address := fmt.Sprint(baseAddress, path)
-	req, err := http.NewRequest("POST", address, bytes.NewBuffer(jsonEncodedData))
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, "POST", address, bytes.NewBuffer(jsonEncodedData))
 	if err != nil {
 		err2.Check(err)
 	}
@@ -114,8 +115,7 @@ func (a *api) Write(ID, data string) (err error) {
 	if err != nil {
 		err2.Check(err)
 	}
-
-	fmt.Println(resp.Status)
+	defer resp.Body.Close()
 	return nil
 }
 
@@ -141,24 +141,23 @@ func (a *api) Read(ID string) (name string, value string, err error) {
 		r, _ := regexp.Compile(expr2)
 		if r.MatchString(ID) {
 			// SCHEMA does have 3 colon letters
-			// fmt.Println("ID", ID, "contains 3 :. It is a SCHEMA")
 			path = "schema/"
 		} else {
 			// CRED_DEF does have 7 colon letters
-			// fmt.Println("ID", ID, "contains more than 0 but not 3 :. It must be CREF_DEF")
 			path = "cred_def/"
 		}
 
 	} else {
 		// NYM txnId does not have any colon letters
-		// fmt.Println("ID", ID, "does not contain :. It's a NYM")
-		path = "nym/"
+		path = nymPath
 	}
 
 	// Build the http GET request towards ledger API
 	client := &http.Client{}
 	address := fmt.Sprint(baseAddress, path, ID)
-	req, err := http.NewRequest("GET", address, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, "GET", address, nil)
 	if err != nil {
 		err2.Check(err)
 	}
@@ -180,23 +179,19 @@ func (a *api) Read(ID string) (name string, value string, err error) {
 		err2.Check(err)
 	}
 
-	fmt.Println(resp.Status)
-	fmt.Println("response: ", string(respBody))
 	a.mem.Lock()
 	defer a.mem.Unlock()
-	if path == "nym/" {
+	if path == nymPath {
 		// special handling. Pick just the hash from data-field.
 		var nym *nymTransaction
-		err := json.Unmarshal([]byte(respBody), &nym)
+		err := json.Unmarshal(respBody, &nym)
 		if err != nil {
 			err2.Check(err)
 		}
 		a.mem.ory[ID] = nym.Data // store the data to the memory cache
-		fmt.Println("tallensin nyt sitten dataa ", a.mem.ory[ID])
 		return ID, nym.Data, nil
 	}
 	a.mem.ory[ID] = string(respBody) // store the data to the memory cache
-	fmt.Println("tallensin nyt sitten dataa ", a.mem.ory[ID])
 	return ID, string(respBody), nil
 }
 
