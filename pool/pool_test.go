@@ -57,7 +57,7 @@ func TestCloseLedger(t *testing.T) {
 
 func TestListPlugins(t *testing.T) {
 	names := pool.ListPlugins()
-	assert.Len(t, names, 3)
+	assert.Len(t, names, 4)
 }
 
 func TestList(t *testing.T) {
