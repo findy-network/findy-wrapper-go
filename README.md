@@ -19,8 +19,7 @@ framework to start.
 
 1. [Install](https://github.com/hyperledger/indy-sdk/#installing-the-sdk) libindy-dev.
 2. Clone the repo: `git clone https://github.com/findy-network/findy-go`
-3. Install needed Go packages: `make deps`
-4. Build the package: `make build`
+3. Build the package: `make build`
 
 If build system cannot find indy libs and headers, set following environment 
 variables:
