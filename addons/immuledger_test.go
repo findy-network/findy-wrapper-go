@@ -3,7 +3,7 @@ package addons
 import (
 	// "fmt"
 	// "net/http"
-	"net/http/httptest"
+
 	"os"
 	"testing"
 
@@ -43,17 +43,18 @@ const immuSchemaDataToWrite = `
 const immuTxnIDForNym = "2TEvwu4PeDbfzvAy6e3HgQ"
 const immuNymDataToWrite = "UFg64enRj3o3w8arQAJn9U"
 
-var immuUrl string
+var immuURL string
 var immuPort string
 var userName string
 var password string
-var mockImmuLedger *httptest.Server
+
+// var mockImmuLedger *httptest.Server
 
 // Store the current env setting before running tests
 func TestImmuLedger_StartMockedImmuledger(t *testing.T) {
 
 	// Read Immu Url from env
-	immuUrl = os.Getenv("ImmuUrl")
+	immuURL = os.Getenv("ImmuUrl")
 	immuPort = os.Getenv("ImmuPort")
 	userName = os.Getenv("ImmuUsrName")
 	password = os.Getenv("ImmuPasswd")
@@ -143,7 +144,7 @@ func TestImmuLedger_Nym(t *testing.T) {
 // Restores the env settings
 func TestImmuLedger_RestoreEnv(t *testing.T) {
 	// restore env
-	os.Setenv("ImmuUrl", immuUrl)
+	os.Setenv("ImmuUrl", immuURL)
 	os.Setenv("ImmuPort", immuPort)
 	os.Setenv("ImmuUsrName", userName)
 	os.Setenv("ImmuPasswd", password)

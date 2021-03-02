@@ -40,7 +40,7 @@ func CleanDataString(data string) string {
 
 func ConnectToImmu() (immuclient.ImmuClient, context.Context, error) {
 	// get credentials from env
-	immuUrl := os.Getenv("ImmuUrl")
+	immuURL := os.Getenv("ImmuUrl")
 	immuPortString := os.Getenv("ImmuPort")
 	userName := os.Getenv("ImmuUsrName")
 	password := os.Getenv("ImmuPasswd")
@@ -51,7 +51,7 @@ func ConnectToImmu() (immuclient.ImmuClient, context.Context, error) {
 	}
 	// set connection options
 	var options immuclient.Options
-	options.Address = immuUrl
+	options.Address = immuURL
 	options.Port = immuPort
 	options.Auth = true
 	options.CurrentDatabase = "defaultdb"
@@ -59,7 +59,7 @@ func ConnectToImmu() (immuclient.ImmuClient, context.Context, error) {
 	// connect to ImmuDB
 	if client == nil {
 		var err error
-		client, err = immuclient.NewImmuClient(immuclient.DefaultOptions().WithAddress(immuUrl).WithAuth(true))
+		client, err = immuclient.NewImmuClient(immuclient.DefaultOptions().WithAddress(immuURL).WithAuth(true))
 		if err != nil {
 			fmt.Println("Immuledger: Connect to ImmuDB failed", err)
 			return nil, nil, err
