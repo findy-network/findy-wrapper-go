@@ -16,7 +16,11 @@ import (
 
 const immuLedgerName = "FINDY_IMMUDB_LEDGER"
 
-var client immuclient.ImmuClient
+type MyImmuClient interface {
+	immuclient.ImmuClient
+}
+
+var client MyImmuClient
 var ctx context.Context
 
 // immu is a ledger addon which implements reading / writing data directly to the ImmuDB.
@@ -79,6 +83,18 @@ func ConnectToImmu() (immuclient.ImmuClient, context.Context, error) {
 	return client, ctx, nil
 }
 
+// This is needed because of testing. Using this the immuclient library
+// functions Set() and Get() can be overriden and there is no need
+// to have connectivity towards real ImmuDB
+func (i *immu) MockImmuClientForTesting(newImmuclient MyImmuClient) {
+	client = newImmuclient
+}
+
+// This is needed because of testing for clearing the memCache
+func (i *immu) ResetMemCache() {
+	resetImmuLedger()
+}
+
 func (i *immu) Close() {
 	client = nil
 	ctx = nil
@@ -105,6 +121,7 @@ func (i *immu) Write(ID, data string) (err error) {
 		err2.Check(err)
 	}
 	fmt.Printf("Immuledger: Successfully committed key \"%s\" at tx %d\n", []byte(ID), tx.Id)
+	// fmt.Println("Immuledger: tx ", tx)
 
 	// store the data to the memory cache
 	defer err2.Return(&err)
@@ -140,6 +157,7 @@ func (i *immu) Read(ID string) (name string, value string, err error) {
 		err2.Check(err)
 	}
 	fmt.Printf("Immuledger: Successfully retrieved entry for key %s\n", dataFromImmu.Key)
+	// fmt.Println("Immuledger: immudata ", dataFromImmu)
 
 	i.mem.Lock()
 	defer i.mem.Unlock()

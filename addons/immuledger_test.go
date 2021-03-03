@@ -1,14 +1,18 @@
 package addons
 
 import (
-	// "fmt"
-	// "net/http"
-
+	"context"
 	"os"
 	"testing"
 
+	"github.com/codenotary/immudb/pkg/api/schema"
+	immuclient "github.com/codenotary/immudb/pkg/client"
 	"github.com/stretchr/testify/assert"
 )
+
+// Setting this as true means that testing is done against real ImmuDB
+// instead of mocked immuDB. So this can be used as an E2E testing tool
+const testAgainstRealImmuDB = false
 
 const immuTxnIDForClaim = "2Kc7X1ErDwNQC3mDSzcj2r:3:CL:2Kc7X1ErDwNQC3mDSzcj2r:2:NEW_SCHEMA_58906353:1.0:TAG_1"
 const immuClaimDataToWrite = `
@@ -48,12 +52,49 @@ var immuPort string
 var userName string
 var password string
 
-// var mockImmuLedger *httptest.Server
+var storedKey []byte
+var storedValue []byte
+
+// create immuClient mock
+type mockImmuClient struct {
+	immuclient.ImmuClient
+}
+
+// Override the real immuclient.Set() function. Can be used to return also errors if needed
+func (m *mockImmuClient) Set(ctx context.Context, key []byte, value []byte) (*schema.TxMetadata, error) {
+	// store values
+	storedKey = key
+	storedValue = value
+	// Set test data to return. This is how the real data looks like
+	var txData schema.TxMetadata
+	txData.Id = 108
+	txData.PrevAlh = []byte("E+\x1e\x85\x85 X\x1d\x87\x8a\x03\xb1\xf2\xb1\xf5\x9eh\xa2\xf2_5{1Ӎ\x03Bٵڳ\xd9")
+	txData.Ts = 1614767958
+	txData.EH = []byte("BA\xaab\x9a{Y\xa4\xad\xd9\xee\xa4fn^^Q\x14d\x87k4%\xdcލC\xd6Ԁ\xc7(")
+	txData.BlTxId = 107
+	txData.BlRoot = []byte("q\xb7(<U]\xba\xad\x8b\xf1\x1cB\x83E\xe6`\xf9\xc3\x12\xe9y\x05\xf9+[\xfawS\xab\xa0\x92I")
+	return &txData, nil
+}
+
+// Override the real immuclient.Get() function. Can be used to return also errors if needed
+func (m *mockImmuClient) Get(ctx context.Context, key []byte) (*schema.Entry, error) {
+	// Set test data to return. This is how the real data looks like
+	var entryData schema.Entry
+	entryData.Tx = 117
+	entryData.Key = storedKey
+	entryData.Value = storedValue
+	return &entryData, nil
+}
+
+var testImmuClient = &mockImmuClient{}
 
 // Store the current env setting before running tests
 func TestImmuLedger_StartMockedImmuledger(t *testing.T) {
 
-	// Read Immu Url from env
+	// Read ImmuDB related credential, Url and port data from env
+	// As these are now stored in variables, the env variables can
+	// be manipulated if needed for testing against ImmuDB running anywhere
+	// Not used for anything at the moment though
 	immuURL = os.Getenv("ImmuUrl")
 	immuPort = os.Getenv("ImmuPort")
 	userName = os.Getenv("ImmuUsrName")
@@ -66,16 +107,15 @@ func TestImmuLedger_Open(t *testing.T) {
 
 // Test CRED DEF writing and reading
 func TestImmuLedger_CRedDef(t *testing.T) {
-
-	// Comment this mockImmuLedger setting out if you want to test against real ImmuDB
-	// ****************************************************************
-	// ToDO find a way to mock immuclient responses somehow
-	// ****************************************************************
-
 	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
+	if !testAgainstRealImmuDB {
+		immuLedger.MockImmuClientForTesting(testImmuClient)
+	}
 	assert.True(t, ok)
 	err := immuLedger.Write(immuTxnIDForClaim, immuClaimDataToWrite)
 	assert.NoError(t, err)
+	// clear MemCache to test reading from ImmuDB / mocked Immu
+	immuLedger.ResetMemCache()
 	name, value, err := immuLedger.Read(immuTxnIDForClaim)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForClaim, name)
@@ -93,14 +133,15 @@ func TestImmuLedger_CRedDef(t *testing.T) {
 
 // Test SCHEMA writing and reading
 func TestImmuLedger_Schema(t *testing.T) {
-	// Comment this mockImmuLedger setting out if you want to test against real ImmuDB
-	// ****************************************************************
-	// ToDO find a way to mock immuclient responses somehow
-	// ****************************************************************
 	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
+	if !testAgainstRealImmuDB {
+		immuLedger.MockImmuClientForTesting(testImmuClient)
+	}
 	assert.True(t, ok)
 	err := immuLedger.Write(immuTxnIDForSchema, immuSchemaDataToWrite)
 	assert.NoError(t, err)
+	// clear MemCache to test reading from ImmuDB / mocked Immu
+	immuLedger.ResetMemCache()
 	name, value, err := immuLedger.Read(immuTxnIDForSchema)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForSchema, name)
@@ -118,14 +159,15 @@ func TestImmuLedger_Schema(t *testing.T) {
 
 // Test NYM writing and reading
 func TestImmuLedger_Nym(t *testing.T) {
-	// Comment this mockImmuLedger setting out if you want to test against real ImmuDB
-	// ****************************************************************
-	// ToDO find a way to mock immuclient responses somehow
-	// ****************************************************************
 	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
+	if !testAgainstRealImmuDB {
+		immuLedger.MockImmuClientForTesting(testImmuClient)
+	}
 	assert.True(t, ok)
 	err := immuLedger.Write(immuTxnIDForNym, immuNymDataToWrite)
 	assert.NoError(t, err)
+	// clear MemCache to test reading from ImmuDB / mocked Immu
+	immuLedger.ResetMemCache()
 	name, value, err := immuLedger.Read(immuTxnIDForNym)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForNym, name)
