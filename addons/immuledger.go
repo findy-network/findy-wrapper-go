@@ -40,15 +40,16 @@ func connectToImmu() (_ immuclient.ImmuClient, _ context.Context, err error) {
 	password := os.Getenv("ImmuPasswd")
 	immuPort := err2.Int.Try(strconv.Atoi(immuPortString))
 	// set connection options
-	var options immuclient.Options
-	options.Address = immuURL
-	options.Port = immuPort
-	options.Auth = true
-	options.CurrentDatabase = "defaultdb"
+	options := &immuclient.Options{
+		Address:         immuURL,
+		Port:            immuPort,
+		Auth:            true,
+		CurrentDatabase: "defaultdb",
+	}
 
 	// connect to ImmuDB
 	if client == nil {
-		client, err = immuclient.NewImmuClient(immuclient.DefaultOptions().WithAddress(immuURL).WithAuth(true))
+		client, err = immuclient.NewImmuClient(options)
 		err2.Check(err)
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
