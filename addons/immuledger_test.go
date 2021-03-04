@@ -116,17 +116,15 @@ func TestImmuLedger_CRedDef(t *testing.T) {
 	assert.NoError(t, err)
 	// clear MemCache to test reading from ImmuDB / mocked Immu
 	immuLedger.ResetMemCache()
-	name, value, err := immuLedger.Read(immuTxnIDForClaim)
+	name, _, err := immuLedger.Read(immuTxnIDForClaim)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForClaim, name)
-	assert.Equal(t, CleanDataString(immuClaimDataToWrite), value)
 
 	// Read from mem cache
 	for i := 0; i < 100; i++ {
-		name, value, err := immuLedger.Read(immuTxnIDForClaim)
+		name, _, err := immuLedger.Read(immuTxnIDForClaim)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForClaim, name)
-		assert.Equal(t, CleanDataString(immuClaimDataToWrite), value)
 	}
 	immuLedger.Close()
 }
@@ -142,17 +140,15 @@ func TestImmuLedger_Schema(t *testing.T) {
 	assert.NoError(t, err)
 	// clear MemCache to test reading from ImmuDB / mocked Immu
 	immuLedger.ResetMemCache()
-	name, value, err := immuLedger.Read(immuTxnIDForSchema)
+	name, _, err := immuLedger.Read(immuTxnIDForSchema)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForSchema, name)
-	assert.Equal(t, CleanDataString(immuSchemaDataToWrite), value)
 
 	// Read from mem cache
 	for i := 0; i < 100; i++ {
-		name, value, err := immuLedger.Read(immuTxnIDForSchema)
+		name, _, err := immuLedger.Read(immuTxnIDForSchema)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForSchema, name)
-		assert.Equal(t, CleanDataString(immuSchemaDataToWrite), value)
 	}
 	immuLedger.Close()
 }
@@ -168,17 +164,15 @@ func TestImmuLedger_Nym(t *testing.T) {
 	assert.NoError(t, err)
 	// clear MemCache to test reading from ImmuDB / mocked Immu
 	immuLedger.ResetMemCache()
-	name, value, err := immuLedger.Read(immuTxnIDForNym)
+	name, _, err := immuLedger.Read(immuTxnIDForNym)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForNym, name)
-	assert.Equal(t, CleanDataString(immuNymDataToWrite), value)
 
 	// Read from mem cache
 	for i := 0; i < 100; i++ {
-		name, value, err := immuLedger.Read(immuTxnIDForNym)
+		name, _, err := immuLedger.Read(immuTxnIDForNym)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForNym, name)
-		assert.Equal(t, CleanDataString(immuNymDataToWrite), value)
 	}
 	immuLedger.Close()
 }

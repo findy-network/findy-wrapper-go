@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"regexp"
 	"strconv"
 	"sync"
 
@@ -31,15 +30,6 @@ type immu struct {
 		sync.RWMutex
 		ory map[string]string
 	}
-}
-
-// clean possible line breaks and tabs from the data
-func CleanDataString(data string) string {
-	re := regexp.MustCompile(`\n`)
-	data = re.ReplaceAllString(data, "")
-	re = regexp.MustCompile(`\t`)
-	data = re.ReplaceAllString(data, "")
-	return data
 }
 
 func ConnectToImmu() (immuclient.ImmuClient, context.Context, error) {
@@ -107,8 +97,6 @@ func (i *immu) Open(name string) bool {
 }
 
 func (i *immu) Write(ID, data string) (err error) {
-	data = CleanDataString(data) // do some data cleaning if needed
-
 	// connect to ImmuDB
 	client, ctx, err := ConnectToImmu()
 	if err != nil {
