@@ -60,6 +60,13 @@ type mockImmuClient struct {
 	immuclient.ImmuClient
 }
 
+// This is needed because of testing. Using this the immuclient library
+// functions Set() and Get() can be overriden and there is no need
+// to have connectivity towards real ImmuDB
+func MockImmuClientForTesting(newImmuclient myImmuClient) {
+	client = newImmuclient
+}
+
 // Override the real immuclient.Set() function. Can be used to return also errors if needed
 func (m *mockImmuClient) Set(ctx context.Context, key []byte, value []byte) (*schema.TxMetadata, error) {
 	// store values
@@ -109,7 +116,7 @@ func TestImmuLedger_Open(t *testing.T) {
 func TestImmuLedger_CRedDef(t *testing.T) {
 	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
 	if !testAgainstRealImmuDB {
-		immuLedger.MockImmuClientForTesting(testImmuClient)
+		MockImmuClientForTesting(testImmuClient)
 	}
 	assert.True(t, ok)
 	err := immuLedger.Write(immuTxnIDForClaim, immuClaimDataToWrite)
@@ -133,7 +140,7 @@ func TestImmuLedger_CRedDef(t *testing.T) {
 func TestImmuLedger_Schema(t *testing.T) {
 	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
 	if !testAgainstRealImmuDB {
-		immuLedger.MockImmuClientForTesting(testImmuClient)
+		MockImmuClientForTesting(testImmuClient)
 	}
 	assert.True(t, ok)
 	err := immuLedger.Write(immuTxnIDForSchema, immuSchemaDataToWrite)
@@ -157,7 +164,7 @@ func TestImmuLedger_Schema(t *testing.T) {
 func TestImmuLedger_Nym(t *testing.T) {
 	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
 	if !testAgainstRealImmuDB {
-		immuLedger.MockImmuClientForTesting(testImmuClient)
+		MockImmuClientForTesting(testImmuClient)
 	}
 	assert.True(t, ok)
 	err := immuLedger.Write(immuTxnIDForNym, immuNymDataToWrite)
