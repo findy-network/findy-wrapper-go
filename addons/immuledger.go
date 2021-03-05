@@ -49,10 +49,10 @@ func tryGetOpions() (cfg *ImmuCfg) {
 		UserName: os.Getenv("ImmuUsrName"),
 		Password: os.Getenv("ImmuPasswd"),
 	}
-	assert.D.True(cfg.URL != "", "immu database URL is needed")
-	assert.D.True(cfg.Port != 0, "immu DB port cannot be 0")
-	assert.D.True(cfg.UserName != "", "immuDB user name cannot be empty")
-	assert.D.True(cfg.Password != "", "immuDB password cannot be empty")
+	assert.D.True(cfg.URL != "", "database URL is needed")
+	assert.D.True(cfg.Port != 0, "port cannot be 0")
+	assert.D.True(cfg.UserName != "", "user name cannot be empty")
+	assert.D.True(cfg.Password != "", "password cannot be empty")
 	cfg.Options = immuclient.Options{
 		Address:         cfg.URL,
 		Port:            cfg.Port,
@@ -106,18 +106,19 @@ func (i *immu) Write(ID, data string) (err error) {
 	defer err2.Return(&err)
 
 	// is immuDB thread safe? Why this is undocumented method?
-	// what happens to db connection during the error
+
+	// store the data to the memory cache in all cases
+	i.mem.Lock()
+	i.mem.ory[ID] = data
+	i.mem.Unlock()
+
+	// todo: extact this to own function later for retries, etc.
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	tx, err := client.Set(ctx, []byte(ID), []byte(data))
 	err2.Check(err)
 	fmt.Printf("Immuledger: Successfully committed key \"%s\" at tx %d\n", []byte(ID), tx.Id)
 	// fmt.Println("Immuledger: tx ", tx)
-
-	// store the data to the memory cache
-	i.mem.Lock()
-	defer i.mem.Unlock()
-	i.mem.ory[ID] = data
 
 	return nil
 }
@@ -135,6 +136,7 @@ func (i *immu) Read(ID string) (name string, value string, err error) {
 	}
 	i.mem.RUnlock()
 
+	// todo: extract to function to handle errors and retries
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	dataFromImmu, err := client.Get(ctx, []byte(ID))
