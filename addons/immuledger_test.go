@@ -108,13 +108,13 @@ func TestImmuLedger_StartMockedImmuledger(t *testing.T) {
 	password = os.Getenv("ImmuPasswd")
 }
 func TestImmuLedger_Open(t *testing.T) {
-	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
+	ok := immuLedger.Open("FINDY_MOCK_IMMUDB_LEDGER")
 	assert.True(t, ok)
 }
 
 // Test CRED DEF writing and reading
 func TestImmuLedger_CRedDef(t *testing.T) {
-	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
+	ok := immuLedger.Open("FINDY_MOCK_IMMUDB_LEDGER")
 	if !testAgainstRealImmuDB {
 		MockImmuClientForTesting(testImmuClient)
 	}
@@ -138,7 +138,7 @@ func TestImmuLedger_CRedDef(t *testing.T) {
 
 // Test SCHEMA writing and reading
 func TestImmuLedger_Schema(t *testing.T) {
-	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
+	ok := immuLedger.Open("FINDY_MOCK_IMMUDB_LEDGER")
 	if !testAgainstRealImmuDB {
 		MockImmuClientForTesting(testImmuClient)
 	}
@@ -162,7 +162,7 @@ func TestImmuLedger_Schema(t *testing.T) {
 
 // Test NYM writing and reading
 func TestImmuLedger_Nym(t *testing.T) {
-	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
+	ok := immuLedger.Open("FINDY_MOCK_IMMUDB_LEDGER")
 	if !testAgainstRealImmuDB {
 		MockImmuClientForTesting(testImmuClient)
 	}

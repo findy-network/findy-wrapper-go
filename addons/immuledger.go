@@ -11,14 +11,25 @@ import (
 	immuclient "github.com/codenotary/immudb/pkg/client"
 	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/lainio/err2"
+	"github.com/lainio/err2/assert"
 	"google.golang.org/grpc/metadata"
 )
 
 const immuLedgerName = "FINDY_IMMUDB_LEDGER"
+const immuMockLedgerName = "FINDY_MOCK_IMMUDB_LEDGER"
 
 type myImmuClient immuclient.ImmuClient
 
 var client myImmuClient
+
+type ImmuCfg struct {
+	URL      string `json:"url"`
+	Port     int    `json:"port"`
+	UserName string `json:"user_name"`
+	Password string `json:"password"`
+
+	immuclient.Options
+}
 
 // immu is a ledger addon which implements reading / writing data directly to the ImmuDB.
 // It writes ledger data to memory before returning it and if it's stored in memory it serves
@@ -30,30 +41,37 @@ type immu struct {
 	}
 }
 
-func connectToImmu() (_ immuclient.ImmuClient, _ context.Context, err error) {
-	defer err2.Return(&err)
-
-	// get credentials from env
-	immuURL := os.Getenv("ImmuUrl")
-	immuPortString := os.Getenv("ImmuPort")
-	userName := os.Getenv("ImmuUsrName")
-	password := os.Getenv("ImmuPasswd")
-	immuPort := err2.Int.Try(strconv.Atoi(immuPortString))
-	// set connection options
-	options := &immuclient.Options{
-		Address:         immuURL,
-		Port:            immuPort,
+func tryGetOpions() (cfg *ImmuCfg) {
+	// get credentials from env if available
+	cfg = &ImmuCfg{
+		URL:      os.Getenv("ImmuUrl"),
+		Port:     err2.Int.Try(strconv.Atoi(os.Getenv("ImmuPort"))),
+		UserName: os.Getenv("ImmuUsrName"),
+		Password: os.Getenv("ImmuPasswd"),
+	}
+	assert.D.True(cfg.URL != "", "immu database URL is needed")
+	assert.D.True(cfg.Port != 0, "immu DB port cannot be 0")
+	assert.D.True(cfg.UserName != "", "immuDB user name cannot be empty")
+	assert.D.True(cfg.Password != "", "immuDB password cannot be empty")
+	cfg.Options = immuclient.Options{
+		Address:         cfg.URL,
+		Port:            cfg.Port,
 		Auth:            true,
 		CurrentDatabase: "defaultdb",
 	}
+	return cfg
+}
+
+func connectToImmu() (_ immuclient.ImmuClient, _ context.Context, err error) {
+	defer err2.Return(&err)
 
 	// connect to ImmuDB
 	if client == nil {
-		client, err = immuclient.NewImmuClient(options)
+		client, err = immuclient.NewImmuClient(&Cfg.Options)
 		err2.Check(err)
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		lr, err := client.Login(ctx, []byte(userName), []byte(password))
+		lr, err := client.Login(ctx, []byte(Cfg.UserName), []byte(Cfg.Password))
 		err2.Check(err)
 		// immudb provides multidatabase capabilities.
 		// token is used not only for authentication, but also to route calls to the correct database
@@ -75,20 +93,22 @@ func (i *immu) Close() {
 }
 
 func (i *immu) Open(name string) bool {
-	// why this is reseted here? should we load it from the DB at startup?
+	// why this is reseted here? for test? should we load it from the DB at startup?
 	resetImmuLedger()
-
+	if name == immuMockLedgerName {
+		return true
+	}
+	Cfg = tryGetOpions()
 	return name == immuLedgerName
 }
 
 func (i *immu) Write(ID, data string) (err error) {
 	defer err2.Return(&err)
 
-	// connect to ImmuDB
-	client, ctx, err := connectToImmu()
-	err2.Check(err)
 	// is immuDB thread safe? Why this is undocumented method?
 	// what happens to db connection during the error
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	tx, err := client.Set(ctx, []byte(ID), []byte(data))
 	err2.Check(err)
 	fmt.Printf("Immuledger: Successfully committed key \"%s\" at tx %d\n", []byte(ID), tx.Id)
@@ -115,12 +135,8 @@ func (i *immu) Read(ID string) (name string, value string, err error) {
 	}
 	i.mem.RUnlock()
 
-	// connect to ImmuDB
-	client, ctx, err := connectToImmu()
-	if err != nil {
-		fmt.Println("Immuledger: Connect failed for reading", err)
-		err2.Check(err)
-	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	dataFromImmu, err := client.Get(ctx, []byte(ID))
 	if err != nil {
 		fmt.Printf("Immuledger: Getting key \"%s\" from ImmuDB failed. Error \"%s\"", ID, err)
@@ -140,13 +156,14 @@ var immuLedger = &immu{mem: struct {
 	ory map[string]string
 }{}}
 
+var Cfg = &ImmuCfg{
+	URL:      "localhost",
+	Port:     3322,
+	UserName: "immudb",
+	Password: "immudb",
+}
+
 func init() {
-	// env settings. Probably these will be set where this addon is called
-	// So these lines will be removed from here eventually
-	os.Setenv("ImmuUrl", "localhost")
-	os.Setenv("ImmuPort", "3322")
-	os.Setenv("ImmuUsrName", "immudb")
-	os.Setenv("ImmuPasswd", "immudb")
 	pool.RegisterPlugin(immuLedgerName, immuLedger)
 }
 
