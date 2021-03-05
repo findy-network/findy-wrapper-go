@@ -10,6 +10,7 @@ import (
 
 	immuclient "github.com/codenotary/immudb/pkg/client"
 	"github.com/findy-network/findy-wrapper-go/pool"
+	"github.com/golang/glog"
 	"github.com/lainio/err2"
 	"github.com/lainio/err2/assert"
 	"google.golang.org/grpc/metadata"
@@ -87,6 +88,12 @@ func (i *immu) ResetMemCache() {
 }
 
 func (i *immu) Close() {
+	defer err2.Catch(func(err error) {
+		glog.Errorf("error immu db ledger addon %v", err)
+	})
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	client.Logout(ctx)
 	client = nil
 	// resetImmuLedger()
 }
