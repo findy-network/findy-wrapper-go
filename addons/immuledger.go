@@ -62,24 +62,23 @@ func tryGetOpions() (cfg *ImmuCfg) {
 	return cfg
 }
 
-func connectToImmu() (_ immuclient.ImmuClient, _ context.Context, err error) {
+func connectToImmu() (err error) {
 	defer err2.Return(&err)
 
-	// connect to ImmuDB
-	if client == nil {
-		client, err = immuclient.NewImmuClient(&Cfg.Options)
-		err2.Check(err)
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		lr, err := client.Login(ctx, []byte(Cfg.UserName), []byte(Cfg.Password))
-		err2.Check(err)
-		// immudb provides multidatabase capabilities.
-		// token is used not only for authentication, but also to route calls to the correct database
-		md := metadata.Pairs("authorization", lr.Token)
-		ctx = metadata.NewOutgoingContext(context.Background(), md)
-		fmt.Println("Immuledger: Connection to ImmuDB is OK")
-	}
-	return client, nil, nil
+	assert.P.True(client != nil, "client connection cannot be already open")
+
+	client, err = immuclient.NewImmuClient(&Cfg.Options)
+	err2.Check(err)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	lr, err := client.Login(ctx, []byte(Cfg.UserName), []byte(Cfg.Password))
+	err2.Check(err)
+	// immudb provides multidatabase capabilities.
+	// token is used not only for authentication, but also to route calls to the correct database
+	md := metadata.Pairs("authorization", lr.Token)
+	ctx = metadata.NewOutgoingContext(context.Background(), md)
+	fmt.Println("Immuledger: Connection to ImmuDB is OK")
+	return nil
 }
 
 // This is needed because of testing for clearing the memCache
@@ -96,9 +95,12 @@ func (i *immu) Open(name string) bool {
 	// why this is reseted here? for test? should we load it from the DB at startup?
 	resetImmuLedger()
 	if name == immuMockLedgerName {
+		// connection is done already, Mock is 'open'
 		return true
 	}
 	Cfg = tryGetOpions()
+	connectToImmu()
+
 	return name == immuLedgerName
 }
 
