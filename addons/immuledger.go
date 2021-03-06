@@ -53,7 +53,7 @@ func tryGetOpions() (cfg *ImmuCfg) {
 }
 
 type immu struct{
-	mem
+	cache mem
 }
 
 func (i *immu) Close() {
@@ -84,7 +84,7 @@ func (i *immu) Open(name string) bool {
 func (i *immu) Write(ID, data string) (err error) {
 	defer err2.Return(&err)
 
-	_ = i.mem.Write(ID, data)
+	_ = i.cache.Write(ID, data)
 
 	// todo: extact this to own function later for retries, etc.
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -101,7 +101,7 @@ func (i *immu) Read(ID string) (name string, value string, err error) {
 	defer err2.Return(&err)
 
 	// chekck if we have data in mem cache
-	if _, value, err = i.mem.Read(ID); err != nil && value != "" {
+	if _, value, err = i.cache.Read(ID); err != nil && value != "" {
 		return ID, value, err
 	}
 	// todo: extract to function to handle errors and retries
@@ -111,12 +111,12 @@ func (i *immu) Read(ID string) (name string, value string, err error) {
 	err2.Check(err)
 	fmt.Printf("Immuledger: Successfully retrieved entry for key %s\n", dataFromImmu.Key)
 
-	_ = i.mem.Write(ID, value)
+	_ = i.cache.Write(ID, value)
 	return ID, string(dataFromImmu.Value), nil
 }
 
 func (i *immu) ResetMemCache() {
-	i.mem.mem.ory = make(map[string]string)
+	i.cache.mem.ory = make(map[string]string)
 }
 
 var immuMemLedger = mem{mem: struct {
@@ -124,7 +124,7 @@ var immuMemLedger = mem{mem: struct {
 	ory map[string]string
 }{}}
 
-var immuLedger = &immu{mem: mem{mem: struct {
+var immuLedger = &immu{cache: mem{mem: struct {
 	sync.RWMutex
 	ory map[string]string
 }{}}}
