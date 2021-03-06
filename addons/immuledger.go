@@ -31,16 +31,6 @@ type ImmuCfg struct {
 	immuclient.Options
 }
 
-// immu is a ledger addon which implements reading / writing data directly to the ImmuDB.
-// It writes ledger data to memory before returning it and if it's stored in memory it serves
-// the data from there instead of fetching it from the ImmuDB
-type immu struct {
-	mem struct {
-		sync.RWMutex
-		ory map[string]string
-	}
-}
-
 func tryGetOpions() (cfg *ImmuCfg) {
 	// get credentials from env if available
 	cfg = &ImmuCfg{
@@ -62,9 +52,8 @@ func tryGetOpions() (cfg *ImmuCfg) {
 	return cfg
 }
 
-// This is needed because of testing for clearing the memCache
-func (i *immu) ResetMemCache() {
-	resetImmuLedger()
+type immu struct{
+	mem
 }
 
 func (i *immu) Close() {
@@ -80,7 +69,8 @@ func (i *immu) Close() {
 
 func (i *immu) Open(name string) bool {
 	// why this is reseted here? for test? should we load it from the DB at startup?
-	resetImmuLedger()
+	i.ResetMemCache()
+
 	if name == immuMockLedgerName {
 		// connection is done already, Mock is 'open'
 		return true
@@ -94,12 +84,7 @@ func (i *immu) Open(name string) bool {
 func (i *immu) Write(ID, data string) (err error) {
 	defer err2.Return(&err)
 
-	// is immuDB thread safe? Why this is undocumented method?
-
-	// store the data to the memory cache in all cases
-	i.mem.Lock()
-	i.mem.ory[ID] = data
-	i.mem.Unlock()
+	_ = i.mem.Write(ID, data)
 
 	// todo: extact this to own function later for retries, etc.
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -116,35 +101,33 @@ func (i *immu) Read(ID string) (name string, value string, err error) {
 	defer err2.Return(&err)
 
 	// chekck if we have data in mem cache
-	// for testing purposes, you might want to disable this temporarily when testing
-	// to varify that reading from ImmuDB is succesful
-	i.mem.RLock()
-	if item, ok := i.mem.ory[ID]; ok {
-		fmt.Printf("Immuledger: Successfully retrieved entry for key %s from memcache\n", ID)
-		// data can be found from memcache, return it
-		i.mem.RUnlock()
-		return ID, item, nil
+	if _, value, err = i.mem.Read(ID); err != nil && value != "" {
+		return ID, value, err
 	}
-	i.mem.RUnlock()
-
 	// todo: extract to function to handle errors and retries
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	dataFromImmu, err := client.Get(ctx, []byte(ID))
 	err2.Check(err)
 	fmt.Printf("Immuledger: Successfully retrieved entry for key %s\n", dataFromImmu.Key)
-	// fmt.Println("Immuledger: immudata ", dataFromImmu)
 
-	i.mem.Lock()
-	defer i.mem.Unlock()
-	i.mem.ory[ID] = string(dataFromImmu.Value) // store the data to the memory cache
+	_ = i.mem.Write(ID, value)
 	return ID, string(dataFromImmu.Value), nil
 }
 
-var immuLedger = &immu{mem: struct {
+func (i *immu) ResetMemCache() {
+	i.mem.mem.ory = make(map[string]string)
+}
+
+var immuMemLedger = mem{mem: struct {
 	sync.RWMutex
 	ory map[string]string
 }{}}
+
+var immuLedger = &immu{mem: mem{mem: struct {
+	sync.RWMutex
+	ory map[string]string
+}{}}}
 
 var Cfg = &ImmuCfg{
 	URL:      "localhost",
@@ -157,6 +140,3 @@ func init() {
 	pool.RegisterPlugin(immuLedgerName, immuLedger)
 }
 
-func resetImmuLedger() {
-	immuLedger.mem.ory = make(map[string]string)
-}
