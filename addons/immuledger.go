@@ -2,7 +2,6 @@ package addons
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"strconv"
 	"sync"
@@ -31,7 +30,7 @@ type ImmuCfg struct {
 	immuclient.Options
 }
 
-func tryGetOpions() (cfg *ImmuCfg) {
+func tryOptions() (cfg *ImmuCfg) {
 	// get credentials from env if available
 	cfg = &ImmuCfg{
 		URL:      os.Getenv("ImmuUrl"),
@@ -52,7 +51,7 @@ func tryGetOpions() (cfg *ImmuCfg) {
 	return cfg
 }
 
-type immu struct{
+type immu struct {
 	cache mem
 }
 
@@ -64,7 +63,6 @@ func (i *immu) Close() {
 	defer cancel()
 	client.Logout(ctx)
 	client = nil
-	// resetImmuLedger()
 }
 
 func (i *immu) Open(name string) bool {
@@ -75,7 +73,7 @@ func (i *immu) Open(name string) bool {
 		// connection is done already, Mock is 'open'
 		return true
 	}
-	Cfg = tryGetOpions()
+	Cfg = tryOptions()
 	connectToImmu()
 
 	return name == immuLedgerName
@@ -89,9 +87,9 @@ func (i *immu) Write(ID, data string) (err error) {
 	// todo: extact this to own function later for retries, etc.
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	tx, err := client.Set(ctx, []byte(ID), []byte(data))
+	_, err = client.Set(ctx, []byte(ID), []byte(data))
 	err2.Check(err)
-	fmt.Printf("Immuledger: Successfully committed key \"%s\" at tx %d\n", []byte(ID), tx.Id)
+	//fmt.Printf("Immuledger: Successfully committed key \"%s\" at tx %d\n", []byte(ID), tx.Id)
 	// fmt.Println("Immuledger: tx ", tx)
 
 	return nil
@@ -101,22 +99,30 @@ func (i *immu) Read(ID string) (name string, value string, err error) {
 	defer err2.Return(&err)
 
 	// chekck if we have data in mem cache
-	if _, value, err = i.cache.Read(ID); err != nil && value != "" {
+	if _, value, err = i.cache.Read(ID); err == nil && value != "" {
+		glog.V(1).Info("----- cache hit")
 		return ID, value, err
 	}
+	if err != nil {
+		glog.Error(err)
+	}
+
 	// todo: extract to function to handle errors and retries
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	dataFromImmu, err := client.Get(ctx, []byte(ID))
 	err2.Check(err)
-	fmt.Printf("Immuledger: Successfully retrieved entry for key %s\n", dataFromImmu.Key)
+	//fmt.Printf("Immuledger: Successfully retrieved entry for key %s\n", dataFromImmu.Key)
 
-	_ = i.cache.Write(ID, value)
+	_ = i.cache.Write(ID, string(dataFromImmu.Value))
 	return ID, string(dataFromImmu.Value), nil
 }
 
 func (i *immu) ResetMemCache() {
+	glog.V(1).Infof("------------ reset cache (%d)", len(i.cache.mem.ory))
+	i.cache.mem.Lock()
 	i.cache.mem.ory = make(map[string]string)
+	i.cache.mem.Unlock()
 }
 
 var immuMemLedger = mem{mem: struct {
@@ -139,4 +145,3 @@ var Cfg = &ImmuCfg{
 func init() {
 	pool.RegisterPlugin(immuLedgerName, immuLedger)
 }
-

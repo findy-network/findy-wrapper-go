@@ -56,6 +56,21 @@ func (m *mockImmuClient) Get(ctx context.Context, key []byte) (*schema.Entry, er
 	return &entryData, nil
 }
 
+func (m *mockImmuClient) Login(
+	ctx context.Context,
+	user []byte,
+	pass []byte,
+) (*schema.LoginResponse, error) {
+	glog.V(1).Infof("immu mock login (user:%s/pwd:%s)",
+		string(user), string(pass))
+	return nil, nil
+}
+
+func (m *mockImmuClient) Logout(ctx context.Context) error {
+	glog.V(1).Infoln("========= calling logout from mock db")
+	return nil
+}
+
 //func NewImmuClient(options *Options) (c ImmuClient, err error) {
 //}
 

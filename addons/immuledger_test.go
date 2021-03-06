@@ -1,9 +1,11 @@
 package addons
 
 import (
+	"flag"
 	"os"
 	"testing"
 
+	"github.com/lainio/err2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -51,9 +53,17 @@ var password string
 
 var testImmuClient = &mockImmuClient{}
 
-// Store the current env setting before running tests
-func TestImmuLedger_StartMockedImmuledger(t *testing.T) {
+func TestMain(m *testing.M) {
+	err2.Check(flag.Set("logtostderr", "true"))
+	err2.Check(flag.Set("v", "23"))
 
+	setUp()
+	code := m.Run()
+	tearDown()
+	os.Exit(code)
+}
+
+func setUp() {
 	// Read ImmuDB related credential, Url and port data from env
 	// As these are now stored in variables, the env variables can
 	// be manipulated if needed for testing against ImmuDB running anywhere
@@ -62,6 +72,14 @@ func TestImmuLedger_StartMockedImmuledger(t *testing.T) {
 	immuPort = os.Getenv("ImmuPort")
 	userName = os.Getenv("ImmuUsrName")
 	password = os.Getenv("ImmuPasswd")
+}
+
+func tearDown() {
+}
+
+// Store the current env setting before running tests
+func TestImmuLedger_StartMockedImmuledger(t *testing.T) {
+
 }
 
 func TestImmuLedger_Open(t *testing.T) {
@@ -79,13 +97,13 @@ func TestImmuLedger_CRedDef(t *testing.T) {
 	err := immuLedger.Write(immuTxnIDForClaim, immuClaimDataToWrite)
 	assert.NoError(t, err)
 	// clear MemCache to test reading from ImmuDB / mocked Immu
-	immuLedger.ResetMemCache()
+	//immuLedger.ResetMemCache()
 	name, _, err := immuLedger.Read(immuTxnIDForClaim)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForClaim, name)
 
 	// Read from mem cache
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 1; i++ {
 		name, _, err := immuLedger.Read(immuTxnIDForClaim)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForClaim, name)
@@ -103,13 +121,13 @@ func TestImmuLedger_Schema(t *testing.T) {
 	err := immuLedger.Write(immuTxnIDForSchema, immuSchemaDataToWrite)
 	assert.NoError(t, err)
 	// clear MemCache to test reading from ImmuDB / mocked Immu
-	immuLedger.ResetMemCache()
 	name, _, err := immuLedger.Read(immuTxnIDForSchema)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForSchema, name)
 
+	immuLedger.ResetMemCache()
 	// Read from mem cache
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 1; i++ {
 		name, _, err := immuLedger.Read(immuTxnIDForSchema)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForSchema, name)
@@ -133,7 +151,7 @@ func TestImmuLedger_Nym(t *testing.T) {
 	assert.Equal(t, immuTxnIDForNym, name)
 
 	// Read from mem cache
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 1; i++ {
 		name, _, err := immuLedger.Read(immuTxnIDForNym)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForNym, name)
