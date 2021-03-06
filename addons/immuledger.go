@@ -113,6 +113,8 @@ func (i *immu) Write(ID, data string) (err error) {
 }
 
 func (i *immu) Read(ID string) (name string, value string, err error) {
+	defer err2.Return(&err)
+
 	// chekck if we have data in mem cache
 	// for testing purposes, you might want to disable this temporarily when testing
 	// to varify that reading from ImmuDB is succesful
@@ -120,7 +122,7 @@ func (i *immu) Read(ID string) (name string, value string, err error) {
 	if item, ok := i.mem.ory[ID]; ok {
 		fmt.Printf("Immuledger: Successfully retrieved entry for key %s from memcache\n", ID)
 		// data can be found from memcache, return it
-		defer i.mem.RUnlock()
+		i.mem.RUnlock()
 		return ID, item, nil
 	}
 	i.mem.RUnlock()
@@ -129,10 +131,7 @@ func (i *immu) Read(ID string) (name string, value string, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	dataFromImmu, err := client.Get(ctx, []byte(ID))
-	if err != nil {
-		fmt.Printf("Immuledger: Getting key \"%s\" from ImmuDB failed. Error \"%s\"", ID, err)
-		err2.Check(err)
-	}
+	err2.Check(err)
 	fmt.Printf("Immuledger: Successfully retrieved entry for key %s\n", dataFromImmu.Key)
 	// fmt.Println("Immuledger: immudata ", dataFromImmu)
 
