@@ -2,15 +2,10 @@ package addons
 
 import (
 	"context"
-	"fmt"
-	"time"
 
 	"github.com/codenotary/immudb/pkg/api/schema"
 	immuclient "github.com/codenotary/immudb/pkg/client"
 	"github.com/golang/glog"
-	"github.com/lainio/err2"
-	"github.com/lainio/err2/assert"
-	"google.golang.org/grpc/metadata"
 )
 
 var storedKey []byte
@@ -24,9 +19,9 @@ type mockImmuClient struct {
 // This is needed because of testing. Using this the immuclient library
 // functions Set() and Get() can be overriden and there is no need
 // to have connectivity towards real ImmuDB
-func MockImmuClientForTesting(newImmuclient myImmuClient) {
-	client = newImmuclient
-}
+//func MockImmuClientForTesting(newImmuclient myImmuClient) {
+//	client = newImmuclient
+//}
 
 // Override the real immuclient.Set() function. Can be used to return also errors if needed
 func (m *mockImmuClient) Set(ctx context.Context, key []byte, value []byte) (*schema.TxMetadata, error) {
@@ -61,34 +56,13 @@ func (m *mockImmuClient) Login(
 	user []byte,
 	pass []byte,
 ) (*schema.LoginResponse, error) {
-	glog.V(1).Infof("immu mock login (user:%s/pwd:%s)",
+	glog.V(1).Infof("************ immu mock login (user:%s/pwd:%s)",
 		string(user), string(pass))
-	return nil, nil
+	lr := &schema.LoginResponse{Token: "MOCK_TOKEN"}
+	return lr, nil
 }
 
 func (m *mockImmuClient) Logout(ctx context.Context) error {
 	glog.V(1).Infoln("========= calling logout from mock db")
-	return nil
-}
-
-//func NewImmuClient(options *Options) (c ImmuClient, err error) {
-//}
-
-func connectToImmu() (err error) {
-	defer err2.Return(&err)
-
-	assert.P.True(client != nil, "client connection cannot be already open")
-
-	client, err = immuclient.NewImmuClient(&Cfg.Options)
-	err2.Check(err)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	lr, err := client.Login(ctx, []byte(Cfg.UserName), []byte(Cfg.Password))
-	err2.Check(err)
-	// immudb provides multidatabase capabilities.
-	// token is used not only for authentication, but also to route calls to the correct database
-	md := metadata.Pairs("authorization", lr.Token)
-	ctx = metadata.NewOutgoingContext(context.Background(), md)
-	fmt.Println("Immuledger: Connection to ImmuDB is OK")
 	return nil
 }

@@ -9,10 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Setting this as true means that testing is done against real ImmuDB
-// instead of mocked immuDB. So this can be used as an E2E testing tool
-const testAgainstRealImmuDB = false
-
 const immuTxnIDForClaim = "2Kc7X1ErDwNQC3mDSzcj2r:3:CL:2Kc7X1ErDwNQC3mDSzcj2r:2:NEW_SCHEMA_58906353:1.0:TAG_1"
 const immuClaimDataToWrite = `
 	{
@@ -51,8 +47,6 @@ var immuPort string
 var userName string
 var password string
 
-var testImmuClient = &mockImmuClient{}
-
 func TestMain(m *testing.M) {
 	err2.Check(flag.Set("logtostderr", "true"))
 	err2.Check(flag.Set("v", "23"))
@@ -64,22 +58,9 @@ func TestMain(m *testing.M) {
 }
 
 func setUp() {
-	// Read ImmuDB related credential, Url and port data from env
-	// As these are now stored in variables, the env variables can
-	// be manipulated if needed for testing against ImmuDB running anywhere
-	// Not used for anything at the moment though
-	immuURL = os.Getenv("ImmuUrl")
-	immuPort = os.Getenv("ImmuPort")
-	userName = os.Getenv("ImmuUsrName")
-	password = os.Getenv("ImmuPasswd")
 }
 
 func tearDown() {
-}
-
-// Store the current env setting before running tests
-func TestImmuLedger_StartMockedImmuledger(t *testing.T) {
-
 }
 
 func TestImmuLedger_Open(t *testing.T) {
@@ -90,9 +71,6 @@ func TestImmuLedger_Open(t *testing.T) {
 // Test CRED DEF writing and reading
 func TestImmuLedger_CRedDef(t *testing.T) {
 	ok := immuLedger.Open("FINDY_MOCK_IMMUDB_LEDGER")
-	if !testAgainstRealImmuDB {
-		MockImmuClientForTesting(testImmuClient)
-	}
 	assert.True(t, ok)
 	err := immuLedger.Write(immuTxnIDForClaim, immuClaimDataToWrite)
 	assert.NoError(t, err)
@@ -114,9 +92,6 @@ func TestImmuLedger_CRedDef(t *testing.T) {
 // Test SCHEMA writing and reading
 func TestImmuLedger_Schema(t *testing.T) {
 	ok := immuLedger.Open("FINDY_MOCK_IMMUDB_LEDGER")
-	if !testAgainstRealImmuDB {
-		MockImmuClientForTesting(testImmuClient)
-	}
 	assert.True(t, ok)
 	err := immuLedger.Write(immuTxnIDForSchema, immuSchemaDataToWrite)
 	assert.NoError(t, err)
@@ -138,9 +113,6 @@ func TestImmuLedger_Schema(t *testing.T) {
 // Test NYM writing and reading
 func TestImmuLedger_Nym(t *testing.T) {
 	ok := immuLedger.Open("FINDY_MOCK_IMMUDB_LEDGER")
-	if !testAgainstRealImmuDB {
-		MockImmuClientForTesting(testImmuClient)
-	}
 	assert.True(t, ok)
 	err := immuLedger.Write(immuTxnIDForNym, immuNymDataToWrite)
 	assert.NoError(t, err)
@@ -157,17 +129,4 @@ func TestImmuLedger_Nym(t *testing.T) {
 		assert.Equal(t, immuTxnIDForNym, name)
 	}
 	immuLedger.Close()
-}
-
-// Restores the env settings
-func TestImmuLedger_RestoreEnv(t *testing.T) {
-	// restore env
-	os.Setenv("ImmuUrl", immuURL)
-	os.Setenv("ImmuPort", immuPort)
-	os.Setenv("ImmuUsrName", userName)
-	os.Setenv("ImmuPasswd", password)
-}
-
-func TestImmuLedger_StartModeCalc(t *testing.T) {
-
 }

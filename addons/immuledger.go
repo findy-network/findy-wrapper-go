@@ -2,8 +2,6 @@ package addons
 
 import (
 	"context"
-	"os"
-	"strconv"
 	"sync"
 	"time"
 
@@ -11,72 +9,53 @@ import (
 	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
-	"github.com/lainio/err2/assert"
+	"google.golang.org/grpc/metadata"
 )
 
 const immuLedgerName = "FINDY_IMMUDB_LEDGER"
-const immuMockLedgerName = "FINDY_MOCK_IMMUDB_LEDGER"
 
 type myImmuClient immuclient.ImmuClient
 
-var client myImmuClient
-
-type ImmuCfg struct {
-	URL      string `json:"url"`
-	Port     int    `json:"port"`
-	UserName string `json:"user_name"`
-	Password string `json:"password"`
-
-	immuclient.Options
-}
-
-func tryOptions() (cfg *ImmuCfg) {
-	// get credentials from env if available
-	cfg = &ImmuCfg{
-		URL:      os.Getenv("ImmuUrl"),
-		Port:     err2.Int.Try(strconv.Atoi(os.Getenv("ImmuPort"))),
-		UserName: os.Getenv("ImmuUsrName"),
-		Password: os.Getenv("ImmuPasswd"),
-	}
-	assert.D.True(cfg.URL != "", "database URL is needed")
-	assert.D.True(cfg.Port != 0, "port cannot be 0")
-	assert.D.True(cfg.UserName != "", "user name cannot be empty")
-	assert.D.True(cfg.Password != "", "password cannot be empty")
-	cfg.Options = immuclient.Options{
-		Address:         cfg.URL,
-		Port:            cfg.Port,
-		Auth:            true,
-		CurrentDatabase: "defaultdb",
-	}
-	return cfg
-}
+//var client myImmuClient
 
 type immu struct {
-	cache mem
+	cache  mem
+	client myImmuClient
+	token  string
 }
 
 func (i *immu) Close() {
 	defer err2.Catch(func(err error) {
-		glog.Errorf("error immu db ledger addon %v", err)
+		glog.Errorf("error immu db ledger addon Close(): %v", err)
 	})
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	client.Logout(ctx)
-	client = nil
+	i.client.Logout(ctx)
+	i.client = nil
 }
 
 func (i *immu) Open(name string) bool {
+	defer err2.Catch(func(err error) {
+		glog.Errorf("error immu db ledger addon Open(): %v", err)
+	})
 	// why this is reseted here? for test? should we load it from the DB at startup?
 	i.ResetMemCache()
 
-	if name == immuMockLedgerName {
-		// connection is done already, Mock is 'open'
-		return true
-	}
-	Cfg = tryOptions()
-	connectToImmu()
+	MockCfg = NewImmuCfg(name)
+	c, token, err := MockCfg.Connect()
+	err2.Check(err)
 
-	return name == immuLedgerName
+	i.client = c
+	i.token = token
+	return true
+}
+
+func (i *immu) buildCtx(context context.Context) context.Context {
+	// immudb provides multidatabase capabilities.
+	// token is used not only for authentication, but also to route calls to the correct database
+	md := metadata.Pairs("authorization", i.token)
+	ctx := metadata.NewOutgoingContext(context, md)
+	return ctx
 }
 
 func (i *immu) Write(ID, data string) (err error) {
@@ -87,7 +66,8 @@ func (i *immu) Write(ID, data string) (err error) {
 	// todo: extact this to own function later for retries, etc.
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	_, err = client.Set(ctx, []byte(ID), []byte(data))
+	ctx = i.buildCtx(ctx)
+	_, err = i.client.Set(ctx, []byte(ID), []byte(data))
 	err2.Check(err)
 	//fmt.Printf("Immuledger: Successfully committed key \"%s\" at tx %d\n", []byte(ID), tx.Id)
 	// fmt.Println("Immuledger: tx ", tx)
@@ -110,7 +90,8 @@ func (i *immu) Read(ID string) (name string, value string, err error) {
 	// todo: extract to function to handle errors and retries
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	dataFromImmu, err := client.Get(ctx, []byte(ID))
+	ctx = i.buildCtx(ctx)
+	dataFromImmu, err := i.client.Get(ctx, []byte(ID))
 	err2.Check(err)
 	//fmt.Printf("Immuledger: Successfully retrieved entry for key %s\n", dataFromImmu.Key)
 
@@ -134,13 +115,6 @@ var immuLedger = &immu{cache: mem{mem: struct {
 	sync.RWMutex
 	ory map[string]string
 }{}}}
-
-var Cfg = &ImmuCfg{
-	URL:      "localhost",
-	Port:     3322,
-	UserName: "immudb",
-	Password: "immudb",
-}
 
 func init() {
 	pool.RegisterPlugin(immuLedgerName, immuLedger)
