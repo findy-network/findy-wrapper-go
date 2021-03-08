@@ -74,17 +74,21 @@ func TestImmuLedger_CRedDef(t *testing.T) {
 	assert.True(t, ok)
 	err := immuLedger.Write(immuTxnIDForClaim, immuClaimDataToWrite)
 	assert.NoError(t, err)
+
 	// clear MemCache to test reading from ImmuDB / mocked Immu
-	//immuLedger.ResetMemCache()
+	immuLedger.ResetMemCache()
 	name, _, err := immuLedger.Read(immuTxnIDForClaim)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForClaim, name)
+	firstCount := immuLedger.client.(*mockImmuClient).getOkCount
 
 	// Read from mem cache
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 10; i++ {
 		name, _, err := immuLedger.Read(immuTxnIDForClaim)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForClaim, name)
+		count := immuLedger.client.(*mockImmuClient).getOkCount
+		assert.Equal(t, firstCount, count)
 	}
 	immuLedger.Close()
 }
@@ -96,16 +100,19 @@ func TestImmuLedger_Schema(t *testing.T) {
 	err := immuLedger.Write(immuTxnIDForSchema, immuSchemaDataToWrite)
 	assert.NoError(t, err)
 	// clear MemCache to test reading from ImmuDB / mocked Immu
+	immuLedger.ResetMemCache()
 	name, _, err := immuLedger.Read(immuTxnIDForSchema)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForSchema, name)
+	firstCount := immuLedger.client.(*mockImmuClient).getOkCount
 
-	immuLedger.ResetMemCache()
 	// Read from mem cache
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 10; i++ {
 		name, _, err := immuLedger.Read(immuTxnIDForSchema)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForSchema, name)
+		count := immuLedger.client.(*mockImmuClient).getOkCount
+		assert.Equal(t, firstCount, count)
 	}
 	immuLedger.Close()
 }
@@ -121,12 +128,15 @@ func TestImmuLedger_Nym(t *testing.T) {
 	name, _, err := immuLedger.Read(immuTxnIDForNym)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForNym, name)
+	firstCount := immuLedger.client.(*mockImmuClient).getOkCount
 
 	// Read from mem cache
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 10; i++ {
 		name, _, err := immuLedger.Read(immuTxnIDForNym)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForNym, name)
+		count := immuLedger.client.(*mockImmuClient).getOkCount
+		assert.Equal(t, firstCount, count)
 	}
 	immuLedger.Close()
 }

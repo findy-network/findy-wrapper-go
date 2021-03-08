@@ -14,6 +14,8 @@ var storedValue []byte
 // mockImmuClient is a mock for ImmuClient mock
 type mockImmuClient struct {
 	im.ImmuClient
+	setOkCount int
+	getOkCount int
 }
 
 // Override the real immuclient.Set() function. Can be used to return also errors if needed
@@ -30,6 +32,7 @@ func (m *mockImmuClient) Set(ctx context.Context, key []byte, value []byte) (*sc
 	txData.EH = []byte("BA\xaab\x9a{Y\xa4\xad\xd9\xee\xa4fn^^Q\x14d\x87k4%\xdcލC\xd6Ԁ\xc7(")
 	txData.BlTxId = 107
 	txData.BlRoot = []byte("q\xb7(<U]\xba\xad\x8b\xf1\x1cB\x83E\xe6`\xf9\xc3\x12\xe9y\x05\xf9+[\xfawS\xab\xa0\x92I")
+	m.setOkCount++
 	return &txData, nil
 }
 
@@ -41,6 +44,7 @@ func (m *mockImmuClient) Get(ctx context.Context, key []byte) (*schema.Entry, er
 	entryData.Tx = 117
 	entryData.Key = storedKey
 	entryData.Value = storedValue
+	m.getOkCount++
 	return &entryData, nil
 }
 
