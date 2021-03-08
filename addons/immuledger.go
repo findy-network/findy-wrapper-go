@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	immuclient "github.com/codenotary/immudb/pkg/client"
+	im "github.com/codenotary/immudb/pkg/client"
 	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
@@ -14,9 +14,7 @@ import (
 
 const immuLedgerName = "FINDY_IMMUDB_LEDGER"
 
-type myImmuClient immuclient.ImmuClient
-
-//var client myImmuClient
+type myImmuClient im.ImmuClient
 
 type immu struct {
 	cache  mem
@@ -41,8 +39,8 @@ func (i *immu) Open(name string) bool {
 	// why this is reseted here? for test? should we load it from the DB at startup?
 	i.ResetMemCache()
 
-	MockCfg = NewImmuCfg(name)
-	c, token, err := MockCfg.Connect()
+	cfg := NewImmuCfg(name)
+	c, token, err := cfg.Connect()
 	err2.Check(err)
 
 	i.client = c

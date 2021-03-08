@@ -4,24 +4,17 @@ import (
 	"context"
 
 	"github.com/codenotary/immudb/pkg/api/schema"
-	immuclient "github.com/codenotary/immudb/pkg/client"
+	im "github.com/codenotary/immudb/pkg/client"
 	"github.com/golang/glog"
 )
 
 var storedKey []byte
 var storedValue []byte
 
-// create immuClient mock
+// mockImmuClient is a mock for ImmuClient mock
 type mockImmuClient struct {
-	immuclient.ImmuClient
+	im.ImmuClient
 }
-
-// This is needed because of testing. Using this the immuclient library
-// functions Set() and Get() can be overriden and there is no need
-// to have connectivity towards real ImmuDB
-//func MockImmuClientForTesting(newImmuclient myImmuClient) {
-//	client = newImmuclient
-//}
 
 // Override the real immuclient.Set() function. Can be used to return also errors if needed
 func (m *mockImmuClient) Set(ctx context.Context, key []byte, value []byte) (*schema.TxMetadata, error) {
