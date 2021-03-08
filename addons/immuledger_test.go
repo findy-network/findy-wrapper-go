@@ -65,13 +65,13 @@ func tearDown() {
 }
 
 func TestImmuLedger_Open(t *testing.T) {
-	ok := immuLedger.Open("FINDY_MOCK_IMMUDB_LEDGER")
+	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
 	assert.True(t, ok)
 }
 
 // Test CRED DEF writing and reading
 func TestImmuLedger_CRedDef(t *testing.T) {
-	ok := immuLedger.Open("FINDY_MOCK_IMMUDB_LEDGER")
+	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
 	assert.True(t, ok)
 	err := immuLedger.Write(immuTxnIDForClaim, immuClaimDataToWrite)
 	assert.NoError(t, err)
@@ -96,7 +96,7 @@ func TestImmuLedger_CRedDef(t *testing.T) {
 
 // Test SCHEMA writing and reading
 func TestImmuLedger_Schema(t *testing.T) {
-	ok := immuLedger.Open("FINDY_MOCK_IMMUDB_LEDGER")
+	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
 	assert.True(t, ok)
 	err := immuLedger.Write(immuTxnIDForSchema, immuSchemaDataToWrite)
 	assert.NoError(t, err)
@@ -120,7 +120,7 @@ func TestImmuLedger_Schema(t *testing.T) {
 
 // Test NYM writing and reading
 func TestImmuLedger_Nym(t *testing.T) {
-	ok := immuLedger.Open("FINDY_MOCK_IMMUDB_LEDGER")
+	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
 	assert.True(t, ok)
 	err := immuLedger.Write(immuTxnIDForNym, immuNymDataToWrite)
 	assert.NoError(t, err)
@@ -143,7 +143,7 @@ func TestImmuLedger_Nym(t *testing.T) {
 }
 
 func TestImmuLedger_RetryOnError(t *testing.T) {
-	immuLedger.Open("FINDY_MOCK_IMMUDB_LEDGER")
+	immuLedger.Open("FINDY_IMMUDB_LEDGER")
 	mock, ok := immuLedger.client.(*mockImmuClient)
 	if !ok {
 		glog.Infoln("no test without mock")
