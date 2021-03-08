@@ -157,6 +157,11 @@ func TestImmuLedger_RetryOnError(t *testing.T) {
 	mock.errorCount = 3
 	_, _, err = immuLedger.Read(immuTxnIDForNym)
 	assert.Error(t, err)
-	//assert.Equal(t, immuTxnIDForNym, name)
-	
+	_, _, err = immuLedger.Read(immuTxnIDForNym)
+	assert.Error(t, err)
+	_, _, err = immuLedger.Read(immuTxnIDForNym)
+	assert.Error(t, err)
+
+	_, _, err = immuLedger.Read(immuTxnIDForNym)
+	assert.NoError(t, err)
 }
