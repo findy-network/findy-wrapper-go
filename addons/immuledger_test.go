@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
@@ -142,7 +143,7 @@ func TestImmuLedger_Nym(t *testing.T) {
 	immuLedger.Close()
 }
 
-func TestImmuLedger_RetryOnError(t *testing.T) {
+func TestImmuLedger_ErrorMockFunction(t *testing.T) {
 	immuLedger.Open("FINDY_IMMUDB_LEDGER")
 	mock, ok := immuLedger.client.(*mockImmuClient)
 	if !ok {
@@ -164,4 +165,19 @@ func TestImmuLedger_RetryOnError(t *testing.T) {
 
 	_, _, err = immuLedger.Read(immuTxnIDForNym)
 	assert.NoError(t, err)
+}
+
+func TestImmuLedger_RetryOnError(t *testing.T) {
+	immuLedger.Open("FINDY_IMMUDB_LEDGER")
+	mock, ok := immuLedger.client.(*mockImmuClient)
+	if !ok {
+		glog.Infoln("no test without mock")
+		return
+	}
+	mock.errorCount = 2
+	err := immuLedger.Write(immuTxnIDForNym, immuNymDataToWrite)
+	assert.NoError(t, err)
+	glog.Info("---------- time stamp to log")
+	time.Sleep(1300 * time.Millisecond)
+	assert.Equal(t, 0, mock.errorCount)
 }

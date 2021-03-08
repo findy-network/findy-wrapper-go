@@ -2,6 +2,7 @@ package addons
 
 import (
 	"context"
+	"math"
 	"sync"
 	"time"
 
@@ -57,19 +58,44 @@ func (i *immu) buildCtx(context context.Context) context.Context {
 }
 
 func (i *immu) Write(ID, data string) (err error) {
-	defer err2.Return(&err)
+	defer err2.Handle(&err, func() {
+		glog.Errorln("write error:", err)
+		err = nil // suspend error for now and retry
+		go i.writeRetry(ID, data)
+	})
 
 	_ = i.cache.Write(ID, data)
+	err2.Check(i.oneWrite(ID, data))
+	return nil
+}
 
-	// todo: extact this to own function later for retries, etc.
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+func (i *immu) writeRetry(ID, data string) {
+	success := false
+	x := 2.0
+	for round := 0.0; round < 12.0; round++ {
+		v := time.Duration(math.Pow(x, round))
+		time.Sleep(v * time.Second)
+		if err := i.oneWrite(ID, data); err != nil {
+			success = true
+			glog.Info("succesful db write retry")
+			break
+		}
+	}
+	if !success {
+		glog.Error("cannot write to DB giving up")
+	}
+}
+
+func (i *immu) oneWrite(ID, data string) (err error) {
+	defer err2.Handle(&err, func() {
+		glog.Errorf("retry db write: %v", err)
+	})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	ctx = i.buildCtx(ctx)
 	_, err = i.client.Set(ctx, []byte(ID), []byte(data))
 	err2.Check(err)
-	//fmt.Printf("Immuledger: Successfully committed key \"%s\" at tx %d\n", []byte(ID), tx.Id)
-	// fmt.Println("Immuledger: tx ", tx)
-
 	return nil
 }
 
