@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/golang/glog"
 	"github.com/lainio/err2"
 	"github.com/stretchr/testify/assert"
 )
@@ -139,4 +140,23 @@ func TestImmuLedger_Nym(t *testing.T) {
 		assert.Equal(t, firstCount, count)
 	}
 	immuLedger.Close()
+}
+
+func TestImmuLedger_RetryOnError(t *testing.T) {
+	immuLedger.Open("FINDY_MOCK_IMMUDB_LEDGER")
+	mock, ok := immuLedger.client.(*mockImmuClient)
+	if !ok {
+		glog.Infoln("no test without mock")
+		return
+	}
+
+	err := immuLedger.Write(immuTxnIDForNym, immuNymDataToWrite)
+	assert.NoError(t, err)
+	// clear cache to achive real DB call (mock)
+	immuLedger.ResetMemCache()
+	mock.errorCount = 3
+	_, _, err = immuLedger.Read(immuTxnIDForNym)
+	assert.Error(t, err)
+	//assert.Equal(t, immuTxnIDForNym, name)
+	
 }

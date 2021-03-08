@@ -2,6 +2,7 @@ package addons
 
 import (
 	"context"
+	"errors"
 
 	"github.com/codenotary/immudb/pkg/api/schema"
 	im "github.com/codenotary/immudb/pkg/client"
@@ -11,15 +12,23 @@ import (
 var storedKey []byte
 var storedValue []byte
 
-// mockImmuClient is a mock for ImmuClient mock
+// mockImmuClient is a mock for the im.ImmuClient interface. We implement only
+// subset of the methods of the full interface. We MUST implement all of them
+// we are calling from the addon! If not function ptr is nil and crash.
 type mockImmuClient struct {
-	im.ImmuClient
-	setOkCount int
-	getOkCount int
+	im.ImmuClient // mocked interface (full version)
+
+	setOkCount int // incremented on every call of the Set()
+	getOkCount int // incremented on every call of the Get()
+	errorCount int // functions send error every time > 0
 }
 
 // Override the real immuclient.Set() function. Can be used to return also errors if needed
 func (m *mockImmuClient) Set(ctx context.Context, key []byte, value []byte) (*schema.TxMetadata, error) {
+	if m.errorCount > 0 {
+		m.errorCount--
+		return nil, errors.New("mock error")
+	}
 	glog.V(2).Infoln("mock set called with key:", string(key))
 	// store values
 	storedKey = key
@@ -38,6 +47,10 @@ func (m *mockImmuClient) Set(ctx context.Context, key []byte, value []byte) (*sc
 
 // Override the real immuclient.Get() function. Can be used to return also errors if needed
 func (m *mockImmuClient) Get(ctx context.Context, key []byte) (*schema.Entry, error) {
+	if m.errorCount > 0 {
+		m.errorCount--
+		return nil, errors.New("mock error")
+	}
 	glog.V(2).Infoln("mock get called with key:", string(key))
 	// Set test data to return. This is how the real data looks like
 	var entryData schema.Entry
@@ -53,13 +66,21 @@ func (m *mockImmuClient) Login(
 	user []byte,
 	pass []byte,
 ) (*schema.LoginResponse, error) {
-	glog.V(1).Infof("************ immu mock login (user:%s/pwd:%s)",
+	if m.errorCount > 0 {
+		m.errorCount--
+		return nil, errors.New("mock error")
+	}
+	glog.V(1).Infof("------------ immu mock login (user:%s/pwd:%s)",
 		string(user), string(pass))
 	lr := &schema.LoginResponse{Token: "MOCK_TOKEN"}
 	return lr, nil
 }
 
 func (m *mockImmuClient) Logout(ctx context.Context) error {
+	if m.errorCount > 0 {
+		m.errorCount--
+		return errors.New("mock error")
+	}
 	glog.V(1).Infoln("========= calling logout from mock db")
 	return nil
 }
