@@ -23,6 +23,42 @@ type mockImmuClient struct {
 	errorCount int // functions send error every time > 0
 }
 
+func isMock(c im.ImmuClient) bool {
+	_, ok := immuLedger.client.(*mockImmuClient)
+	return ok
+}
+
+func getOkCount(c im.ImmuClient) int {
+	mock, ok := immuLedger.client.(*mockImmuClient)
+	if ok {
+		return mock.getOkCount
+	}
+	return 0
+}
+
+func setOkCount(c im.ImmuClient) int {
+	mock, ok := immuLedger.client.(*mockImmuClient)
+	if ok {
+		return mock.setOkCount
+	}
+	return 0
+}
+
+func errorCount(c im.ImmuClient) int {
+	mock, ok := immuLedger.client.(*mockImmuClient)
+	if ok {
+		return mock.errorCount
+	}
+	return 0
+}
+
+func setErrorCount(c im.ImmuClient, count int) {
+	mock, ok := immuLedger.client.(*mockImmuClient)
+	if ok {
+		mock.errorCount = count
+	}
+}
+
 // Override the real immuclient.Set() function. Can be used to return also errors if needed
 func (m *mockImmuClient) Set(ctx context.Context, key []byte, value []byte) (*schema.TxMetadata, error) {
 	if m.errorCount > 0 {

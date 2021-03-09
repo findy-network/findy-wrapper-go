@@ -82,14 +82,14 @@ func TestImmuLedger_CRedDef(t *testing.T) {
 	name, _, err := immuLedger.Read(immuTxnIDForClaim)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForClaim, name)
-	firstCount := immuLedger.client.(*mockImmuClient).getOkCount
+	firstCount := getOkCount(immuLedger.client)
 
 	// Read from mem cache
 	for i := 0; i < 10; i++ {
 		name, _, err := immuLedger.Read(immuTxnIDForClaim)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForClaim, name)
-		count := immuLedger.client.(*mockImmuClient).getOkCount
+		count := getOkCount(immuLedger.client)
 		assert.Equal(t, firstCount, count)
 	}
 	immuLedger.Close()
@@ -106,14 +106,14 @@ func TestImmuLedger_Schema(t *testing.T) {
 	name, _, err := immuLedger.Read(immuTxnIDForSchema)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForSchema, name)
-	firstCount := immuLedger.client.(*mockImmuClient).getOkCount
+	firstCount := getOkCount(immuLedger.client)
 
 	// Read from mem cache
 	for i := 0; i < 10; i++ {
 		name, _, err := immuLedger.Read(immuTxnIDForSchema)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForSchema, name)
-		count := immuLedger.client.(*mockImmuClient).getOkCount
+		count := getOkCount(immuLedger.client)
 		assert.Equal(t, firstCount, count)
 	}
 	immuLedger.Close()
@@ -130,14 +130,14 @@ func TestImmuLedger_Nym(t *testing.T) {
 	name, _, err := immuLedger.Read(immuTxnIDForNym)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForNym, name)
-	firstCount := immuLedger.client.(*mockImmuClient).getOkCount
+	firstCount := getOkCount(immuLedger.client)
 
 	// Read from mem cache
 	for i := 0; i < 10; i++ {
 		name, _, err := immuLedger.Read(immuTxnIDForNym)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForNym, name)
-		count := immuLedger.client.(*mockImmuClient).getOkCount
+		count := getOkCount(immuLedger.client)
 		assert.Equal(t, firstCount, count)
 	}
 	immuLedger.Close()
@@ -145,8 +145,7 @@ func TestImmuLedger_Nym(t *testing.T) {
 
 func TestImmuLedger_ErrorMockFunction(t *testing.T) {
 	immuLedger.Open("FINDY_IMMUDB_LEDGER")
-	mock, ok := immuLedger.client.(*mockImmuClient)
-	if !ok {
+	if !isMock(immuLedger.client) {
 		glog.Infoln("no test without mock")
 		return
 	}
@@ -155,7 +154,7 @@ func TestImmuLedger_ErrorMockFunction(t *testing.T) {
 	assert.NoError(t, err)
 	// clear cache to achive real DB call (mock)
 	immuLedger.ResetMemCache()
-	mock.errorCount = 3
+	setErrorCount(immuLedger.client, 3)
 	_, _, err = immuLedger.Read(immuTxnIDForNym)
 	assert.Error(t, err)
 	_, _, err = immuLedger.Read(immuTxnIDForNym)
@@ -169,15 +168,14 @@ func TestImmuLedger_ErrorMockFunction(t *testing.T) {
 
 func TestImmuLedger_RetryOnError(t *testing.T) {
 	immuLedger.Open("FINDY_IMMUDB_LEDGER")
-	mock, ok := immuLedger.client.(*mockImmuClient)
-	if !ok {
+	if !isMock(immuLedger.client) {
 		glog.Infoln("no test without mock")
 		return
 	}
-	mock.errorCount = 2
+	setErrorCount(immuLedger.client, 2)
 	err := immuLedger.Write(immuTxnIDForNym, immuNymDataToWrite)
 	assert.NoError(t, err)
 	glog.Info("---------- time stamp to log")
 	time.Sleep(1300 * time.Millisecond)
-	assert.Equal(t, 0, mock.errorCount)
+	assert.Equal(t, 0, errorCount(immuLedger.client))
 }
