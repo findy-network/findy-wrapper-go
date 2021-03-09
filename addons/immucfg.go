@@ -68,10 +68,10 @@ func cfgFromEnv() (cfg *ImmuCfg) {
 		Password: os.Getenv(envImmuPwd),
 	}
 
-	assert.D.True(cfg.URL != "", "immu URL cannot be empty")
-	assert.D.True(cfg.Port != 0, "immu port cannot be 0")
-	assert.D.True(cfg.UserName != "", "immu user name cannot be empty")
-	assert.D.True(cfg.Password != "", "immu password cannot be empty")
+	assert.D.True(tmpCfg.URL != "", "immu URL cannot be empty")
+	assert.D.True(tmpCfg.Port != 0, "immu port cannot be 0")
+	assert.D.True(tmpCfg.UserName != "", "immu user name cannot be empty")
+	assert.D.True(tmpCfg.Password != "", "immu password cannot be empty")
 
 	return tmpCfg
 }
@@ -84,7 +84,7 @@ func envExists(name string) bool {
 func (cfg *ImmuCfg) Connect() (c immuclient.ImmuClient, token string, err error) {
 	defer err2.Return(&err)
 
-	client, err := cfg.MyImmuClient()
+	client, err := cfg.newImmuClient()
 	err2.Check(err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -96,7 +96,7 @@ func (cfg *ImmuCfg) Connect() (c immuclient.ImmuClient, token string, err error)
 	return client, lr.Token, nil
 }
 
-func (cfg *ImmuCfg) MyImmuClient() (c immuclient.ImmuClient, err error) {
+func (cfg *ImmuCfg) newImmuClient() (c immuclient.ImmuClient, err error) {
 	if cfg.URL == mockURL {
 		return &mockImmuClient{}, nil
 	}
