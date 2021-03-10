@@ -25,20 +25,23 @@ type mockImmuClient struct {
 	errorCount int // functions send error every time > 0
 }
 
+// isMock returns true if client is mock.
 func isMock(c im.ImmuClient) bool {
-	_, ok := immuLedger.client.(*mockImmuClient)
+	_, ok := c.(*mockImmuClient)
 	return ok
 }
 
+// getOkCount
 func getOkCount(c im.ImmuClient) int {
-	mock, ok := immuLedger.client.(*mockImmuClient)
+	mock, ok := c.(*mockImmuClient)
 	if ok {
 		return mock.getOkCount
 	}
 	return 0
 }
 
-func setOkCount(c im.ImmuClient) int {
+// setOkCount sets the mock's setOkCount, if mock exists.
+func _(c im.ImmuClient) int {
 	mock, ok := immuLedger.client.(*mockImmuClient)
 	if ok {
 		return mock.setOkCount
@@ -46,16 +49,18 @@ func setOkCount(c im.ImmuClient) int {
 	return 0
 }
 
+// errorCount
 func errorCount(c im.ImmuClient) int {
-	mock, ok := immuLedger.client.(*mockImmuClient)
+	mock, ok := c.(*mockImmuClient)
 	if ok {
 		return mock.errorCount
 	}
 	return 0
 }
 
+// setErrorCount
 func setErrorCount(c im.ImmuClient, count int) {
-	mock, ok := immuLedger.client.(*mockImmuClient)
+	mock, ok := c.(*mockImmuClient)
 	if ok {
 		mock.errorCount = count
 	}
@@ -126,7 +131,7 @@ func (m *mockImmuClient) Logout(ctx context.Context) error {
 // rmTokenDir removes empty token dir so simulate same behavior as the immuDB.
 // The reason why we have to have it in mock is the bug in immuDB Logout
 // function which is depending the existing of the directory.
-func rmTokenDir() {
+func _() {
 	hd, _ := os.UserHomeDir()
 	fp := filepath.Join(hd, "token")
 	err := os.Remove(fp)

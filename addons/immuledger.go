@@ -29,8 +29,9 @@ func (i *immu) Close() {
 	})
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
 	ctx = i.buildCtx(ctx)
-	i.client.Logout(ctx)
+	err2.Check(i.client.Logout(ctx))
 
 	i.client = nil
 }
@@ -129,7 +130,7 @@ func (i *immu) ResetMemCache() {
 	i.cache.mem.Unlock()
 }
 
-var immuMemLedger = mem{mem: struct {
+var _ = mem{mem: struct {
 	sync.RWMutex
 	ory map[string]string
 }{}}

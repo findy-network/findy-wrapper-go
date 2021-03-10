@@ -44,11 +44,6 @@ const immuSchemaDataToWrite = `
 const immuTxnIDForNym = "2TEvwu4PeDbfzvAy6e3HgQ"
 const immuNymDataToWrite = "UFg64enRj3o3w8arQAJn9U"
 
-var immuURL string
-var immuPort string
-var userName string
-var password string
-
 func TestMain(m *testing.M) {
 	err2.Check(flag.Set("logtostderr", "true"))
 	err2.Check(flag.Set("v", "3"))
