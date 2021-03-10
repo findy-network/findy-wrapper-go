@@ -7,7 +7,7 @@ if [[ "$1" != "" ]]; then
 	unset ImmuUsrName
 	unset ImmuPasswd
 else
-	export ImmuUrl="mock"
+	export ImmuUrl="localhost"
 	export ImmuPort=3322
 	export ImmuUsrName="immudb"
 	export ImmuPasswd="immudb"
