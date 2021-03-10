@@ -3,10 +3,11 @@ package addons
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
-	immuclient "github.com/codenotary/immudb/pkg/client"
+	im "github.com/codenotary/immudb/pkg/client"
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
 	"github.com/lainio/err2/assert"
@@ -29,7 +30,7 @@ type ImmuCfg struct {
 	UserName string `json:"user_name"`
 	Password string `json:"password"`
 
-	immuclient.Options
+	*im.Options
 }
 
 var MockCfg = &ImmuCfg{
@@ -46,12 +47,10 @@ func NewImmuCfg(name string) (cfg *ImmuCfg) {
 		glog.V(2).Infoln("using MockCfg")
 		cfg = MockCfg
 	}
-	cfg.Options = immuclient.Options{
-		Address:         cfg.URL,
-		Port:            cfg.Port,
-		Auth:            true,
-		CurrentDatabase: "defaultdb",
-	}
+	cfg.Options = im.DefaultOptions().
+		WithAddress(cfg.URL).
+		WithPort(cfg.Port).
+		WithAuth(true)
 	return cfg
 }
 
@@ -81,7 +80,7 @@ func envExists(name string) bool {
 	return exists
 }
 
-func (cfg *ImmuCfg) Connect() (c immuclient.ImmuClient, token string, err error) {
+func (cfg *ImmuCfg) Connect() (c im.ImmuClient, token string, err error) {
 	defer err2.Return(&err)
 
 	client, err := cfg.newImmuClient()
@@ -93,12 +92,26 @@ func (cfg *ImmuCfg) Connect() (c immuclient.ImmuClient, token string, err error)
 	lr, err := client.Login(ctx, []byte(cfg.UserName), []byte(cfg.Password))
 	err2.Check(err)
 
+	createTokenDir() // for immuDB bug, to allow Logout()
 	return client, lr.Token, nil
 }
 
-func (cfg *ImmuCfg) newImmuClient() (c immuclient.ImmuClient, err error) {
+// createTokenDir because of the bug in immuDB Logout() which cannot be called
+// if this empty directory doesn't exist! The immuDB code first tries to delete
+// the directory and if it doesn't success it doesn't perform the actual logout.
+func createTokenDir() {
+	hd, _ := os.UserHomeDir()
+	fp := filepath.Join(hd, "token")
+	err := os.Mkdir(fp, 0775)
+	if err != nil {
+		glog.Errorln("mkdir error:", err)
+	}
+	glog.V(12).Infoln("token path created:", fp)
+}
+
+func (cfg *ImmuCfg) newImmuClient() (c im.ImmuClient, err error) {
 	if cfg.URL == mockURL {
 		return &mockImmuClient{}, nil
 	}
-	return immuclient.NewImmuClient(&cfg.Options)
+	return im.NewImmuClient(cfg.Options)
 }

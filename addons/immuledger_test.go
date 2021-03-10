@@ -51,7 +51,7 @@ var password string
 
 func TestMain(m *testing.M) {
 	err2.Check(flag.Set("logtostderr", "true"))
-	err2.Check(flag.Set("v", "23"))
+	err2.Check(flag.Set("v", "3"))
 
 	setUp()
 	code := m.Run()
@@ -68,6 +68,7 @@ func tearDown() {
 func TestImmuLedger_Open(t *testing.T) {
 	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
 	assert.True(t, ok)
+	immuLedger.Close()
 }
 
 // Test CRED DEF writing and reading
@@ -164,6 +165,7 @@ func TestImmuLedger_ErrorMockFunction(t *testing.T) {
 
 	_, _, err = immuLedger.Read(immuTxnIDForNym)
 	assert.NoError(t, err)
+	immuLedger.Close()
 }
 
 func TestImmuLedger_RetryOnError(t *testing.T) {
@@ -178,4 +180,5 @@ func TestImmuLedger_RetryOnError(t *testing.T) {
 	glog.Info("---------- time stamp to log")
 	time.Sleep(1300 * time.Millisecond)
 	assert.Equal(t, 0, errorCount(immuLedger.client))
+	immuLedger.Close()
 }

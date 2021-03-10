@@ -29,7 +29,9 @@ func (i *immu) Close() {
 	})
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	ctx = i.buildCtx(ctx)
 	i.client.Logout(ctx)
+
 	i.client = nil
 }
 
@@ -102,7 +104,6 @@ func (i *immu) oneWrite(ID, data string) (err error) {
 func (i *immu) Read(ID string) (name string, value string, err error) {
 	defer err2.Return(&err)
 
-	// chekck if we have data in mem cache
 	if _, value, err = i.cache.Read(ID); err == nil && value != "" {
 		glog.V(1).Info("----- cache hit")
 		return ID, value, err
@@ -111,13 +112,11 @@ func (i *immu) Read(ID string) (name string, value string, err error) {
 		glog.Error(err)
 	}
 
-	// todo: extract to function to handle errors and retries
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	ctx = i.buildCtx(ctx)
 	dataFromImmu, err := i.client.Get(ctx, []byte(ID))
 	err2.Check(err)
-	//fmt.Printf("Immuledger: Successfully retrieved entry for key %s\n", dataFromImmu.Key)
 
 	_ = i.cache.Write(ID, string(dataFromImmu.Value))
 	return ID, string(dataFromImmu.Value), nil

@@ -3,6 +3,8 @@ package addons
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
 
 	"github.com/codenotary/immudb/pkg/api/schema"
 	im "github.com/codenotary/immudb/pkg/client"
@@ -119,4 +121,17 @@ func (m *mockImmuClient) Logout(ctx context.Context) error {
 	}
 	glog.V(1).Infoln("========= calling logout from mock db")
 	return nil
+}
+
+// rmTokenDir removes empty token dir so simulate same behavior as the immuDB.
+// The reason why we have to have it in mock is the bug in immuDB Logout
+// function which is depending the existing of the directory.
+func rmTokenDir() {
+	hd, _ := os.UserHomeDir()
+	fp := filepath.Join(hd, "token")
+	err := os.Remove(fp)
+	if err != nil {
+		glog.Errorln("remove token:", err)
+	}
+	glog.V(12).Infoln("token path removed:", fp)
 }

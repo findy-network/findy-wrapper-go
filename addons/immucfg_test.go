@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/metadata"
 )
 
 func TestImmuCfg_NewImmuCfg(t *testing.T) {
@@ -16,9 +17,11 @@ func TestImmuCfg_Connect(t *testing.T) {
 	cfg := NewImmuCfg(immuLedgerName)
 	assert.NotNil(t, cfg)
 
-	c, _, err := cfg.Connect()
+	c, token, err := cfg.Connect()
 	assert.NoError(t, err)
 
-	err = c.Logout(context.Background())
+	md := metadata.Pairs("authorization", token)
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	err = c.Logout(ctx)
 	assert.NoError(t, err)
 }
