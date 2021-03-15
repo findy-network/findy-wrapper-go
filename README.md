@@ -3,17 +3,16 @@
 ![lint](https://github.com/findy-network/findy-wrapper-go/workflows/golangci-lint/badge.svg?branch=dev)
 ![test](https://github.com/findy-network/findy-wrapper-go/workflows/test/badge.svg?branch=dev)
 
-
 This is a Go wrapper for [indy-sdk](https://github.com/hyperledger/indy-sdk). It
 wraps most of the **libindy**'s functions and data types, but it doesn't try to be
 complete. We have written it incrementally and wrapped only those functions that
 we need at the moment.
 
 We haven't extended this wrapper with helper classes. It only tries to offer Go
-programming interface above the existing libindy API. [findy-agent](https://github.com/findy-network/findy-agent) 
+programming interface above the existing libindy API. [findy-agent](https://github.com/findy-network/findy-agent)
 extends this API with SSI/DID abstractions and offers more high-level API for
 SSI/DID development. For the most applications **findy-agent** is the suitable
-framework to start. 
+framework to start.
 
 ## Get Started
 
@@ -21,7 +20,7 @@ framework to start.
 2. Clone the repo: `git clone https://github.com/findy-network/findy-go`
 3. Build the package: `make build`
 
-If build system cannot find indy libs and headers, set following environment 
+If build system cannot find indy libs and headers, set following environment
 variables:
 
 ```
@@ -47,16 +46,17 @@ perform all of its functions.
 ## Run Tests With Indy Ledger
 
 1. [Install and start ledger](https://github.com/bcgov/von-network/blob/master/docs/UsingVONNetwork.md#building-and-starting)
-2. Create a ledger pool with [indy CLI](https://github.com/bcgov/von-network/blob/master/docs/UsingVONNetwork.md#using-the-cli)  on VON Network or if `findy-agent` is installed
+2. Create a ledger pool with [indy CLI](https://github.com/bcgov/von-network/blob/master/docs/UsingVONNetwork.md#using-the-cli) on VON Network or if `findy-agent` is installed
 
-   ```findy-agent create cnx -pool <pool_name> -txn genesis.txt```
+   `findy-agent create cnx -pool <pool_name> -txn genesis.txt`
+
 3. Set environment variable: `export FINDY_POOL=<pool_name>`
 4. Run tests: `make test`
 
 ## Documentation
 
 The wrapper includes minimal Go documentation. If you need more information
-about indy SDK, we suggest that you would read the original 
+about indy SDK, we suggest that you would read the original
 [indy SDK documentation](https://hyperledger-indy.readthedocs.io/projects/sdk/en/latest/docs/index.html).
 
 ## Naming Conventions
@@ -65,12 +65,15 @@ It follows the same sub-package structure as libindy.
 Also, function names are the same, but it respects Go idioms.
 
 Original indy SDK function calls in C:
+
 ```C
 indy_key_for_did(...)
 ...
 indy_key_for_local_did(..)
 ```
+
 Same functions but with Go wrapper:
+
 ```go
 r := <-did.Key(pool, wallet, didStr)
 ...
@@ -115,3 +118,14 @@ When a null string is needed for an argument, the predefined type must be used.
 
 The Go error value can be retrieved with `dto.Result.Err()` which returns Go
 `error`.
+
+## Publishing new version
+
+Release script will tag the current version and push the tag to remote. This will trigger e2e-tests in CI automatically and if they succeed, the tag is merged to master.
+
+Release script assumes it is triggered from dev branch. It takes one parameter, the next working version. E.g. if current working version is 0.1.0, following will release version 0.1.0 and update working version to 0.2.0:
+
+```bash
+git checkout dev
+./release 0.2.0
+```
