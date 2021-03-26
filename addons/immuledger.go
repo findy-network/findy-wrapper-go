@@ -7,13 +7,12 @@ import (
 	"time"
 
 	im "github.com/codenotary/immudb/pkg/client"
-	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
 	"google.golang.org/grpc/metadata"
 )
 
-const immuLedgerName = "FINDY_IMMUDB_LEDGER"
+const immuLedgerNameImpl = "FINDY_IMMUDB_LEDGER_IMPL"
 
 type myImmuClient im.ImmuClient
 
@@ -142,11 +141,11 @@ var _ = mem{mem: struct {
 	ory map[string]string
 }{}}
 
-var immuLedger = &immu{cache: mem{mem: struct {
+var immuLedgerImpl = &immu{cache: mem{mem: struct {
 	sync.RWMutex
 	ory map[string]string
 }{}}}
 
 func init() {
-	pool.RegisterPlugin(immuLedgerName, immuLedger)
+	//pool.RegisterPlugin(immuLedgerNameImpl, immuLedger)
 }
