@@ -21,9 +21,10 @@ var store = make(map[keyType][]byte)
 type mockImmuClient struct {
 	im.ImmuClient // mocked interface (full version)
 
-	setOkCount int // incremented on every call of the Set()
-	getOkCount int // incremented on every call of the Get()
-	errorCount int // functions send error every time > 0
+	setOkCount   int // incremented on every call of the Set()
+	getOkCount   int // incremented on every call of the Get()
+	errorCount   int // functions send error every time > 0
+	loginOkCount int
 }
 
 // isMock returns true if client is mock.
@@ -116,6 +117,7 @@ func (m *mockImmuClient) Login(
 	glog.V(1).Infof("------------ immu mock login (user:%s/pwd:%s)",
 		string(user), string(pass))
 	lr := &schema.LoginResponse{Token: "MOCK_TOKEN"}
+	m.loginOkCount++
 	return lr, nil
 }
 
