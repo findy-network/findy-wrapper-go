@@ -118,6 +118,7 @@ func (m *myClient) Read(
 	_ string,
 	err error,
 ) {
+	glog.V(100).Infoln("(((( read")
 	reply := make(chan data)
 	query := getData{
 		data: data{
@@ -128,6 +129,7 @@ func (m *myClient) Read(
 	queryChannel <- query
 	select {
 	case r := <-reply:
+	glog.V(100).Infoln(")))) read")
 		return r.key, r.value, nil
 	case <-time.After(maxTimeout):
 		return "", "", fmt.Errorf("timeout error")
@@ -140,7 +142,9 @@ func (m *myClient) Write(
 ) (
 	err error,
 ) {
+	glog.V(100).Infoln("(((( write")
 	setChannel <- data{key: key, value: value}
+	glog.V(100).Infoln(")))) write")
 	return nil
 }
 
