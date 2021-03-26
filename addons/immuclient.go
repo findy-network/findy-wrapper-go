@@ -14,7 +14,7 @@ const maxTimeout = 30 * time.Second
 var delta = 50 * time.Minute
 
 type myClient struct {
-	loginTs time.Time
+	loginTS time.Time
 	*immu
 }
 
@@ -96,28 +96,27 @@ func (m *myClient) refreshToken() {
 		glog.Errorln("fatal error in refresh token", err)
 	})
 
-	compareT := m.loginTs.Add(delta)
-	timeDiff := time.Until(compareT)
-	if timeDiff >= 0 {
+	if m.needRefresh() {
 		glog.V(3).Infoln("refresh login")
 		err2.Check(m.login())
 	}
 }
 
+func (m *myClient) needRefresh() bool {
+	expTime := m.loginTS.Add(delta)
+	timeDiff := time.Until(expTime)
+	return timeDiff <= 0 // no time left i.e. over time
+}
+
 func (m *myClient) login() (err error) {
 	defer err2.Return(&err)
+	glog.V(1).Infoln("++ login")
 	err2.Check(m.immu.login())
-	m.loginTs = time.Now()
+	m.loginTS = time.Now()
 	return nil
 }
 
-func (m *myClient) Read(
-	key string,
-) (
-	_ string,
-	_ string,
-	err error,
-) {
+func (m *myClient) Read(key string) (_ string, _ string, err error) {
 	glog.V(100).Infoln("(((( read")
 	reply := make(chan data)
 	query := getData{
@@ -136,12 +135,7 @@ func (m *myClient) Read(
 	}
 }
 
-func (m *myClient) Write(
-	key string,
-	value string,
-) (
-	err error,
-) {
+func (m *myClient) Write(key string, value string) (err error) {
 	glog.V(100).Infoln("(((( write")
 	setChannel <- data{key: key, value: value}
 	glog.V(100).Infoln(")))) write")
@@ -155,6 +149,7 @@ func (m *myClient) Close() {
 
 func (m *myClient) Open(name string) bool {
 	m.Start()
+	m.loginTS = time.Now() // set it here because Open does the 1st login
 	return m.immu.Open(name)
 }
 

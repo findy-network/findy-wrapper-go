@@ -26,10 +26,35 @@ func TestSetAndGet(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "value1", val)
 
+	mock, isMock := c.client.(*mockImmuClient)
+	loginCount := 0
+	if isMock {
+		loginCount = mock.loginOkCount
+	}
+	delta = 1 * time.Millisecond
+	time.Sleep(5 * time.Millisecond)
+
 	_, val, err = c.Read("key2")
 	assert.NoError(t, err)
 	assert.Equal(t, "value2", val)
-
+	if isMock {
+		loginCount2 := mock.loginOkCount
+		assert.Equal(t, loginCount+1, loginCount2)
+	}
 	c.Stop()
 	time.Sleep(3 * time.Millisecond)
+	immuLedgerImpl.Close()
+}
+
+func TestNeedRefresh(t *testing.T) {
+	c := immuLedger
+	c.loginTS = time.Now()
+	delta = 4 * time.Millisecond
+	time.Sleep(1 * time.Millisecond)
+	assert.False(t, c.needRefresh())
+
+	c.loginTS = time.Now()
+	delta = 1 * time.Millisecond
+	time.Sleep(4 * time.Millisecond)
+	assert.True(t, c.needRefresh())
 }
