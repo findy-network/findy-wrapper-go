@@ -14,7 +14,7 @@ const maxTimeout = 30 * time.Second
 var delta = 50 * time.Minute
 
 type myClient struct {
-	loginTs    time.Time
+	loginTs time.Time
 	*immu
 }
 
@@ -129,7 +129,7 @@ func (m *myClient) Read(
 	queryChannel <- query
 	select {
 	case r := <-reply:
-	glog.V(100).Infoln(")))) read")
+		glog.V(100).Infoln(")))) read")
 		return r.key, r.value, nil
 	case <-time.After(maxTimeout):
 		return "", "", fmt.Errorf("timeout error")
