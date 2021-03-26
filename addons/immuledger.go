@@ -21,6 +21,7 @@ type immu struct {
 	cache  mem
 	client myImmuClient
 	token  string
+	cfg    *ImmuCfg
 }
 
 func (i *immu) Close() {
@@ -40,13 +41,13 @@ func (i *immu) Open(name string) bool {
 	defer err2.Catch(func(err error) {
 		glog.Errorf("error immu db ledger addon Open(): %v", err)
 	})
-	// why this is reseted here? for test? should we load it from the DB at startup?
-	i.ResetMemCache()
+	i.ResetMemCache() // for tests at the moment
 
 	cfg := NewImmuCfg(name)
 	c, token, err := cfg.Connect()
 	err2.Check(err)
 
+	i.cfg = cfg
 	i.client = c
 	i.token = token
 	return true
@@ -121,6 +122,12 @@ func (i *immu) Read(ID string) (name string, value string, err error) {
 
 	_ = i.cache.Write(ID, string(dataFromImmu.Value))
 	return ID, string(dataFromImmu.Value), nil
+}
+
+func (i *immu) login() (err error) {
+	defer err2.Return(&err)
+	i.token = err2.String.Try(i.cfg.login(i.client))
+	return nil
 }
 
 func (i *immu) ResetMemCache() {

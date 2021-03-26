@@ -86,14 +86,22 @@ func (cfg *ImmuCfg) Connect() (c im.ImmuClient, token string, err error) {
 	client, err := cfg.newImmuClient()
 	err2.Check(err)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	lr, err := client.Login(ctx, []byte(cfg.UserName), []byte(cfg.Password))
+	token, err = cfg.login(client)
 	err2.Check(err)
 
 	createTokenDir() // for immuDB bug, to allow Logout()
-	return client, lr.Token, nil
+	return client, token, nil
+}
+
+func (cfg *ImmuCfg) login(client im.ImmuClient) (token string, err error) {
+	defer err2.Return(&err)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	lr, err := client.Login(ctx, []byte(cfg.UserName), []byte(cfg.Password))
+	err2.Check(err)
+
+	return lr.Token, nil
 }
 
 // createTokenDir because of the bug in immuDB Logout() which cannot be called

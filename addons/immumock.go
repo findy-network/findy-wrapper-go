@@ -11,8 +11,9 @@ import (
 	"github.com/golang/glog"
 )
 
-var storedKey []byte
-var storedValue []byte
+type keyType = string
+
+var store = make(map[keyType][]byte)
 
 // mockImmuClient is a mock for the im.ImmuClient interface. We implement only
 // subset of the methods of the full interface. We MUST implement all of them
@@ -74,8 +75,7 @@ func (m *mockImmuClient) Set(ctx context.Context, key []byte, value []byte) (*sc
 	}
 	glog.V(2).Infoln("mock set called with key:", string(key))
 	// store values
-	storedKey = key
-	storedValue = value
+	store[keyType(key)] = value
 	// Set test data to return. This is how the real data looks like
 	var txData schema.TxMetadata
 	txData.Id = 108
@@ -98,8 +98,8 @@ func (m *mockImmuClient) Get(ctx context.Context, key []byte) (*schema.Entry, er
 	// Set test data to return. This is how the real data looks like
 	var entryData schema.Entry
 	entryData.Tx = 117
-	entryData.Key = storedKey
-	entryData.Value = storedValue
+	entryData.Key = key
+	entryData.Value = store[keyType(key)]
 	m.getOkCount++
 	return &entryData, nil
 }
