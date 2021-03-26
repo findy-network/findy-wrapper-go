@@ -12,8 +12,6 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-const immuLedgerNameImpl = "FINDY_IMMUDB_LEDGER_IMPL"
-
 type myImmuClient im.ImmuClient
 
 type immu struct {
