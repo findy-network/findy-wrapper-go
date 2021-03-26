@@ -8,25 +8,25 @@ import (
 )
 
 func TestSetAndGet(t *testing.T) {
-	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
+	ok := immuLedgerImpl.Open("FINDY_IMMUDB_LEDGER")
 	assert.True(t, ok)
-	c := newClient(immuLedger)
+	c := newClient(immuLedgerImpl)
 	c.Start()
 
-	err := c.Set("key1", "value1")
+	err := c.Write("key1", "value1")
 	assert.NoError(t, err)
 
-	err = c.Set("key2", "value2")
+	err = c.Write("key2", "value2")
 	assert.NoError(t, err)
 
-	c.realClient.ResetMemCache()
+	c.ResetMemCache()
 
 	val := ""
-	val, err = c.Get("key1")
+	_, val, err = c.Read("key1")
 	assert.NoError(t, err)
 	assert.Equal(t, "value1", val)
 
-	val, err = c.Get("key2")
+	_, val, err = c.Read("key2")
 	assert.NoError(t, err)
 	assert.Equal(t, "value2", val)
 

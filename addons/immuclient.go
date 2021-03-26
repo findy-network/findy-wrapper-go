@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
 )
@@ -14,7 +15,7 @@ var delta = 50 * time.Minute
 
 type myClient struct {
 	loginTs    time.Time
-	realClient *immu
+	*immu
 }
 
 type getData struct {
@@ -34,7 +35,7 @@ var (
 )
 
 func newClient(immuLedger *immu) *myClient {
-	return &myClient{realClient: immuLedger}
+	return &myClient{immu: immuLedger}
 }
 
 func (m *myClient) Start() {
@@ -54,14 +55,14 @@ func (m *myClient) Start() {
 		defer err2.CatchTrace(func(err error) {
 			glog.Errorln("fatal error in read", err)
 		})
-		key, value := err2.StrStr.Try(m.realClient.Read(get.key))
+		key, value := err2.StrStr.Try(m.immu.Read(get.key))
 		get.reply <- data{key, value}
 	}
 	write := func(set data) {
 		defer err2.CatchTrace(func(err error) {
 			glog.Errorln("fatal error in write", err)
 		})
-		err2.Check(m.realClient.Write(set.key, set.value))
+		err2.Check(m.immu.Write(set.key, set.value))
 	}
 
 	go func() {
@@ -105,14 +106,15 @@ func (m *myClient) refreshToken() {
 
 func (m *myClient) login() (err error) {
 	defer err2.Return(&err)
-	err2.Check(m.realClient.login())
+	err2.Check(m.immu.login())
 	m.loginTs = time.Now()
 	return nil
 }
 
-func (m *myClient) Get(
+func (m *myClient) Read(
 	key string,
 ) (
+	_ string,
 	_ string,
 	err error,
 ) {
@@ -126,13 +128,13 @@ func (m *myClient) Get(
 	queryChannel <- query
 	select {
 	case r := <-reply:
-		return r.value, nil
+		return r.key, r.value, nil
 	case <-time.After(maxTimeout):
-		return "", fmt.Errorf("timeout error")
+		return "", "", fmt.Errorf("timeout error")
 	}
 }
 
-func (m *myClient) Set(
+func (m *myClient) Write(
 	key string,
 	value string,
 ) (
@@ -143,8 +145,19 @@ func (m *myClient) Set(
 }
 
 func (m *myClient) Close() {
+	m.Stop()
+	m.immu.Close()
 }
 
 func (m *myClient) Open(name string) bool {
-	return true
+	m.Start()
+	return m.immu.Open(name)
+}
+
+const immuLedgerName = "FINDY_IMMUDB_LEDGER"
+
+var immuLedger = newClient(immuLedgerImpl)
+
+func init() {
+	pool.RegisterPlugin(immuLedgerName, immuLedger)
 }
