@@ -17,7 +17,7 @@ check_fmt:
 	$(eval GOFILES = $(shell find . -name '*.go'))
 	@gofmt -l $(GOFILES)
 
-lint:
+lint_old:
 	$(GOPATH)/bin/golint ./...
 
 lint_e:
@@ -33,6 +33,8 @@ test_cov:
 	go test -v -p 1 -failfast -coverprofile=c.out ./... && go tool cover -html=c.out
 
 check: check_fmt vet shadow
+
+lint: lint_ci
 
 lint_ci:
 	golangci-lint run ./...

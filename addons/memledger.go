@@ -8,41 +8,41 @@ import (
 
 const memName = "FINDY_MEM_LEDGER"
 
-// mem is a ledger addon which implements transient ledger. It writes
+// Mem is a ledger addon which implements transient ledger. It writes
 // ledger data to memory and reads it from there. It's convenient for unit test
 // and some development cases.
-type mem struct {
-	mem struct {
+type Mem struct {
+	Mem struct {
 		sync.RWMutex
-		ory map[string]string
+		Ory map[string]string
 	}
 }
 
-func (m *mem) Close() {
+func (m *Mem) Close() {
 	resetMem()
 }
 
-func (m *mem) Open(name string) bool {
+func (m *Mem) Open(name string) bool {
 	resetMem()
 	return name == memName
 }
 
-func (m *mem) Write(ID, data string) error {
-	m.mem.Lock()
-	defer m.mem.Unlock()
-	m.mem.ory[ID] = data
+func (m *Mem) Write(ID, data string) error {
+	m.Mem.Lock()
+	defer m.Mem.Unlock()
+	m.Mem.Ory[ID] = data
 	return nil
 }
 
-func (m *mem) Read(ID string) (name string, value string, err error) {
-	m.mem.RLock()
-	defer m.mem.RUnlock()
-	return ID, m.mem.ory[ID], nil
+func (m *Mem) Read(ID string) (name string, value string, err error) {
+	m.Mem.RLock()
+	defer m.Mem.RUnlock()
+	return ID, m.Mem.Ory[ID], nil
 }
 
-var memLedger = &mem{mem: struct {
+var memLedger = &Mem{Mem: struct {
 	sync.RWMutex
-	ory map[string]string
+	Ory map[string]string
 }{}}
 
 func init() {
@@ -50,5 +50,5 @@ func init() {
 }
 
 func resetMem() {
-	memLedger.mem.ory = make(map[string]string)
+	memLedger.Mem.Ory = make(map[string]string)
 }
