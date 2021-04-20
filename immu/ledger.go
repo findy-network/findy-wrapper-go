@@ -1,4 +1,4 @@
-package addons
+package immu
 
 import (
 	"context"
@@ -7,20 +7,18 @@ import (
 	"time"
 
 	im "github.com/codenotary/immudb/pkg/client"
-	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
 	"google.golang.org/grpc/metadata"
 )
 
-const immuLedgerName = "FINDY_IMMUDB_LEDGER"
-
 type myImmuClient im.ImmuClient
 
 type immu struct {
-	cache  mem
+	cache  Mem
 	client myImmuClient
 	token  string
+	cfg    *Cfg
 }
 
 func (i *immu) Close() {
@@ -40,13 +38,13 @@ func (i *immu) Open(name string) bool {
 	defer err2.Catch(func(err error) {
 		glog.Errorf("error immu db ledger addon Open(): %v", err)
 	})
-	// why this is reseted here? for test? should we load it from the DB at startup?
-	i.ResetMemCache()
+	i.ResetMemCache() // for tests at the moment
 
 	cfg := NewImmuCfg(name)
 	c, token, err := cfg.Connect()
 	err2.Check(err)
 
+	i.cfg = cfg
 	i.client = c
 	i.token = token
 	return true
@@ -123,23 +121,29 @@ func (i *immu) Read(ID string) (name string, value string, err error) {
 	return ID, string(dataFromImmu.Value), nil
 }
 
-func (i *immu) ResetMemCache() {
-	glog.V(1).Infof("------------ reset cache (%d)", len(i.cache.mem.ory))
-	i.cache.mem.Lock()
-	i.cache.mem.ory = make(map[string]string)
-	i.cache.mem.Unlock()
+func (i *immu) login() (err error) {
+	defer err2.Return(&err)
+	i.token = err2.String.Try(i.cfg.login(i.client))
+	return nil
 }
 
-var _ = mem{mem: struct {
+func (i *immu) ResetMemCache() {
+	glog.V(1).Infof("------------ reset cache (%d)", len(i.cache.Mem.Ory))
+	i.cache.Mem.Lock()
+	i.cache.Mem.Ory = make(map[string]string)
+	i.cache.Mem.Unlock()
+}
+
+var _ = Mem{Mem: struct {
 	sync.RWMutex
-	ory map[string]string
+	Ory map[string]string
 }{}}
 
-var immuLedger = &immu{cache: mem{mem: struct {
+var immuLedgerImpl = &immu{cache: Mem{Mem: struct {
 	sync.RWMutex
-	ory map[string]string
+	Ory map[string]string
 }{}}}
 
 func init() {
-	pool.RegisterPlugin(immuLedgerName, immuLedger)
+	//pool.RegisterPlugin(immuLedgerNameImpl, immuLedger)
 }

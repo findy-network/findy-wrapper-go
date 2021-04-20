@@ -1,4 +1,4 @@
-package addons
+package immu
 
 import (
 	"flag"
@@ -140,6 +140,8 @@ func TestImmuLedger_Nym(t *testing.T) {
 }
 
 func TestImmuLedger_ErrorMockFunction(t *testing.T) {
+	immuLedger := immuLedgerImpl // error handling is in inner component
+
 	immuLedger.Open("FINDY_IMMUDB_LEDGER")
 	if !isMock(immuLedger.client) {
 		glog.Infoln("no test without mock")

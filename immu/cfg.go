@@ -1,4 +1,4 @@
-package addons
+package immu
 
 import (
 	"context"
@@ -24,7 +24,7 @@ const (
 	envImmuPwd  = "ImmuPasswd"
 )
 
-type ImmuCfg struct {
+type Cfg struct {
 	URL      string `json:"url"`
 	Port     int    `json:"port"`
 	UserName string `json:"user_name"`
@@ -33,14 +33,14 @@ type ImmuCfg struct {
 	*im.Options
 }
 
-var MockCfg = &ImmuCfg{
+var MockCfg = &Cfg{
 	URL:      "mock",
 	Port:     3322,
 	UserName: "immudb",
 	Password: "immudb",
 }
 
-func NewImmuCfg(name string) (cfg *ImmuCfg) {
+func NewImmuCfg(name string) (cfg *Cfg) {
 	if name != immuMockLedgerName && envExists(envImmuURL) {
 		cfg = cfgFromEnv()
 	} else {
@@ -54,13 +54,13 @@ func NewImmuCfg(name string) (cfg *ImmuCfg) {
 	return cfg
 }
 
-func cfgFromEnv() (cfg *ImmuCfg) {
+func cfgFromEnv() (cfg *Cfg) {
 	assert.D.True(envExists(envImmuURL), "immu URL must exist")
 	assert.D.True(envExists(envImmuPort), "immu port must exist")
 	assert.D.True(envExists(envImmuUser), "immu user name must exists")
 	assert.D.True(envExists(envImmuPwd), "immu password must exist")
 
-	tmpCfg := &ImmuCfg{
+	tmpCfg := &Cfg{
 		URL:      os.Getenv(envImmuURL),
 		Port:     err2.Int.Try(strconv.Atoi(os.Getenv(envImmuPort))),
 		UserName: os.Getenv(envImmuUser),
@@ -80,20 +80,28 @@ func envExists(name string) bool {
 	return exists
 }
 
-func (cfg *ImmuCfg) Connect() (c im.ImmuClient, token string, err error) {
+func (cfg *Cfg) Connect() (c im.ImmuClient, token string, err error) {
 	defer err2.Return(&err)
 
 	client, err := cfg.newImmuClient()
 	err2.Check(err)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	lr, err := client.Login(ctx, []byte(cfg.UserName), []byte(cfg.Password))
+	token, err = cfg.login(client)
 	err2.Check(err)
 
 	createTokenDir() // for immuDB bug, to allow Logout()
-	return client, lr.Token, nil
+	return client, token, nil
+}
+
+func (cfg *Cfg) login(client im.ImmuClient) (token string, err error) {
+	defer err2.Return(&err)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	lr, err := client.Login(ctx, []byte(cfg.UserName), []byte(cfg.Password))
+	err2.Check(err)
+
+	return lr.Token, nil
 }
 
 // createTokenDir because of the bug in immuDB Logout() which cannot be called
@@ -109,7 +117,7 @@ func createTokenDir() {
 	glog.V(12).Infoln("token path created:", fp)
 }
 
-func (cfg *ImmuCfg) newImmuClient() (c im.ImmuClient, err error) {
+func (cfg *Cfg) newImmuClient() (c im.ImmuClient, err error) {
 	if cfg.URL == mockURL {
 		return &mockImmuClient{}, nil
 	}
