@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# for debuging
+# dry_run=0
+
 lib_name="$1""/libindy.dylib"
 echo "$lib_name"
 
@@ -26,7 +29,9 @@ change_lib_location() {
 	if [[ ! -e "$oldpath" ]]; then 
 		echo does not exits: "$oldpath"
 		printf "install_name_tool call: %s %s %s\n" $oldpath $newpath $lib_name
-		#install_name_tool -change $oldpath $newpath $lib_name
+		if [[ "$dry_run" == "" ]]; then
+			install_name_tool -change $oldpath $newpath $lib_name
+		fi
 	else
 		echo "OLD PATH COULD USE"
 	fi
