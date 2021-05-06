@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # You can edit between these! ----
-install_location="./libindy"
+install_location="./libindy2"
 
 # -----
 # bash exception handling
 set -e
 
-. ./prerequisites.sh
-. ./download.sh "$install_location"
-. ./update-deps.sh "$install_location"
+. ./tools/prerequisites.sh
+. ./tools/download.sh "$install_location"
+. ./tools/update-deps.sh "$install_location/lib"

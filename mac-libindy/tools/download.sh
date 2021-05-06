@@ -13,4 +13,4 @@ download_and_extract_to() {
 	rm -f "$tmpfile"
 }
 
-download_and_extract_to "./libindy"
+download_and_extract_to $1
