@@ -66,7 +66,7 @@ update_own_location() {
 			printf "install_name_tool -id call: %s %s\n" $actualpath $lib_name
 		fi
 		if [[ "$dry_run" == "" ]]; then
-			install_name_tool -id $actualpath $lib_name
+			install_name_tool -id $actualpath $lib_name > /dev/null
 		fi
 	else
 		if [[ "$verbose" != "" ]]; then
@@ -101,7 +101,6 @@ abs_lib_path=$(get_abs_filename "$lib_name")
 # update lib's own location
 update_own_location "libindy" "$abs_lib_path"
 
-# echo "-----"
 update_lib_location "zeromq" "libzmq" 
 update_lib_location "$brew_name" "libssl" "$ssl_location"
 update_lib_location "$brew_name" "libcrypto" "$crypto_location"

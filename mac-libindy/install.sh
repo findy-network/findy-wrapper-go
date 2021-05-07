@@ -44,6 +44,8 @@ Add this to your environment files to make it permanent:
 
 	source ${install_location}/env.sh
 
-Don't forget to call it for this shell session as well!!
+Don't forget to call it for this shell session as well. It's in your clipboard.
 EOF
+
+printf "source %s/env.sh" "$install_location" | pbcopy
 
