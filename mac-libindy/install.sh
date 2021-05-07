@@ -2,8 +2,9 @@
 
 # You can edit between these! ----
 install_location="/usr/local/opt/libindy"
-
 # -----
+
+
 # bash exception handling
 set -e
 
@@ -24,22 +25,25 @@ ln -s include indy
 popd
 
 # build env loader
-cat >env.sh <<EOL
+cat >"$install_location"/env.sh <<EOF
 #!/bin/bash
 
 export CGO_CFLAGS="-I""$install_location"
 export CGO_LDFLAGS="-L""$install_location""/lib"
-EOL
+EOF
 
 cat >/dev/stdout <<EOF
+
+Congrulations!
+
 We have now installed libindy to your given location and generated the
 environment variables loading script (env.sh) in this directory. You need to
 source the file to set the env variables for CGO.
 
 Add this to your environment files to make it permanent:
 
-	source env.sh
+	source ${install_location}/env.sh
 
-Don't forget to call it!!
+Don't forget to call it for this shell session as well!!
 EOF
 

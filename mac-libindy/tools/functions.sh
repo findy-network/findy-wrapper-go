@@ -31,6 +31,26 @@ cellar_check() {
 	echo "${files[0]}"
 }
 
+verbose_flag() {
+	local response="$1"
+	if [[ "$response" =~ ([dD][vV]|[vV]) ]]
+	then
+	    echo yes
+	else
+	    echo ""
+	fi
+}
+
+debug_flag() {
+	local response="$1"
+	if [[ "$response" =~ ([vV][dD]|[dD]) ]]
+	then
+	    echo yes
+	else
+	    echo ""
+	fi
+}
+
 prompt_default_yes() {
 	read -r -p "Do you want that? [Y/n] " response
 	if [[ "$response" =~ ^([nN][oO]|[nN])$ ]]

@@ -8,8 +8,8 @@ download_and_extract_to() {
 	local libindy_location="https://repo.sovrin.org/macos/libindy/stable/1.16.0/libindy_1.16.0.zip"
 	tmpfile=$(mktemp /tmp/findy-download.XXXXXX)
 
-	curl -o "$tmpfile" "$libindy_location"
-	unzip "$tmpfile" -d "$extract_to"
+	curl -s -o "$tmpfile" "$libindy_location"
+	unzip -q "$tmpfile" -d "$extract_to"
 	rm -f "$tmpfile"
 }
 
