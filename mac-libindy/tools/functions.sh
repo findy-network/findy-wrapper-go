@@ -14,9 +14,14 @@ check_lib_exists() {
 	fi
 
 	if [[ ! -e "$actualpath" ]]; then 
-		echo "Error: does not exits: ""$actualpath"
-		echo "do you want us to install it?"
-		exit 1
+		echo "Warning: does not exits: ""$actualpath"
+		echo "We can try to install ""$libname"" for you."
+		if [[ $(prompt_default_no) == "yes" ]]; then
+			brew install "$libname"
+		else
+			echo "Terminating. Please install the missing library."
+			exit 1
+		fi
 	fi
 }
 
@@ -26,4 +31,23 @@ cellar_check() {
 	echo "${files[0]}"
 }
 
+prompt_default_yes() {
+	read -r -p "Do you want that? [Y/n] " response
+	if [[ "$response" =~ ^([nN][oO]|[nN])$ ]]
+	then
+	    echo no
+	else
+	    echo yes
+	fi
+}
+
+prompt_default_no() {
+	read -r -p "Are you sure? [y/N] " response
+	if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
+	then
+	    echo yes
+	else
+	    echo no
+	fi
+}
 

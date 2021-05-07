@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. tools/functions.sh
+
 lib_name="$1""/libindy.dylib"
 echo "$lib_name"
 
@@ -15,10 +17,6 @@ dry_run="$2"
 get_abs_filename() {
 	# $1 : relative filename
 	echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
-}
-
-brew_location() {
-	echo $(brew --prefix "$1")
 }
 
 change_lib_location() {
@@ -71,12 +69,6 @@ update_own_location() {
 		echo "old: ""$curpath"
 		echo "LID's OLD PATH COULD USE"
 	fi
-}
-
-cellar_check() {
-	local pattern="/usr/local/Cellar/openssl/1.0.2?"
-	local files=( $pattern )
-	echo "${files[0]}"
 }
 
 # ----------- main ----------------

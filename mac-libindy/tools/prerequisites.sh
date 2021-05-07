@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 . tools/functions.sh
 
 # =========== main =================
@@ -25,8 +27,12 @@ fi
 
 if [[ ! -e "$openssl_path" ]]; then
 	echo "open ssl 1.0 not installed..."
-	echo "do you want us to try to install it?"
-	exit 1
+	if [[ $(prompt_default_yes) == "no" ]]; then
+		exit 1
+	else
+		echo "installing openssl 1.0..."
+		brew install rbenv/tap/openssl@1.0
+	fi
 fi
 
 check_lib_exists "zeromq" "libzmq" 
