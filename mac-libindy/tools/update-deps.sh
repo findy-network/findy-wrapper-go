@@ -95,6 +95,7 @@ fi
 
 if [[ ! -e "$openssl_path" ]]; then
 	echo "open ssl 1.0 not installed..."
+	echo "do you want us to try to install it?"
 	exit 1
 fi
 

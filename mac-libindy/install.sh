@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # You can edit between these! ----
-install_location="./libindy2"
+install_location="/usr/local/opt/libindy"
 
 # -----
 # bash exception handling
@@ -15,7 +15,7 @@ get_abs_filename() {
 install_location=$(get_abs_filename "$install_location")
 
 ./tools/prerequisites.sh
-#./tools/download.sh "$install_location"
+./tools/download.sh "$install_location"
 ./tools/update-deps.sh "$install_location/lib"
 
 # indysdk package tries to find headers from indy/ dir not include/

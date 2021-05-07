@@ -2,7 +2,7 @@
 
 if ! command -v brew &> /dev/null
 then
-	echo "how brew is not installed for this user"
+	echo "home brew is not installed for the current user"
 	exit 1
 fi
 
