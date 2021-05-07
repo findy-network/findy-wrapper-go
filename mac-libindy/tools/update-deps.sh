@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# for debuging
-# dry_run=0
-
 lib_name="$1""/libindy.dylib"
 echo "$lib_name"
 
@@ -11,6 +8,9 @@ if [[ ! -e "$lib_name" ]]; then
 	printf "\nusage:\t$0 location_of_libindy.dylib\n"
 	exit 1
 fi
+
+# for debuging
+dry_run="$2"
 
 get_abs_filename() {
 	# $1 : relative filename
@@ -56,13 +56,30 @@ update_lib_location() {
 	change_lib_location $curpath $actualpath
 }
 
+update_own_location() {
+	local libname="$1"
+	local curpath="$(otool -L "$lib_name" | tail -n +2 | egrep "$libname" | awk '{print $1}')"
+	local actualpath="$2"
+
+	if [[ ! -e "$curpath" ]]; then 
+		echo "does not exits: ""$curpath"
+		printf "install_name_tool -id call: %s %s\n" $actualpath $lib_name
+		if [[ "$dry_run" == "" ]]; then
+			install_name_tool -id $actualpath $lib_name
+		fi
+	else
+		echo "old: ""$curpath"
+		echo "LID's OLD PATH COULD USE"
+	fi
+}
+
 cellar_check() {
 	local pattern="/usr/local/Cellar/openssl/1.0.2?"
 	local files=( $pattern )
 	echo "${files[0]}"
 }
 
-# main ----
+# ----------- main ----------------
 
 if [[ "$openssl_path" == "" ]]; then
 	cellar_path=$(cellar_check)
@@ -82,7 +99,10 @@ if [[ ! -e "$openssl_path" ]]; then
 fi
 
 abs_lib_path=$(get_abs_filename "$lib_name")
-update_lib_location "libindy" "libindy" "$abs_lib_path"
+
+# update lib's own location
+update_own_location "libindy" "$abs_lib_path"
+
 echo "-----"
 update_lib_location "zeromq" "libzmq" 
 update_lib_location "$brew_name" "libssl" "$ssl_location"
