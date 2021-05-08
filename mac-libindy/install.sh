@@ -37,9 +37,9 @@ cat >/dev/stdout <<EOF
 
 Congrulations!
 
-We have now installed libindy to your given location and generated the
-environment variables loading script (env.sh) in this directory. You need to
-source the file to set the env variables for CGO.
+We have now installed libindy to your system and generated the environment
+variables loading script (env.sh) into the installation directory. You need to
+source the file to set the env variables for CGO by yourself.
 
 Add this to your environment files to make it permanent:
 
