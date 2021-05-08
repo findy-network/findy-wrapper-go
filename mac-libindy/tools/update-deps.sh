@@ -14,11 +14,6 @@ fi
 dry_run=$(debug_flag "$2")
 verbose=$(verbose_flag "$2")
 
-get_abs_filename() {
-	# $1 : relative filename
-	echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
-}
-
 change_lib_location() {
 	local oldpath="$1"
 	local newpath="$2"

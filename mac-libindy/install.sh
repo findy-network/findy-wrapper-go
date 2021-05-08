@@ -1,28 +1,29 @@
 #!/bin/bash
 
-# You can edit between these! ----
-install_location="/usr/local/opt/libindy"
-# -----
+. tools/functions.sh
 
+install_location=${1:-/usr/local/opt/libindy}
 
-# bash exception handling
-set -e
-
-get_abs_filename() {
-	# $1 : relative filename
-	echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
-}
+if [[ "$1" != "" ]]; then
+	read -p "Please confirm the installation location [${install_location}]: " location
+	install_location=${location:-$install_location}
+fi
 
 install_location=$(get_abs_filename "$install_location")
+echo "Installing to: ""$install_location"
+echo "This will take a moment. Please wait..."
+
+# bash "exception handling"
+set -e
 
 ./tools/prerequisites.sh
 ./tools/download.sh "$install_location"
 ./tools/update-deps.sh "$install_location/lib"
 
 # indysdk package tries to find headers from indy/ dir not include/
-pushd $install_location
+pushd $install_location > /dev/null
 ln -s include indy
-popd
+popd > /dev/null
 
 # build env loader
 cat >"$install_location"/env.sh <<EOF
