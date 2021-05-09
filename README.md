@@ -10,23 +10,58 @@ we need at the moment.
 
 We haven't extended this wrapper with helper classes. It only tries to offer Go
 programming interface above the existing libindy API. [findy-agent](https://github.com/findy-network/findy-agent)
-extends this API with SSI/DID abstractions and offers more high-level API for
-SSI/DID development. For the most applications **findy-agent** is the suitable
-framework to start.
+extends this wrapper with SSI/DID abstractions and offers more high-level API
+for SSI/DID development. For the most applications **findy-agent** is the one to
+start playing with.
+
+This wrapper offers one key feature addition that it's written with Go: **it's
+not dependent on running indy ledger.** The wrapper abstracts ledger with the
+plug-in interface which allows to implement any storage technology to handle
+needed persistence. Currently implemented ledger add-ons are:
+
+- indy pool: data is saved into indy ledger
+- memory ledger: especially good for unit testing and caching
+- file: data is saved into simple JSON file
+- immu DB: data is written to immu database
 
 ## Get Started
 
+### Linux and Ubuntu
+
+This is the preferred way to build and use Findy Go wrapper.
+
 1. [Install](https://github.com/hyperledger/indy-sdk/#installing-the-sdk) libindy-dev.
-2. Clone the repo: `git clone https://github.com/findy-network/findy-go`
-3. Build the package: `make build`
+2. Clone the repo: `git clone https://github.com/findy-network/findy-wrapper-go`
+3. Run the tests to see everything is working properly : `make test`
 
-If build system cannot find indy libs and headers, set following environment
-variables:
+### macOS
 
-```
-export CGO_CFLAGS="-I/<path_to_>/indy-sdk/libindy/include"
-export CGO_LDFLAGS="-L/<path_to_>/indy-sdk/libindy/target/debug"
-```
+Because indy SDK won't offer proper distribution for OSX, we have written a
+helper Bash script to perform installation. Follow these steps:
+
+1. Clone the repo: `git clone https://github.com/findy-network/findy-wrapper-go`
+2. Go to directory `./mac-install`:
+   ```
+   $ cd mac-install
+   ```
+3. Execute the installation script. 
+   ```
+   $ ./install.sh
+   ```
+   **Or**, if you want to change the default installation location, enter it as
+   a first argument for the script.
+   ```
+   $ ./install.sh /my/own/location
+   ```
+4. Follow the instructions of the `install.sh` i.e. **source the env.sh** which
+is generated to installation directory and is in your clipboard after successful
+installation.
+   ```
+   $ source /usr/local/opt/libindy/env.sh
+   ```
+5. Run the tests to see everything is OK: `make test`
+
+The problem solving tip: `source env.sh` in your dev session. 
 
 ## Development Without The Ledger
 
@@ -121,9 +156,13 @@ The Go error value can be retrieved with `dto.Result.Err()` which returns Go
 
 ## Publishing new version
 
-Release script will tag the current version and push the tag to remote. This will trigger e2e-tests in CI automatically and if they succeed, the tag is merged to master.
+Release script will tag the current version and push the tag to remote. This
+will trigger e2e-tests in CI automatically and if they succeed, the tag is
+merged to master.
 
-Release script assumes it is triggered from dev branch. It takes one parameter, the next working version. E.g. if current working version is 0.1.0, following will release version 0.1.0 and update working version to 0.2.0:
+Release script assumes it is triggered from dev branch. It takes one parameter,
+the next working version. E.g. if current working version is 0.1.0, following
+will release version 0.1.0 and update working version to 0.2.0:
 
 ```bash
 git checkout dev
