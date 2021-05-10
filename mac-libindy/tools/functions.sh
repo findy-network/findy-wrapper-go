@@ -19,10 +19,9 @@ check_lib_exists() {
 	fi
 
 	if [[ ! -e "$actualpath" ]]; then 
-		echo "Warning: does not exits: ""$actualpath"
-		echo "We can try to install ""$libname"" for you."
+		echo "We can try to install ""$pathbase"" for you."
 		if [[ $(prompt_default_no) == "yes" ]]; then
-			brew install "$libname"
+			brew install "$pathbase"
 		else
 			echo "Terminating. Please install the missing library."
 			exit 1

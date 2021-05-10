@@ -26,7 +26,7 @@ if [[ "$openssl_path" == "" ]]; then
 fi
 
 if [[ ! -e "$openssl_path" ]]; then
-	echo "open ssl 1.0 not installed..."
+	echo "open ssl 1.0 not installed. We can install it for you..."
 	if [[ $(prompt_default_yes) == "no" ]]; then
 		exit 1
 	else

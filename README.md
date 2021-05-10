@@ -26,6 +26,9 @@ needed persistence. Currently implemented ledger add-ons are:
 
 ## Get Started
 
+Ubuntu 20.04 is preferred development environment but macOS is also an option.
+Please make sure that Go and git are both installed and working properly.
+
 ### Linux and Ubuntu
 
 This is the preferred way to build and use Findy Go wrapper.
@@ -39,10 +42,11 @@ This is the preferred way to build and use Findy Go wrapper.
 Because indy SDK won't offer proper distribution for OSX, we have written a
 helper Bash script to perform installation. Follow these steps:
 
+0. Install [Homebrew](https://brew.sh/) if it insn't already on your machine.
 1. Clone the repo: `git clone https://github.com/findy-network/findy-wrapper-go`
-2. Go to directory `./mac-install`:
+2. Go to directory `./mac-libindy`:
    ```
-   $ cd mac-install
+   $ cd mac-libindy
    ```
 3. Execute the installation script. 
    ```
