@@ -42,9 +42,10 @@ var MockCfg = &Cfg{
 
 func NewImmuCfg(name string) (cfg *Cfg) {
 	if name != immuMockLedgerName && envExists(envImmuURL) {
+		glog.V(2).Infoln("+++ using env Cfg")
 		cfg = cfgFromEnv()
 	} else {
-		glog.V(2).Infoln("using MockCfg")
+		glog.V(2).Infoln("+++ using MockCfg")
 		cfg = MockCfg
 	}
 	cfg.Options = im.DefaultOptions().
