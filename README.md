@@ -14,15 +14,15 @@ extends this wrapper with SSI/DID abstractions and offers more high-level API
 for SSI/DID development. For the most applications **findy-agent** is the one to
 start playing with.
 
-This wrapper offers one key feature addition that it's written with Go: **it's
+This wrapper offers one key feature addition to that it's written in Go: **it's
 not dependent on running indy ledger.** The wrapper abstracts ledger with the
 plug-in interface which allows to implement any storage technology to handle
 needed persistence. Currently implemented ledger add-ons are:
 
-- indy pool: data is saved into indy ledger
+- indy pool: data is saved into the indy ledger
 - memory ledger: especially good for unit testing and caching
 - file: data is saved into simple JSON file
-- immu DB: data is written to immu database
+- immudb: data is written to immutable database
 
 ## Get Started
 
@@ -83,10 +83,16 @@ perform all of its functions.
 1. [Install and start ledger](https://github.com/bcgov/von-network/blob/master/docs/UsingVONNetwork.md#building-and-starting)
 2. Create a ledger pool with [indy CLI](https://github.com/bcgov/von-network/blob/master/docs/UsingVONNetwork.md#using-the-cli) on VON Network or if `findy-agent` is installed
 
-   `findy-agent create cnx -pool <pool_name> -txn genesis.txt`
+   `findy-agent ledger pool create --name <pool_name> --genesis-txn-file genesis.txt`
+
+   To test ledger connection you can give the following command:
+
+   `findy-agent ledger pool ping --name <pool_name>`
 
 3. Set environment variable: `export FINDY_POOL=<pool_name>`
-4. Run tests: `make test`
+4. Run tests: `make test`.
+
+   This will run all the pool tests towards the real ledger.
 
 ## Documentation
 
