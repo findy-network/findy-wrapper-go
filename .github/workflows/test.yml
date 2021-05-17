@@ -14,3 +14,7 @@ jobs:
         run: make indy_to_debian
       - name: test
         run: make test
+      - name: Run coverage
+        run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+      - name: Upload coverage to Codecov
+        run: bash <(curl -s https://codecov.io/bash)
