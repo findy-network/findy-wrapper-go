@@ -33,7 +33,9 @@ Please make sure that Go and git are both installed and working properly.
 
 This is the preferred way to build and use Findy Go wrapper.
 
-1. [Install](https://github.com/hyperledger/indy-sdk/#installing-the-sdk) libindy-dev.
+1. Install libindy-dev: `make indy_to_debian`
+
+   Check [indy-sdk installation instructions](https://github.com/hyperledger/indy-sdk/#installing-the-sdk)  for more details.
 2. Clone the repo: `git clone https://github.com/findy-network/findy-wrapper-go`
 3. Run the tests to see everything is working properly : `make test`
 
