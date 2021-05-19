@@ -33,7 +33,9 @@ Please make sure that Go and git are both installed and working properly.
 
 This is the preferred way to build and use Findy Go wrapper.
 
-1. [Install](https://github.com/hyperledger/indy-sdk/#installing-the-sdk) libindy-dev.
+1. Install libindy-dev: `make indy_to_debian`
+
+   Check [indy-sdk installation instructions](https://github.com/hyperledger/indy-sdk/#installing-the-sdk)  for more details.
 2. Clone the repo: `git clone https://github.com/findy-network/findy-wrapper-go`
 3. Run the tests to see everything is working properly : `make test`
 
@@ -44,9 +46,9 @@ helper Bash script to perform installation. Follow these steps:
 
 0. Install [Homebrew](https://brew.sh/) if it insn't already on your machine.
 1. Clone the repo: `git clone https://github.com/findy-network/findy-wrapper-go`
-2. Go to directory `./mac-libindy`:
+2. Go to directory `./scripts/mac-libindy`:
    ```
-   $ cd mac-libindy
+   $ cd scripts/mac-libindy
    ```
 3. Execute the installation script. 
    ```
@@ -164,17 +166,3 @@ When a null string is needed for an argument, the predefined type must be used.
 The Go error value can be retrieved with `dto.Result.Err()` which returns Go
 `error`.
 
-## Publishing new version
-
-Release script will tag the current version and push the tag to remote. This
-will trigger e2e-tests in CI automatically and if they succeed, the tag is
-merged to master.
-
-Release script assumes it is triggered from dev branch. It takes one parameter,
-the next working version. E.g. if current working version is 0.1.0, following
-will release version 0.1.0 and update working version to 0.2.0:
-
-```bash
-git checkout dev
-./release 0.2.0
-```

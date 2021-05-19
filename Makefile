@@ -38,3 +38,6 @@ lint: lint_ci
 
 lint_ci:
 	golangci-lint run ./...
+
+indy_to_debian:
+	./scripts/debian-libindy/install-indy.sh
