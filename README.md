@@ -2,6 +2,7 @@
 
 ![lint](https://github.com/findy-network/findy-wrapper-go/workflows/golangci-lint/badge.svg?branch=dev)
 ![test](https://github.com/findy-network/findy-wrapper-go/workflows/test/badge.svg?branch=dev)
+[![codecov](https://codecov.io/gh/findy-network/findy-wrapper-go/branch/master/graph/badge.svg?token=2OPADTJQJ3)](https://codecov.io/gh/findy-network/findy-wrapper-go)
 
 This is a Go wrapper for [indy-sdk](https://github.com/hyperledger/indy-sdk). It
 wraps most of the **libindy**'s functions and data types, but it doesn't try to be
