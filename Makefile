@@ -23,8 +23,11 @@ lint_old:
 lint_e:
 	@$(GOPATH)/bin/golint ./... | grep -v export | cat
 
-test:
+testv:
 	go test -v -p 1 -failfast ./...
+
+test:
+	go test -p 1 -failfast ./...
 
 logged_test:
 	go test -v -p 1 -failfast ./... -args -logtostderr=true -v=10
