@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/findy-network/findy-wrapper-go/plugin"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,16 +14,16 @@ func TestSetAndGet(t *testing.T) {
 	c := newClient(immuLedgerImpl)
 	c.Start()
 
-	err := c.Write("key1", "value1")
+	err := c.Write(plugin.TxDID, "key1", "value1")
 	assert.NoError(t, err)
 
-	err = c.Write("key2", "value2")
+	err = c.Write(plugin.TxDID, "key2", "value2")
 	assert.NoError(t, err)
 
 	c.ResetMemCache()
 
 	val := ""
-	_, val, err = c.Read("key1")
+	_, val, err = c.Read(plugin.TxDID, "key1")
 	assert.NoError(t, err)
 	assert.Equal(t, "value1", val)
 
@@ -34,7 +35,7 @@ func TestSetAndGet(t *testing.T) {
 	delta = 1 * time.Millisecond
 	time.Sleep(5 * time.Millisecond)
 
-	_, val, err = c.Read("key2")
+	_, val, err = c.Read(plugin.TxDID, "key2")
 	assert.NoError(t, err)
 	assert.Equal(t, "value2", val)
 	if isMock {

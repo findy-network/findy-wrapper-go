@@ -55,11 +55,6 @@ func TestCloseLedger(t *testing.T) {
 	assert.Equal(t, h2, -1)
 }
 
-func TestListPlugins(t *testing.T) {
-	names := pool.ListPlugins()
-	assert.Len(t, names, 4)
-}
-
 func TestList(t *testing.T) {
 	r := <-pool.List()
 	assert.NoError(t, r.Err())

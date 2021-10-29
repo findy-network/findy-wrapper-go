@@ -7,11 +7,35 @@ type Plugin interface {
 	Close()
 }
 
+type TxType int
+
+const (
+	TxTypeDID TxType = iota
+	TxTypeSchema
+	TxTypeCredDef
+)
+
+type TxInfo struct {
+	TxType
+
+	Wallet       int
+	SubmitterDID string
+	VerKey       string
+	Alias        string
+	Role         string
+}
+
+var (
+	TxDID     = TxInfo{TxType: TxTypeDID}
+	TxSchema  = TxInfo{TxType: TxTypeSchema}
+	TxCredDef = TxInfo{TxType: TxTypeCredDef}
+)
+
 // Mapper is an property getter/setter interface for addon ledger
 // implementations.
 type Mapper interface {
-	Write(ID, data string) error
-	Read(ID string) (string, string, error)
+	Write(tx TxInfo, ID, data string) error
+	Read(tx TxInfo, ID string) (string, string, error)
 }
 
 // Ledger is a plugin interface used to offer implementations of addon ledgers.

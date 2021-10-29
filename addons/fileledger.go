@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/findy-network/findy-wrapper-go/plugin"
 	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/lainio/err2"
 )
@@ -40,7 +41,7 @@ func (m *file) Open(name string) bool {
 	return true
 }
 
-func (m *file) Write(ID, data string) (err error) {
+func (m *file) Write(_ plugin.TxInfo, ID, data string) (err error) {
 	defer err2.Return(&err)
 	m.mem.Lock()
 	defer m.mem.Unlock()
@@ -49,7 +50,7 @@ func (m *file) Write(ID, data string) (err error) {
 	return nil
 }
 
-func (m *file) Read(ID string) (name string, value string, err error) {
+func (m *file) Read(_ plugin.TxInfo, ID string) (name string, value string, err error) {
 	m.mem.RLock()
 	defer m.mem.RUnlock()
 	return ID, m.mem.ory[ID], nil

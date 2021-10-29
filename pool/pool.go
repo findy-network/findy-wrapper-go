@@ -28,6 +28,7 @@ import (
 	"github.com/findy-network/findy-wrapper-go/internal/ctx"
 	"github.com/findy-network/findy-wrapper-go/plugin"
 	"github.com/golang/glog"
+	"github.com/lainio/err2/assert"
 )
 
 var (
@@ -121,11 +122,11 @@ func IsIndyLedgerOpen(handle int) bool {
 
 // Write writes data to all of the plugin ledgers. Note! The original indy
 // ledger is not one of the plugin ledgers, at least not yet.
-func Write(ID, data string) {
+func Write(tx plugin.TxInfo, ID, data string) {
 	for _, ledger := range openPlugins {
 		ledger := ledger
 		go func() {
-			if err := ledger.Write(ID, data); err != nil {
+			if err := ledger.Write(tx, ID, data); err != nil {
 				glog.Error("error in writing ledger:", err)
 			}
 		}()
@@ -134,15 +135,37 @@ func Write(ID, data string) {
 
 // Read reads data from all of the plugin ledgers. Note! The original indy
 // ledger is not one of the plugin ledgers, at least not yet.
-func Read(ID string) (string, string, error) {
-	for _, ledger := range openPlugins {
-		if name, value, err := ledger.Read(ID); err != nil {
-			glog.Error("error in ledger read:", err)
-		} else {
-			return name, value, err
+func Read(tx plugin.TxInfo, ID string) (string, string, error) {
+	switch len(openPlugins) {
+	case 0:
+		assert.D.True(false, "no plugins open")
+	case 1:
+		return openPlugins[-1].Read(tx, ID)
+	case 2:
+		var result string
+		select {
+		case r1 := <-asyncRead(-1, tx, ID):
+			result = r1
+		case r2 := <-asyncRead(-2, tx, ID):
+			result = r2
 		}
+		return ID, result, nil
+	default:
+		assert.D.True(false, "not suppoted plugins open")
 	}
 	return "", "", nil
+}
+
+func asyncRead(i int, tx plugin.TxInfo, ID string) chan string {
+	ch := make(chan string)
+	go func() {
+		name, value, err := openPlugins[i].Read(tx, ID)
+		if err != nil {
+			glog.Errorf("error in value: %s, ledger reading: %s", name, err)
+		}
+		ch <- value
+	}()
+	return ch
 }
 
 // registeredPlugins keeps track of the all of leger plugins installed in the

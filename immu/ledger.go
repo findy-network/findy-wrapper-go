@@ -7,6 +7,7 @@ import (
 	"time"
 
 	im "github.com/codenotary/immudb/pkg/client"
+	"github.com/findy-network/findy-wrapper-go/plugin"
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
 	"google.golang.org/grpc/metadata"
@@ -58,14 +59,14 @@ func (i *immu) buildCtx(context context.Context) context.Context {
 	return ctx
 }
 
-func (i *immu) Write(ID, data string) (err error) {
+func (i *immu) Write(tx plugin.TxInfo, ID, data string) (err error) {
 	defer err2.Handle(&err, func() {
 		glog.Errorln("write error:", err)
 		err = nil // suspend error for now and retry
 		go i.writeRetry(ID, data)
 	})
 
-	_ = i.cache.Write(ID, data)
+	_ = i.cache.Write(tx, ID, data)
 	err2.Check(i.oneWrite(ID, data))
 	return nil
 }
@@ -100,10 +101,10 @@ func (i *immu) oneWrite(ID, data string) (err error) {
 	return nil
 }
 
-func (i *immu) Read(ID string) (name string, value string, err error) {
+func (i *immu) Read(tx plugin.TxInfo, ID string) (name string, value string, err error) {
 	defer err2.Return(&err)
 
-	if _, value, err = i.cache.Read(ID); err == nil && value != "" {
+	if _, value, err = i.cache.Read(tx, ID); err == nil && value != "" {
 		glog.V(1).Info("----- cache hit")
 		return ID, value, err
 	}
@@ -117,7 +118,7 @@ func (i *immu) Read(ID string) (name string, value string, err error) {
 	dataFromImmu, err := i.client.Get(ctx, []byte(ID))
 	err2.Check(err)
 
-	_ = i.cache.Write(ID, string(dataFromImmu.Value))
+	_ = i.cache.Write(tx, ID, string(dataFromImmu.Value))
 	return ID, string(dataFromImmu.Value), nil
 }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/findy-network/findy-wrapper-go/plugin"
 	"github.com/findy-network/findy-wrapper-go/pool"
 )
 
@@ -30,7 +31,7 @@ func (m *echo) Open(name string) bool {
 	return name == echoName
 }
 
-func (m *echo) Write(ID, data string) error {
+func (m *echo) Write(_ plugin.TxInfo, ID, data string) error {
 	m.mem.Lock()
 	defer m.mem.Unlock()
 	fmt.Printf("Ledger WRITE [%s] <- (%s)", ID, data)
@@ -38,7 +39,7 @@ func (m *echo) Write(ID, data string) error {
 	return nil
 }
 
-func (m *echo) Read(ID string) (name string, value string, err error) {
+func (m *echo) Read(_ plugin.TxInfo, ID string) (name string, value string, err error) {
 	m.mem.RLock()
 	defer m.mem.RUnlock()
 	fmt.Printf("Ledger READ [%s] -> (%s)", ID, m.mem.ory[ID])
