@@ -132,6 +132,8 @@ func (ao *Indy) WriteDID(
 ) (err error) {
 	defer err2.Return(&err)
 
+	glog.V(1).Infoln("submitter:", tx.SubmitterDID)
+
 	r := <-ledger.BuildNymRequest(tx.SubmitterDID, data, tx.VerKey, tx.Alias, tx.Role)
 	err2.Check(r.Err())
 
@@ -150,6 +152,8 @@ func (ao *Indy) WriteSchema(
 ) (err error) {
 	defer err2.Return(&err)
 
+	glog.V(1).Infoln("submitter:", tx.SubmitterDID)
+
 	r := <-ledger.BuildSchemaRequest(tx.SubmitterDID, data)
 	err2.Check(r.Err())
 
@@ -167,6 +171,8 @@ func (ao *Indy) WriteCredDef(
 	data string,
 ) (err error) {
 	defer err2.Return(&err)
+
+	glog.V(1).Infoln("submitter:", tx.SubmitterDID)
 
 	r := <-ledger.BuildCredDefRequest(tx.SubmitterDID, data)
 	err2.Check(r.Err())

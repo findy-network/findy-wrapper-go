@@ -74,6 +74,10 @@ func ListPlugins() []string {
 // plugins compiled into the binary running. ListPlugins() returns all of the
 // available ones.
 func OpenLedger(names ...string) ctx.Channel {
+	return OpenLedgers(names)
+}
+
+func OpenLedgers(names []string) ctx.Channel {
 	realName := ""
 	for _, name := range names {
 		if r, ok := registeredPlugins[name]; ok && r.Open(name) {
@@ -124,9 +128,10 @@ func IsIndyLedgerOpen(handle int) bool {
 // ledger is not one of the plugin ledgers, at least not yet.
 func Write(tx plugin.TxInfo, ID, data string) {
 	for _, ledger := range openPlugins {
-		ledger := ledger
+		l := ledger
 		go func() {
-			if err := ledger.Write(tx, ID, data); err != nil {
+			if err := l.Write(tx, ID, data); err != nil {
+				glog.Error("error in writing ledger:", ID, "data:\n", data)
 				glog.Error("error in writing ledger:", err)
 			}
 		}()
@@ -145,8 +150,10 @@ func Read(tx plugin.TxInfo, ID string) (string, string, error) {
 		var result string
 		select {
 		case r1 := <-asyncRead(-1, tx, ID):
+			glog.V(1).Infoln("---- winner -1 ----")
 			result = r1
 		case r2 := <-asyncRead(-2, tx, ID):
+			glog.V(1).Infoln("---- winner -2 ----")
 			result = r2
 		}
 		return ID, result, nil

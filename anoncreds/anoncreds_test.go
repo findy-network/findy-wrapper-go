@@ -1,12 +1,14 @@
 package anoncreds
 
 import (
+	"flag"
 	"fmt"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/findy-network/findy-wrapper-go/dto"
+	"github.com/lainio/err2"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/findy-network/findy-wrapper-go"
@@ -16,6 +18,9 @@ import (
 )
 
 func TestIssuerCreateSchema(t *testing.T) {
+	err2.Check(flag.Set("logtostderr", "true"))
+	err2.Check(flag.Set("v", "3"))
+
 	ut := time.Now().Unix() - 1558884840
 	schemaName := fmt.Sprintf("NEW_SCHEMA_%v", ut)
 
@@ -26,10 +31,10 @@ func TestIssuerCreateSchema(t *testing.T) {
 	if nil != r.Err() {
 		t.Errorf("did.CreateAndStore: create steward() = %v", r.Error())
 	}
-	w1DID := r.Str1()
+	stewardDID := r.Str1()
 	w1Key := r.Str2()
 
-	err := ledger.WriteDID(pool, w1, w1DID, w1DID, w1Key, findy.NullString,
+	err := ledger.WriteDID(pool, w1, stewardDID, stewardDID, w1Key, findy.NullString,
 		findy.NullString)
 
 	w2, name2 := helpers.CreateAndOpenTestWallet(t)
@@ -42,7 +47,7 @@ func TestIssuerCreateSchema(t *testing.T) {
 
 	// try to write prover's DID to ledger even it's not need and that's why
 	// we don't care the error status
-	_ = ledger.WriteDID(pool, w2, w2DID, w2DID, w2Key, findy.NullString,
+	_ = ledger.WriteDID(pool, w2, stewardDID, w2DID, w2Key, findy.NullString,
 		findy.NullString)
 
 	type args struct {
@@ -56,7 +61,7 @@ func TestIssuerCreateSchema(t *testing.T) {
 		args args
 		want error
 	}{
-		{"1st", args{w1DID, schemaName, "1.0", "[\"email\"]"}, nil},
+		{"1st", args{stewardDID, schemaName, "1.0", "[\"email\"]"}, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -68,13 +73,13 @@ func TestIssuerCreateSchema(t *testing.T) {
 			//fmt.Println(sid)
 			scJSON := r.Str2()
 			//fmt.Println(scJSON)
-			err = ledger.WriteSchema(pool, w1, w1DID, scJSON)
+			err = ledger.WriteSchema(pool, w1, stewardDID, scJSON)
 			assert.NoError(t, err)
 
 			time.Sleep(1 * time.Second) // let ledger build everything ready
 
 			// Read SCHEMA from Ledger
-			sid, scJSON, err = ledger.ReadSchema(pool, w1DID, sid)
+			sid, scJSON, err = ledger.ReadSchema(pool, stewardDID, sid)
 			assert.NoError(t, err)
 
 			// ===========================================================
@@ -84,7 +89,7 @@ func TestIssuerCreateSchema(t *testing.T) {
 			// -----------------------------------------------------
 			// Build CRED DEF from the schema: CredDef n : 1 Schema
 			// we can reuse schemas in cred defs, use tag for naming
-			r = <-IssuerCreateAndStoreCredentialDef(w1, w1DID, scJSON,
+			r = <-IssuerCreateAndStoreCredentialDef(w1, stewardDID, scJSON,
 				"MY_FIRMS_CRED_DEF", findy.NullString, findy.NullString)
 			assert.NoError(t, r.Err())
 			// note! that in normal PROTOCOL this should be read from ledger on
@@ -102,7 +107,7 @@ func TestIssuerCreateSchema(t *testing.T) {
 			credOffer := r.Str1()
 
 			// Write CRED DEF to ledger = todo should be after creation =====
-			err = ledger.WriteCredDef(pool, w1, w1DID, cd)
+			err = ledger.WriteCredDef(pool, w1, stewardDID, cd)
 			assert.NoError(t, err)
 
 			// =================================================================
