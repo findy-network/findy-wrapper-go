@@ -36,7 +36,7 @@ func OpenTestPool(t *testing.T) int {
 	}
 
 	select {
-	case r = <-pool.OpenLedgers(poolNames):
+	case r = <-pool.OpenLedger(poolNames...):
 		if r.Err() != nil {
 			t.Fatal("Cannot open pool")
 		}

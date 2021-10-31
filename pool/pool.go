@@ -74,10 +74,6 @@ func ListPlugins() []string {
 // plugins compiled into the binary running. ListPlugins() returns all of the
 // available ones.
 func OpenLedger(names ...string) ctx.Channel {
-	return OpenLedgers(names)
-}
-
-func OpenLedgers(names []string) ctx.Channel {
 	realName := ""
 	for _, name := range names {
 		if r, ok := registeredPlugins[name]; ok && r.Open(name) {
