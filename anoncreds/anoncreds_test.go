@@ -47,7 +47,7 @@ func TestIssuerCreateSchema(t *testing.T) {
 
 	// try to write prover's DID to ledger even it's not need and that's why
 	// we don't care the error status
-	_ = ledger.WriteDID(pool, w2, stewardDID, w2DID, w2Key, findy.NullString,
+	_ = ledger.WriteDID(pool, w1, stewardDID, w2DID, w2Key, findy.NullString,
 		findy.NullString)
 
 	type args struct {
@@ -122,6 +122,8 @@ func TestIssuerCreateSchema(t *testing.T) {
 			}
 			msid = r.Str1()
 			//fmt.Println(msid)
+
+			time.Sleep(1 * time.Second) // let ledger build everything ready
 
 			// Get CRED DEF from the ledger
 			credDefID, credDef, err := ledger.ReadCredDef(pool, w2DID, cdid)
