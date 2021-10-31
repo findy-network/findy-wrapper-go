@@ -119,8 +119,8 @@ func Write(tx plugin.TxInfo, ID, data string) {
 		l := ledger
 		go func() {
 			if err := l.Write(tx, ID, data); err != nil {
-				glog.Error("error in writing ledger:", ID, "data:\n", data)
-				glog.Error("error in writing ledger:", err)
+				glog.Errorln("-- writing err ledger:", tx, ID, "data:\n", data)
+				glog.Errorln("-- error:", err)
 			}
 		}()
 	}
@@ -135,20 +135,49 @@ func Read(tx plugin.TxInfo, ID string) (string, string, error) {
 	case 1:
 		return openPlugins[-1].Read(tx, ID)
 	case 2:
-		var result string
-		select {
-		case r1 := <-asyncRead(-1, tx, ID):
-			glog.V(1).Infoln("---- winner -1 ----")
-			result = r1
-		case r2 := <-asyncRead(-2, tx, ID):
-			glog.V(1).Infoln("---- winner -2 ----")
-			result = r2
-		}
-		return ID, result, nil
+		return readFrom2(tx, ID)
 	default:
-		assert.D.True(false, "not suppoted plugins open")
+		assert.D.True(false, "amount of open plugins is not supported")
 	}
 	return "", "", nil
+}
+
+func readFrom2(tx plugin.TxInfo, ID string) (string, string, error) {
+	var (
+		result    string
+		readCount int
+	)
+
+loop:
+	for {
+		select {
+		case r1 := <-asyncRead(-1, tx, ID):
+			readCount++
+			glog.V(1).Infoln("---- winner -1 ----", readCount)
+			result = r1
+
+			// todo: currently first plugin is the Indy ledger, if we are
+			// here, we must write data to "cache ledger"
+			if readCount >= 2 && r1 != "" {
+				err := openPlugins[-1].Write(tx, ID, r1)
+				if err != nil {
+					glog.Errorln("error cache update", err)
+				}
+			}
+			break loop
+
+		case r2 := <-asyncRead(-2, tx, ID):
+			readCount++
+			glog.V(1).Infoln("---- winner -2 ----", readCount)
+			result = r2
+			if r2 == "" {
+				glog.V(1).Infoln("--- NO CACHE HIT:", ID, readCount)
+				continue loop
+			}
+			break loop
+		}
+	}
+	return ID, result, nil
 }
 
 func asyncRead(i int, tx plugin.TxInfo, ID string) chan string {
