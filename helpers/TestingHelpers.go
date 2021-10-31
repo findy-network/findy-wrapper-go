@@ -31,11 +31,11 @@ func OpenTestPool(t *testing.T) int {
 		poolNames[0] = poolName
 		poolNames[1] = ""
 	} else {
-		poolNames = make([]string, 4)
+		poolNames = make([]string, 2)
 		poolNames[0] = poolName
 		poolNames[1] = ""
-		poolNames[2] = memLedgerName
-		poolNames[3] = ""
+		//		poolNames[2] = memLedgerName
+		//		poolNames[3] = ""
 	}
 
 	select {
