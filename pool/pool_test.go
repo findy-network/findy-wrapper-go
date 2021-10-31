@@ -32,7 +32,7 @@ func TestSetProtocolVersion(t *testing.T) {
 }
 
 func TestOpenLedger(t *testing.T) {
-	r := <-pool.OpenLedger("FINDY_MEM_LEDGER", "FINDY_ECHO_LEDGER")
+	r := <-pool.OpenLedger("FINDY_MEM_LEDGER", "", "FINDY_ECHO_LEDGER", "")
 	assert.NoError(t, r.Err())
 	h1 := r.Handle()
 	assert.Equal(t, h1, -2)
@@ -42,14 +42,14 @@ func TestOpenLedger(t *testing.T) {
 }
 
 func TestCloseLedger(t *testing.T) {
-	r := <-pool.OpenLedger("FINDY_MEM_LEDGER", "FINDY_ECHO_LEDGER")
+	r := <-pool.OpenLedger("FINDY_MEM_LEDGER", "", "FINDY_ECHO_LEDGER", "")
 	assert.NoError(t, r.Err())
 	h1 := r.Handle()
 	assert.Equal(t, h1, -2)
 	r = <-pool.CloseLedger(h1)
 	assert.NoError(t, r.Err())
 
-	r = <-pool.OpenLedger("FINDY_MEM_LEDGER")
+	r = <-pool.OpenLedger("FINDY_MEM_LEDGER", "")
 	assert.NoError(t, r.Err())
 	h2 := r.Handle()
 	assert.Equal(t, h2, -1)

@@ -27,12 +27,15 @@ func OpenTestPool(t *testing.T) int {
 	poolName := os.Getenv("FINDY_POOL")
 	if poolName == "" {
 		poolName = memLedgerName
-		poolNames = make([]string, 1)
-		poolNames[0] = poolName
-	} else {
 		poolNames = make([]string, 2)
 		poolNames[0] = poolName
-		poolNames[1] = memLedgerName
+		poolNames[1] = ""
+	} else {
+		poolNames = make([]string, 4)
+		poolNames[0] = poolName
+		poolNames[1] = ""
+		poolNames[2] = memLedgerName
+		poolNames[3] = ""
 	}
 
 	select {

@@ -74,22 +74,14 @@ func ListPlugins() []string {
 // plugins compiled into the binary running. ListPlugins() returns all of the
 // available ones.
 func OpenLedger(names ...string) ctx.Channel {
-	realName := ""
-	for _, name := range names {
-		if r, ok := registeredPlugins[name]; ok && r.Open(name) {
+	//for _, name := range names {
+	for i := 0; i < len(names); i += 2 {
+		name := names[i]
+		extra := names[i+1]
+		if r, ok := registeredPlugins[name]; ok && r.Open(name, extra) {
 			openPlugins[pluginHandles] = r
 			pluginHandles--
-		} else {
-			if realName != "" {
-				glog.Warning(
-					"trying open multiple real ledgers",
-					realName, " and", name, "using", name)
-			}
-			realName = name
 		}
-	}
-	if realName != "" {
-		return c2go.PoolOpenLedger(realName)
 	}
 	return makeHandleResult(pluginHandles + 1)
 }
