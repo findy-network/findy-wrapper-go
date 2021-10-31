@@ -1,6 +1,8 @@
 // Package plugin is an interface package for ledger addons.
 package plugin
 
+import "errors"
+
 // Plugin is a plugin interface for addon ledger implementations.
 type Plugin interface {
 	Open(name ...string) bool
@@ -15,6 +17,10 @@ const (
 	TxTypeCredDef
 )
 
+func (t TxType) String() string {
+	return []string{"TxTypeDID", "TxTypeSchema", "TxTypeCredDef"}[t]
+}
+
 type TxInfo struct {
 	TxType
 
@@ -25,10 +31,16 @@ type TxInfo struct {
 	Role         string
 }
 
+func (ti TxInfo) String() string {
+	return ti.TxType.String()
+}
+
 var (
 	TxDID     = TxInfo{TxType: TxTypeDID}
 	TxSchema  = TxInfo{TxType: TxTypeSchema}
 	TxCredDef = TxInfo{TxType: TxTypeCredDef}
+
+	ErrNotExist = errors.New("Ledger element doesn't exist")
 )
 
 // Mapper is an property getter/setter interface for addon ledger
