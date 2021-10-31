@@ -35,13 +35,13 @@ func (i *immu) Close() {
 	i.client = nil
 }
 
-func (i *immu) Open(name string) bool {
+func (i *immu) Open(name ...string) bool {
 	defer err2.Catch(func(err error) {
 		glog.Errorf("error immu db ledger addon Open(): %v", err)
 	})
 	i.ResetMemCache() // for tests at the moment
 
-	cfg := NewImmuCfg(name)
+	cfg := NewImmuCfg(name[0])
 	c, token, err := cfg.Connect()
 	err2.Check(err)
 

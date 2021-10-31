@@ -3,7 +3,7 @@ package plugin
 
 // Plugin is a plugin interface for addon ledger implementations.
 type Plugin interface {
-	Open(name string) bool
+	Open(name ...string) bool
 	Close()
 }
 

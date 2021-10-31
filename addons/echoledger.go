@@ -25,10 +25,10 @@ func (m *echo) Close() {
 	resetEcho()
 }
 
-func (m *echo) Open(name string) bool {
+func (m *echo) Open(name ...string) bool {
 	fmt.Println("Opening Echo ledger")
 	resetEcho()
-	return name == echoName
+	return name[0] == echoName
 }
 
 func (m *echo) Write(_ plugin.TxInfo, ID, data string) error {

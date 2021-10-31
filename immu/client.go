@@ -150,10 +150,10 @@ func (m *myClient) Close() {
 	m.immu.Close()
 }
 
-func (m *myClient) Open(name string) bool {
+func (m *myClient) Open(name ...string) bool {
 	m.Start()
 	m.loginTS = time.Now() // set it here because Open does the 1st login
-	return m.immu.Open(name)
+	return m.immu.Open(name[0])
 }
 
 const immuLedgerName = "FINDY_IMMUDB_LEDGER"

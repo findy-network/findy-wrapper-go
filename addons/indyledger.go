@@ -15,9 +15,10 @@ import (
 
 const indyLedgerAddonName = "FINDY_LEDGER"
 
-// Indy is a ledger addon which implements transient ledger. It writes
-// ledger data to memory and reads it from there. It's convenient for unit test
-// and some development cases.
+// Indy is a ledger addon which implements real Indy ledger pool client.
+// The machine which uses it must have indy pool named FINDY_LEDGER.
+// Also it's important that memory or file ledger is used same time because both
+// writing and reading to addon is done asynchronously.
 type Indy struct {
 	handle int
 }
@@ -26,16 +27,16 @@ func (ao *Indy) Close() {
 	c2go.PoolCloseLedger(ao.handle)
 }
 
-func (ao *Indy) Open(name string) (ok bool) {
-	assert.D.True(name == indyLedgerAddonName)
+func (ao *Indy) Open(name ...string) (ok bool) {
+	assert.D.True(name[0] == indyLedgerAddonName)
 
 	defer err2.Catch(func(err error) {
 		ok = false
-		glog.Errorln("cannot open", indyLedgerAddonName, "by name", name)
+		glog.Errorln("cannot open", indyLedgerAddonName, "by name", name[0])
 		glog.Errorln(err)
 	})
 
-	r := <-c2go.PoolOpenLedger(name)
+	r := <-c2go.PoolOpenLedger(name[0])
 	err2.Check(r.Err())
 	ao.handle = r.Handle()
 	return true

@@ -31,8 +31,8 @@ func (m *file) Close() {
 	//resetMemory()
 }
 
-func (m *file) Open(name string) bool {
-	filename = fullFilename(name)
+func (m *file) Open(name ...string) bool {
+	filename = fullFilename(name[0])
 	if fileExists() {
 		err2.Check(m.load(filename))
 	} else {
