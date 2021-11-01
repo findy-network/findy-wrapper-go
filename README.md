@@ -1,7 +1,6 @@
 # findy-wrapper-go
 
-![lint](https://github.com/findy-network/findy-wrapper-go/workflows/golangci-lint/badge.svg?branch=dev)
-![test](https://github.com/findy-network/findy-wrapper-go/workflows/test/badge.svg?branch=dev)
+[![test](https://github.com/findy-network/findy-wrapper-go/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/findy-network/findy-wrapper-go/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/findy-network/findy-wrapper-go/branch/master/graph/badge.svg?token=2OPADTJQJ3)](https://codecov.io/gh/findy-network/findy-wrapper-go)
 
 This is a Go wrapper for [indy-sdk](https://github.com/hyperledger/indy-sdk). It
@@ -36,7 +35,8 @@ This is the preferred way to build and use Findy Go wrapper.
 
 1. Install libindy-dev: `make indy_to_debian`
 
-   Check [indy-sdk installation instructions](https://github.com/hyperledger/indy-sdk/#installing-the-sdk)  for more details.
+   Check [indy-sdk installation instructions](https://github.com/hyperledger/indy-sdk/#installing-the-sdk) for more details.
+
 2. Clone the repo: `git clone https://github.com/findy-network/findy-wrapper-go`
 3. Run the tests to see everything is working properly : `make test`
 
@@ -51,7 +51,7 @@ helper Bash script to perform installation. Follow these steps:
    ```
    $ cd scripts/mac-libindy
    ```
-3. Execute the installation script. 
+3. Execute the installation script.
    ```
    $ ./install.sh
    ```
@@ -61,14 +61,14 @@ helper Bash script to perform installation. Follow these steps:
    $ ./install.sh /my/own/location
    ```
 4. Follow the instructions of the `install.sh` i.e. **source the env.sh** which
-is generated to installation directory and is in your clipboard after successful
-installation.
+   is generated to installation directory and is in your clipboard after successful
+   installation.
    ```
    $ source /usr/local/opt/libindy/env.sh
    ```
 5. Run the tests to see everything is OK: `make test`
 
-The problem solving tip: `source env.sh` in your dev session. 
+The problem solving tip: `source env.sh` in your dev session.
 
 ## Development Without The Ledger
 
@@ -166,4 +166,3 @@ When a null string is needed for an argument, the predefined type must be used.
 
 The Go error value can be retrieved with `dto.Result.Err()` which returns Go
 `error`.
-
