@@ -28,8 +28,17 @@ import (
 	"github.com/findy-network/findy-wrapper-go/internal/ctx"
 	"github.com/findy-network/findy-wrapper-go/plugin"
 	"github.com/golang/glog"
+	"github.com/lainio/err2"
 	"github.com/lainio/err2/assert"
 )
+
+type readChan chan readInfo
+
+type readInfo struct {
+	id     string
+	result string
+	err    error
+}
 
 var (
 	// Counter for plugin handles. It gives unique handles for plugins.
@@ -70,11 +79,26 @@ func ListPlugins() []string {
 
 // OpenLedger opens all ledger types given. The original indy SDK function takes
 // only one pool configuration name as an argument. This wrapper takes many pool
-// names where one can be an original indy pool and the rest can be any of the
-// plugins compiled into the binary running. ListPlugins() returns all of the
-// available ones.
+// plugin name-argument pairs. ListPlugins() returns all of the available ones.
 func OpenLedger(names ...string) ctx.Channel {
-	//for _, name := range names {
+	_, startsWithPluginName := registeredPlugins[names[0]]
+	legacy := len(names) == 1
+
+	// only one argument is given, as legacy mode was
+	if legacy {
+		// default is that incoming argument is Indy pool name only
+		pluginName := "FINDY_LEDGER"
+		pluginArg := names[0]
+
+		if startsWithPluginName {
+			pluginName = names[0]
+			pluginArg = ""
+		}
+		names = make([]string, 2)
+		names[0] = pluginName
+		names[1] = pluginArg
+	}
+
 	for i := 0; i < len(names); i += 2 {
 		name := names[i]
 		extra := names[i+1]
@@ -142,36 +166,54 @@ func Read(tx plugin.TxInfo, ID string) (string, string, error) {
 	return "", "", nil
 }
 
-func readFrom2(tx plugin.TxInfo, ID string) (string, string, error) {
+func readFrom2(tx plugin.TxInfo, ID string) (id string, val string, err error) {
+	defer err2.Annotate("reading cached ledger", &err)
+
+	const (
+		indyLedger  = -1
+		cacheLedger = -2
+	)
 	var (
 		result    string
 		readCount int
 	)
 
+	ch1 := asyncRead(indyLedger, tx, ID)
+	ch2 := asyncRead(cacheLedger, tx, ID)
+
 loop:
 	for {
 		select {
-		case r1 := <-asyncRead(-1, tx, ID):
+		case r1 := <-ch1:
+			if r1.err != nil && r1.err != plugin.ErrNotExist {
+				err2.Check(r1.err)
+			}
 			readCount++
-			glog.V(1).Infoln("---- winner -1 ----", readCount)
-			result = r1
+			glog.V(5).Infof("---- %d. winner -1 ----", readCount)
+			result = r1.result
 
-			// todo: currently first plugin is the Indy ledger, if we are
-			// here, we must write data to "cache ledger"
-			if readCount >= 2 && r1 != "" {
-				err := openPlugins[-1].Write(tx, ID, r1)
+			// Currently first plugin is the Indy ledger, if we are
+			// here, we must write data to cache ledger
+			if readCount >= 2 && r1.result != "" {
+				glog.V(5).Infoln("--- update cache plugin:", r1.id, r1.result)
+				tmpTx := tx
+				tx.Update = true
+				err := openPlugins[cacheLedger].Write(tmpTx, ID, r1.result)
 				if err != nil {
 					glog.Errorln("error cache update", err)
 				}
 			}
 			break loop
 
-		case r2 := <-asyncRead(-2, tx, ID):
+		case r2 := <-ch2:
+			if r2.err != nil && r2.err != plugin.ErrNotExist {
+				err2.Check(r2.err)
+			}
 			readCount++
-			glog.V(1).Infoln("---- winner -2 ----", readCount)
-			result = r2
-			if r2 == "" {
-				glog.V(1).Infoln("--- NO CACHE HIT:", ID, readCount)
+			glog.V(5).Infof("---- %d. winner -2 ----", readCount)
+			result = r2.result
+			if r2.result == "" {
+				glog.V(5).Infoln("--- NO CACHE HIT:", ID, readCount)
 				continue loop
 			}
 			break loop
@@ -180,14 +222,17 @@ loop:
 	return ID, result, nil
 }
 
-func asyncRead(i int, tx plugin.TxInfo, ID string) chan string {
-	ch := make(chan string)
+func asyncRead(i int, tx plugin.TxInfo, ID string) readChan {
+	ch := make(readChan)
 	go func() {
 		name, value, err := openPlugins[i].Read(tx, ID)
 		if err != nil {
 			glog.Errorf("error in value: %s, ledger reading: %s", name, err)
 		}
-		ch <- value
+		ch <- readInfo{
+			id:     name,
+			result: value,
+		}
 	}()
 	return ch
 }
