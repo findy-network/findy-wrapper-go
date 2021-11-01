@@ -23,6 +23,8 @@ multiple ledger pool names at once.
 package pool
 
 import (
+	"strings"
+
 	"github.com/findy-network/findy-wrapper-go/dto"
 	"github.com/findy-network/findy-wrapper-go/internal/c2go"
 	"github.com/findy-network/findy-wrapper-go/internal/ctx"
@@ -81,6 +83,11 @@ func ListPlugins() []string {
 // only one pool configuration name as an argument. This wrapper takes many pool
 // plugin name-argument pairs. ListPlugins() returns all of the available ones.
 func OpenLedger(names ...string) ctx.Channel {
+	// first round of checks, if caller cannot yet use variadic function
+	if len(names) == 1 {
+		names = ConvertPluginArgs(names[0])
+	}
+
 	_, startsWithPluginName := registeredPlugins[names[0]]
 	legacy := len(names) == 1
 
@@ -108,6 +115,28 @@ func OpenLedger(names ...string) ctx.Channel {
 		}
 	}
 	return makeHandleResult(pluginHandles + 1)
+}
+
+// ConvertPluginArgs converts pool name to list of config pairs if it's possible
+func ConvertPluginArgs(poolName string) []string {
+	pools := strings.Split(poolName, ",")
+	pluginsLen := len(pools)
+	if pluginsLen == 1 {
+		pluginsLen++
+		pools = append(pools, "")
+	}
+	glog.V(1).Infof("Using env var defined %d ledger plugin(s)", pluginsLen)
+
+	poolNames := make([]string, pluginsLen)
+	for i := 0; i < pluginsLen; i += 2 {
+		poolNames[i] = pools[i]
+		poolNames[i+1] = pools[i+1]
+	}
+	if pluginsLen >= 2 && glog.V(1) {
+		glog.Infoln("Using two ledger plugins")
+	}
+
+	return poolNames
 }
 
 // CloseLedger is exchanged indy SDK wrapper function. It closes all currently
