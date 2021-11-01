@@ -3,11 +3,13 @@ package helpers
 import (
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	_ "github.com/findy-network/findy-wrapper-go/addons" // we need this here
+	"github.com/golang/glog"
 
 	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/findy-network/findy-wrapper-go/wallet"
@@ -31,11 +33,22 @@ func OpenTestPool(t *testing.T) int {
 		poolNames[0] = poolName
 		poolNames[1] = ""
 	} else {
-		poolNames = make([]string, 2)
-		poolNames[0] = poolName
-		poolNames[1] = ""
-		//		poolNames[2] = memLedgerName
-		//		poolNames[3] = ""
+		pools := strings.Split(poolName, ",")
+		pluginsLen := len(pools)
+		if pluginsLen == 1 {
+			pluginsLen++
+			pools = append(pools, "")
+		}
+		glog.V(1).Infof("Using env var defined %d ledger plugin(s)", pluginsLen)
+
+		poolNames = make([]string, pluginsLen)
+		for i := 0; i < pluginsLen; i += 2 {
+			poolNames[i] = pools[i]
+			poolNames[i+1] = pools[i+1]
+		}
+		if pluginsLen >= 2 && glog.V(1) {
+			glog.Infoln("Using two ledger plugins")
+		}
 	}
 
 	select {
