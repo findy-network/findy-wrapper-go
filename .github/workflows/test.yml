@@ -1,6 +1,17 @@
 name: test
 on: push
 jobs:
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install indy
+        run: make indy_to_debian
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.32
   test:
     runs-on: ubuntu-latest
     steps:
