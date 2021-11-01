@@ -29,6 +29,8 @@ type TxInfo struct {
 	VerKey       string
 	Alias        string
 	Role         string
+
+	Update bool
 }
 
 func (ti TxInfo) String() string {
