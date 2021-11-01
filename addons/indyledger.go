@@ -30,13 +30,18 @@ func (ao *Indy) Close() {
 func (ao *Indy) Open(name ...string) (ok bool) {
 	assert.D.True(name[0] == indyLedgerAddonName)
 
+	poolName := name[1]
+	if poolName == "" {
+		poolName = indyLedgerAddonName
+	}
+
 	defer err2.Catch(func(err error) {
 		ok = false
-		glog.Errorln("cannot open", indyLedgerAddonName, "by name", name[0])
+		glog.Errorln("cannot open", indyLedgerAddonName, "by name", poolName)
 		glog.Errorln(err)
 	})
 
-	r := <-c2go.PoolOpenLedger(name[0])
+	r := <-c2go.PoolOpenLedger(poolName)
 	err2.Check(r.Err())
 	ao.handle = r.Handle()
 	return true
@@ -84,6 +89,8 @@ func (ao *Indy) ReadCredDef(
 ) (name string, value string, err error) {
 	defer err2.Return(&err)
 
+	glog.V(100).Infoln("submitter:", tx.SubmitterDID)
+
 	r := <-ledger.BuildGetCredDefRequest(tx.SubmitterDID, credDefID)
 	err2.Check(r.Err())
 
@@ -108,6 +115,8 @@ func (ao *Indy) ReadSchema(
 	ID string,
 ) (name string, value string, err error) {
 	defer err2.Return(&err)
+
+	glog.V(100).Infoln("submitter:", tx.SubmitterDID)
 
 	r := <-ledger.BuildGetSchemaRequest(tx.SubmitterDID, ID)
 	err2.Check(r.Err())
