@@ -1,14 +1,13 @@
 package anoncreds
 
 import (
-	"flag"
 	"fmt"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/findy-network/findy-wrapper-go/dto"
-	"github.com/lainio/err2"
+	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/findy-network/findy-wrapper-go"
@@ -18,9 +17,6 @@ import (
 )
 
 func TestIssuerCreateSchema(t *testing.T) {
-	err2.Check(flag.Set("logtostderr", "true"))
-	err2.Check(flag.Set("v", "3"))
-
 	ut := time.Now().Unix() - 1558884840
 	schemaName := fmt.Sprintf("NEW_SCHEMA_%v", ut)
 
@@ -70,17 +66,19 @@ func TestIssuerCreateSchema(t *testing.T) {
 			r := <-IssuerCreateSchema(tt.args.did, tt.args.name, tt.args.version, tt.args.attrNames)
 			assert.NoError(t, r.Err())
 			sid := r.Str1()
-			//fmt.Println(sid)
 			scJSON := r.Str2()
-			//fmt.Println(scJSON)
+
 			err = ledger.WriteSchema(pool, w1, stewardDID, scJSON)
 			assert.NoError(t, err)
 
-			time.Sleep(1 * time.Second) // let ledger build everything ready
+			glog.V(2).Infoln("<<====IN SchemaID:", sid, "waiting before read schema")
+			time.Sleep(5 * time.Second) // let ledger build everything ready
 
 			// Read SCHEMA from Ledger
 			sid, scJSON, err = ledger.ReadSchema(pool, stewardDID, sid)
 			assert.NoError(t, err)
+			glog.V(2).Infoln("=====================> OUT SchemaID:", sid)
+			glog.V(2).Infoln("==== getting from ledger for schema:", scJSON)
 
 			// ===========================================================
 			// === start from the issuer side of the table
@@ -98,7 +96,6 @@ func TestIssuerCreateSchema(t *testing.T) {
 			cdid := r.Str1()
 
 			cd := r.Str2()
-			//fmt.Println(cd)
 			// BUILD CRED_DEF OFFER
 			r = <-IssuerCreateCredentialOffer(w1, cdid)
 			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
@@ -107,6 +104,7 @@ func TestIssuerCreateSchema(t *testing.T) {
 			credOffer := r.Str1()
 
 			// Write CRED DEF to ledger = todo should be after creation =====
+			glog.V(2).Infoln("<<==================== IN CredDefID:", cdid)
 			err = ledger.WriteCredDef(pool, w1, stewardDID, cd)
 			assert.NoError(t, err)
 
@@ -121,13 +119,13 @@ func TestIssuerCreateSchema(t *testing.T) {
 				t.Errorf("ProverCreateMasterSecret() = %v, want %v", got, tt.want)
 			}
 			msid = r.Str1()
-			//fmt.Println(msid)
 
-			time.Sleep(1 * time.Second) // let ledger build everything ready
+			time.Sleep(5 * time.Second) // let ledger build everything ready
 
 			// Get CRED DEF from the ledger
 			credDefID, credDef, err := ledger.ReadCredDef(pool, w2DID, cdid)
 			assert.NoError(t, err)
+			glog.V(2).Infoln("<<==================== OUT CredDef:", credDefID)
 
 			// build credential request to send to back to issuer
 			r = <-ProverCreateCredentialReq(w2, w2DID, credOffer, credDef, msid)
@@ -185,7 +183,6 @@ func TestIssuerCreateSchema(t *testing.T) {
 				RequestedPredicates: map[string]PredicateInfo{},
 			}
 			pReqStr := dto.ToJSON(pReq)
-			//fmt.Println(pReqStr)
 			r = <-ProverSearchCredentialsForProofReq(w2, pReqStr, findy.NullString)
 			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ProverSearchCredentialsForProofReq() = %v, want %v", got, tt.want)
@@ -197,8 +194,6 @@ func TestIssuerCreateSchema(t *testing.T) {
 				t.Errorf("ProverFetchCredentialsForProofReq() = %v, want %v", got, tt.want)
 			}
 			credentials := r.Str1()
-			//fmt.Println(credentials)
-			//fmt.Println("=====================")
 			// Needs to be slice, len() tells how much we did read
 			credInfo := make([]Credentials, fetchMax)
 			dto.FromJSONStr(credentials, &credInfo)
@@ -212,7 +207,6 @@ func TestIssuerCreateSchema(t *testing.T) {
 				sid: schemaObject,
 			}
 			schemasJSON := dto.ToJSON(schemas)
-			//fmt.Println(schemasJSON)
 
 			credDefObject := map[string]interface{}{}
 			dto.FromJSONStr(credDef, &credDefObject)
@@ -233,13 +227,11 @@ func TestIssuerCreateSchema(t *testing.T) {
 				RequestedPredicates: map[string]RequestedPredObject{},
 			}
 			reqCredJSON := dto.ToJSON(reqCred)
-			//fmt.Println(reqCredJSON)
 			r = <-ProverCreateProof(w2, pReqStr, reqCredJSON, msid, schemasJSON, credDefsJSON, "{}")
 			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ProverCreateProof() = %v, want %v", got, tt.want)
 			}
 			proofJS := r.Str1()
-			//fmt.Println(proofJS)
 
 			r = <-VerifierVerifyProof(pReqStr, proofJS, schemasJSON, credDefsJSON, "{}", "{}")
 			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
@@ -413,7 +405,6 @@ func TestProofReq(t *testing.T) {
 	dto.FromJSONStr(proofReqJSON, &proofReq)
 
 	if proofReq.Name != "Proof of Education" {
-		fmt.Print("proof req:", proofReqJSON)
 		t.Error("cannot read proof request")
 	}
 }
