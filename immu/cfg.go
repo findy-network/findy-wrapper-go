@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	immuMockLedgerName = "FINDY_MOCK_IMMUDB_LEDGER"
+	// immuMockLedgerName = "FINDY_MOCK_IMMUDB_LEDGER"
 
 	mockURL = "mock"
 
@@ -40,8 +40,8 @@ var MockCfg = &Cfg{
 	Password: "immudb",
 }
 
-func NewImmuCfg(name string) (cfg *Cfg) {
-	if name != immuMockLedgerName && envExists(envImmuURL) {
+func NewImmuCfg(_ string) (cfg *Cfg) {
+	if envExists(envImmuURL) {
 		glog.V(2).Infoln("+++ using env Cfg")
 		cfg = cfgFromEnv()
 	} else {

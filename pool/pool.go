@@ -23,6 +23,7 @@ multiple ledger pool names at once.
 package pool
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/findy-network/findy-wrapper-go/dto"
@@ -109,10 +110,15 @@ func OpenLedger(names ...string) ctx.Channel {
 	for i := 0; i < len(names); i += 2 {
 		name := names[i]
 		extra := names[i+1]
-		if r, ok := registeredPlugins[name]; ok && r.Open(name, extra) {
+		lstr := fmt.Sprintf("open plugin:%s(%s)", name, extra)
+		if r, ok := registeredPlugins[name]; ok && r.Open(extra) {
 			openPlugins[pluginHandles] = r
 			pluginHandles--
+			lstr += " ==> OK"
+		} else {
+			lstr += " ==> ERR"
 		}
+		glog.V(1).Infoln(lstr)
 	}
 	return makeHandleResult(pluginHandles + 1)
 }

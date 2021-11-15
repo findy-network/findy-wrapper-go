@@ -23,9 +23,9 @@ func (m *Mem) Close() {
 	resetMem()
 }
 
-func (m *Mem) Open(name ...string) bool {
+func (m *Mem) Open(_ ...string) bool {
 	resetMem()
-	return name[0] == memName
+	return true
 }
 
 func (m *Mem) Write(_ plugin.TxInfo, ID, data string) error {

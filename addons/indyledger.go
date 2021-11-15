@@ -28,9 +28,7 @@ func (ao *Indy) Close() {
 }
 
 func (ao *Indy) Open(name ...string) (ok bool) {
-	assert.D.True(name[0] == indyLedgerAddonName)
-
-	poolName := name[1]
+	poolName := name[0]
 	if poolName == "" {
 		poolName = indyLedgerAddonName
 	}

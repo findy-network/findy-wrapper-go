@@ -7,6 +7,7 @@ import (
 
 	"github.com/findy-network/findy-wrapper-go/plugin"
 	"github.com/findy-network/findy-wrapper-go/pool"
+	"github.com/golang/glog"
 )
 
 const memName = "FINDY_MEM_LEDGER"
@@ -30,18 +31,19 @@ type Mem struct {
 }
 
 func (m *Mem) Close() {
-	resetMem()
+	m.resetMem()
 }
 
 func (m *Mem) Open(name ...string) bool {
-	resetMem()
-	m.incSeqNo()
+	m.resetMem()
+	m.IncSeqNo()
 
-	if len(name) > 1 && name[1] != "" {
+	if name[0] != "" {
+		glog.V(1).Infoln("-- setting Cache Mode for mem plugin --")
 		m.cacheMode = true
 	}
 
-	return name[0] == memName
+	return true
 }
 
 func (m *Mem) Write(tx plugin.TxInfo, ID, data string) error {
@@ -53,7 +55,7 @@ func (m *Mem) Write(tx plugin.TxInfo, ID, data string) error {
 	m.Mem.Lock()
 	defer m.Mem.Unlock()
 
-	m.incSeqNo()
+	m.IncSeqNo()
 	m.Mem.Ory[ID] = data
 	return nil
 }
@@ -78,7 +80,7 @@ func (m *Mem) Read(tx plugin.TxInfo, ID string) (name string, value string, err 
 	return ID, m.Mem.Ory[ID], nil
 }
 
-func (m *Mem) incSeqNo() {
+func (m *Mem) IncSeqNo() {
 	m.Seq.Lock()
 	defer m.Seq.Unlock()
 
@@ -90,6 +92,13 @@ func (m *Mem) SeqNo() uint {
 	defer m.Seq.Unlock()
 
 	return m.Seq.No
+}
+
+func (m *Mem) resetMem() {
+	m.Mem.Lock()
+	defer m.Mem.Unlock()
+
+	memLedger.Mem.Ory = make(map[string]string)
 }
 
 var memLedger = &Mem{
@@ -107,8 +116,4 @@ var memLedger = &Mem{
 
 func init() {
 	pool.RegisterPlugin(memName, memLedger)
-}
-
-func resetMem() {
-	memLedger.Mem.Ory = make(map[string]string)
 }
