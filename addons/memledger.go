@@ -25,6 +25,8 @@ type Mem struct {
 		sync.Mutex
 		No uint
 	}
+
+	cacheMode bool
 }
 
 func (m *Mem) Close() {
@@ -34,6 +36,11 @@ func (m *Mem) Close() {
 func (m *Mem) Open(name ...string) bool {
 	resetMem()
 	m.incSeqNo()
+
+	if len(name) > 1 && name[1] != "" {
+		m.cacheMode = true
+	}
+
 	return name[0] == memName
 }
 
@@ -61,6 +68,9 @@ func (m *Mem) Read(tx plugin.TxInfo, ID string) (name string, value string, err 
 	// if reading first time ("null" exists in "seqNo:"), replace it with the
 	// current seqNo. This mimics indy ledger behaviour
 	if tx.TxType == plugin.TxTypeSchema && strings.Contains(curval, "null") {
+		if m.cacheMode {
+			return ID, "", plugin.ErrNotExist
+		}
 		repval := strings.Replace(curval, "null", strconv.Itoa(int(seqNo)), 1)
 		m.Mem.Ory[ID] = repval
 	}
