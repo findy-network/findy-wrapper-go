@@ -29,6 +29,9 @@ testv:
 test:
 	go test -p 1 -failfast ./...
 
+ledger_test:
+	go test -v -p 1 -failfast ./anoncreds/... -args -logtostderr=true -v=10
+
 logged_test:
 	go test -v -p 1 -failfast ./... -args -logtostderr=true -v=10
 
