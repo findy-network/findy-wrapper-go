@@ -39,7 +39,7 @@ func (m *Mem) Open(name ...string) bool {
 	m.IncSeqNo()
 
 	if name[0] != "" {
-		glog.V(1).Infoln("-- setting Cache Mode for mem plugin --")
+		glog.V(3).Infoln("-- setting Cache Mode for mem plugin --")
 		m.cacheMode = true
 	}
 
@@ -98,7 +98,8 @@ func (m *Mem) resetMem() {
 	m.Mem.Lock()
 	defer m.Mem.Unlock()
 
-	memLedger.Mem.Ory = make(map[string]string)
+	glog.V(3).Infoln("memLedger reset mem")
+	m.Mem.Ory = make(map[string]string)
 }
 
 var memLedger = &Mem{
