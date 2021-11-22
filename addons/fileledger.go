@@ -33,7 +33,8 @@ func (m *file) Close() {
 func (m *file) Open(name ...string) bool {
 	if strings.Contains(name[0], "=") {
 		sub := strings.Split(name[0], "=")
-		m.Mem.Open(sub...)
+		m.Mem.Open(sub[1])
+		name[0] = sub[0]
 	} else {
 		m.Mem.Open("")
 	}
