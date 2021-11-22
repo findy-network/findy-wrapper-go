@@ -96,7 +96,12 @@ perform all of its functions.
 
    `findy-agent ledger pool ping --name <pool_name>`
 
-3. Set environment variable: `export FINDY_POOL=<pool_name>`
+3. Set environment variable: `export FINDY_POOL="FINDY_LEDGER,<pool_name>"`
+
+   This will tell `anoncreds` tests to use `FINDY_LEDGER` plugin that's the
+   add-on for real Indy ledger. You give the pool name for the ledger after
+   the comma.
+
 4. Run tests: `make test`.
 
    This will run all the pool tests towards the real ledger.
