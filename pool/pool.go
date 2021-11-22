@@ -223,7 +223,8 @@ loop:
 			exist := !err2.FilterTry(plugin.ErrNotExist, r1.err)
 
 			readCount++
-			glog.V(5).Infof("---- %d. winner -1 ----", readCount)
+			glog.V(5).Infof("---- %d. winner -1 (exist=%v) ----",
+				readCount, exist)
 			result = r1.result
 
 			// Currently first plugin is the Indy ledger, if we are
@@ -243,7 +244,8 @@ loop:
 			notExist := err2.FilterTry(plugin.ErrNotExist, r2.err)
 
 			readCount++
-			glog.V(5).Infof("---- %d. winner -2 ----", readCount)
+			glog.V(5).Infof("---- %d. winner -2 (notExist=%v, result=%s) ----",
+				readCount, notExist, r2.result)
 			result = r2.result
 
 			if notExist {
@@ -266,6 +268,7 @@ func asyncRead(i int, tx plugin.TxInfo, ID string) readChan {
 		ch <- readInfo{
 			id:     name,
 			result: value,
+			err:    err,
 		}
 	}()
 	return ch
