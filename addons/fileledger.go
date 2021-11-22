@@ -11,6 +11,7 @@ import (
 
 	"github.com/findy-network/findy-wrapper-go/plugin"
 	"github.com/findy-network/findy-wrapper-go/pool"
+	"github.com/golang/glog"
 	"github.com/lainio/err2"
 )
 
@@ -38,10 +39,10 @@ func (m *file) Open(name ...string) bool {
 	}
 
 	filename = fullFilename(name[0])
+	glog.V(3).Infoln("-- file ledger:", filename)
+
 	if fileExists() {
 		err2.Check(m.load(filename))
-	} else {
-		m.Mem.resetMem()
 	}
 	return true
 }
