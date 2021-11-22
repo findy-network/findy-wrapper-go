@@ -220,16 +220,15 @@ loop:
 	for {
 		select {
 		case r1 := <-ch1:
-			if r1.err != nil && r1.err != plugin.ErrNotExist {
-				err2.Check(r1.err)
-			}
+			exist := !err2.FilterTry(plugin.ErrNotExist, r1.err)
+
 			readCount++
 			glog.V(5).Infof("---- %d. winner -1 ----", readCount)
 			result = r1.result
 
 			// Currently first plugin is the Indy ledger, if we are
 			// here, we must write data to cache ledger
-			if readCount >= 2 && r1.result != "" {
+			if readCount >= 2 && exist {
 				glog.V(5).Infoln("--- update cache plugin:", r1.id, r1.result)
 				tmpTx := tx
 				tx.Update = true
@@ -241,13 +240,13 @@ loop:
 			break loop
 
 		case r2 := <-ch2:
-			if r2.err != nil && r2.err != plugin.ErrNotExist {
-				err2.Check(r2.err)
-			}
+			notExist := err2.FilterTry(plugin.ErrNotExist, r2.err)
+
 			readCount++
 			glog.V(5).Infof("---- %d. winner -2 ----", readCount)
 			result = r2.result
-			if r2.result == "" {
+
+			if notExist {
 				glog.V(5).Infoln("--- NO CACHE HIT:", ID, readCount)
 				continue loop
 			}
