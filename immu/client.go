@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/findy-network/findy-wrapper-go/plugin"
 	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
@@ -24,6 +25,7 @@ type getData struct {
 }
 
 type data struct {
+	plugin.TxInfo
 	key   string
 	value string
 }
@@ -55,14 +57,14 @@ func (m *myClient) Start() {
 		defer err2.CatchTrace(func(err error) {
 			glog.Errorln("fatal error in read", err)
 		})
-		key, value := err2.StrStr.Try(m.immu.Read(get.key))
-		get.reply <- data{key, value}
+		key, value := err2.StrStr.Try(m.immu.Read(get.TxInfo, get.key))
+		get.reply <- data{get.TxInfo, key, value}
 	}
 	write := func(set data) {
 		defer err2.CatchTrace(func(err error) {
 			glog.Errorln("fatal error in write", err)
 		})
-		err2.Check(m.immu.Write(set.key, set.value))
+		err2.Check(m.immu.Write(set.TxInfo, set.key, set.value))
 	}
 
 	go func() {
@@ -116,12 +118,13 @@ func (m *myClient) login() (err error) {
 	return nil
 }
 
-func (m *myClient) Read(key string) (_ string, _ string, err error) {
+func (m *myClient) Read(tx plugin.TxInfo, key string) (_ string, _ string, err error) {
 	glog.V(100).Infoln("(((( read")
 	reply := make(chan data)
 	query := getData{
 		data: data{
-			key: key,
+			TxInfo: tx,
+			key:    key,
 		},
 		reply: reply,
 	}
@@ -135,9 +138,9 @@ func (m *myClient) Read(key string) (_ string, _ string, err error) {
 	}
 }
 
-func (m *myClient) Write(key string, value string) (err error) {
+func (m *myClient) Write(tx plugin.TxInfo, key string, value string) (err error) {
 	glog.V(100).Infoln("(((( write")
-	setChannel <- data{key: key, value: value}
+	setChannel <- data{TxInfo: tx, key: key, value: value}
 	glog.V(100).Infoln(")))) write")
 	return nil
 }
@@ -147,10 +150,10 @@ func (m *myClient) Close() {
 	m.immu.Close()
 }
 
-func (m *myClient) Open(name string) bool {
+func (m *myClient) Open(name ...string) bool {
 	m.Start()
 	m.loginTS = time.Now() // set it here because Open does the 1st login
-	return m.immu.Open(name)
+	return m.immu.Open(name[0])
 }
 
 const immuLedgerName = "FINDY_IMMUDB_LEDGER"

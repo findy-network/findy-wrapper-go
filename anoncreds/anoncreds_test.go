@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/findy-network/findy-wrapper-go/dto"
+	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/findy-network/findy-wrapper-go"
@@ -26,10 +27,10 @@ func TestIssuerCreateSchema(t *testing.T) {
 	if nil != r.Err() {
 		t.Errorf("did.CreateAndStore: create steward() = %v", r.Error())
 	}
-	w1DID := r.Str1()
+	stewardDID := r.Str1()
 	w1Key := r.Str2()
 
-	err := ledger.WriteDID(pool, w1, w1DID, w1DID, w1Key, findy.NullString,
+	err := ledger.WriteDID(pool, w1, stewardDID, stewardDID, w1Key, findy.NullString,
 		findy.NullString)
 
 	w2, name2 := helpers.CreateAndOpenTestWallet(t)
@@ -42,7 +43,7 @@ func TestIssuerCreateSchema(t *testing.T) {
 
 	// try to write prover's DID to ledger even it's not need and that's why
 	// we don't care the error status
-	_ = ledger.WriteDID(pool, w2, w2DID, w2DID, w2Key, findy.NullString,
+	_ = ledger.WriteDID(pool, w1, stewardDID, w2DID, w2Key, findy.NullString,
 		findy.NullString)
 
 	type args struct {
@@ -56,7 +57,7 @@ func TestIssuerCreateSchema(t *testing.T) {
 		args args
 		want error
 	}{
-		{"1st", args{w1DID, schemaName, "1.0", "[\"email\"]"}, nil},
+		{"1st", args{stewardDID, schemaName, "1.0", "[\"email\"]"}, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -65,17 +66,19 @@ func TestIssuerCreateSchema(t *testing.T) {
 			r := <-IssuerCreateSchema(tt.args.did, tt.args.name, tt.args.version, tt.args.attrNames)
 			assert.NoError(t, r.Err())
 			sid := r.Str1()
-			//fmt.Println(sid)
 			scJSON := r.Str2()
-			//fmt.Println(scJSON)
-			err = ledger.WriteSchema(pool, w1, w1DID, scJSON)
+
+			err = ledger.WriteSchema(pool, w1, stewardDID, scJSON)
 			assert.NoError(t, err)
 
-			time.Sleep(1 * time.Second) // let ledger build everything ready
+			glog.V(2).Infoln("<<====IN SchemaID:", sid, "waiting before read schema")
+			time.Sleep(5 * time.Second) // let ledger build everything ready
 
 			// Read SCHEMA from Ledger
-			sid, scJSON, err = ledger.ReadSchema(pool, w1DID, sid)
+			sid, scJSON, err = ledger.ReadSchema(pool, stewardDID, sid)
 			assert.NoError(t, err)
+			glog.V(2).Infoln("=====================> OUT SchemaID:", sid)
+			glog.V(2).Infoln("==== getting from ledger for schema:", scJSON)
 
 			// ===========================================================
 			// === start from the issuer side of the table
@@ -84,7 +87,7 @@ func TestIssuerCreateSchema(t *testing.T) {
 			// -----------------------------------------------------
 			// Build CRED DEF from the schema: CredDef n : 1 Schema
 			// we can reuse schemas in cred defs, use tag for naming
-			r = <-IssuerCreateAndStoreCredentialDef(w1, w1DID, scJSON,
+			r = <-IssuerCreateAndStoreCredentialDef(w1, stewardDID, scJSON,
 				"MY_FIRMS_CRED_DEF", findy.NullString, findy.NullString)
 			assert.NoError(t, r.Err())
 			// note! that in normal PROTOCOL this should be read from ledger on
@@ -93,7 +96,6 @@ func TestIssuerCreateSchema(t *testing.T) {
 			cdid := r.Str1()
 
 			cd := r.Str2()
-			//fmt.Println(cd)
 			// BUILD CRED_DEF OFFER
 			r = <-IssuerCreateCredentialOffer(w1, cdid)
 			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
@@ -102,7 +104,8 @@ func TestIssuerCreateSchema(t *testing.T) {
 			credOffer := r.Str1()
 
 			// Write CRED DEF to ledger = todo should be after creation =====
-			err = ledger.WriteCredDef(pool, w1, w1DID, cd)
+			glog.V(2).Infoln("<<==================== IN CredDefID:", cdid)
+			err = ledger.WriteCredDef(pool, w1, stewardDID, cd)
 			assert.NoError(t, err)
 
 			// =================================================================
@@ -116,11 +119,13 @@ func TestIssuerCreateSchema(t *testing.T) {
 				t.Errorf("ProverCreateMasterSecret() = %v, want %v", got, tt.want)
 			}
 			msid = r.Str1()
-			//fmt.Println(msid)
+
+			time.Sleep(5 * time.Second) // let ledger build everything ready
 
 			// Get CRED DEF from the ledger
 			credDefID, credDef, err := ledger.ReadCredDef(pool, w2DID, cdid)
 			assert.NoError(t, err)
+			glog.V(2).Infoln("<<==================== OUT CredDef:", credDefID)
 
 			// build credential request to send to back to issuer
 			r = <-ProverCreateCredentialReq(w2, w2DID, credOffer, credDef, msid)
@@ -178,7 +183,6 @@ func TestIssuerCreateSchema(t *testing.T) {
 				RequestedPredicates: map[string]PredicateInfo{},
 			}
 			pReqStr := dto.ToJSON(pReq)
-			//fmt.Println(pReqStr)
 			r = <-ProverSearchCredentialsForProofReq(w2, pReqStr, findy.NullString)
 			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ProverSearchCredentialsForProofReq() = %v, want %v", got, tt.want)
@@ -190,8 +194,6 @@ func TestIssuerCreateSchema(t *testing.T) {
 				t.Errorf("ProverFetchCredentialsForProofReq() = %v, want %v", got, tt.want)
 			}
 			credentials := r.Str1()
-			//fmt.Println(credentials)
-			//fmt.Println("=====================")
 			// Needs to be slice, len() tells how much we did read
 			credInfo := make([]Credentials, fetchMax)
 			dto.FromJSONStr(credentials, &credInfo)
@@ -205,7 +207,6 @@ func TestIssuerCreateSchema(t *testing.T) {
 				sid: schemaObject,
 			}
 			schemasJSON := dto.ToJSON(schemas)
-			//fmt.Println(schemasJSON)
 
 			credDefObject := map[string]interface{}{}
 			dto.FromJSONStr(credDef, &credDefObject)
@@ -226,13 +227,11 @@ func TestIssuerCreateSchema(t *testing.T) {
 				RequestedPredicates: map[string]RequestedPredObject{},
 			}
 			reqCredJSON := dto.ToJSON(reqCred)
-			//fmt.Println(reqCredJSON)
 			r = <-ProverCreateProof(w2, pReqStr, reqCredJSON, msid, schemasJSON, credDefsJSON, "{}")
 			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ProverCreateProof() = %v, want %v", got, tt.want)
 			}
 			proofJS := r.Str1()
-			//fmt.Println(proofJS)
 
 			r = <-VerifierVerifyProof(pReqStr, proofJS, schemasJSON, credDefsJSON, "{}", "{}")
 			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
@@ -406,7 +405,6 @@ func TestProofReq(t *testing.T) {
 	dto.FromJSONStr(proofReqJSON, &proofReq)
 
 	if proofReq.Name != "Proof of Education" {
-		fmt.Print("proof req:", proofReqJSON)
 		t.Error("cannot read proof request")
 	}
 }

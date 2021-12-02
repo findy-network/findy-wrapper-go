@@ -21,10 +21,8 @@ func buildResult(cmdHandle uint32, err int32, setter func(r *dto.Result)) {
 	} else {
 		r.SetErrCode(int(err))
 		errorMsg := C.GoString(C.findy_get_current_error())
-		if glog.V(1) {
-			glog.Info(errorMsg)
-		}
 		r.SetErrorJSON(errorMsg)
+		glog.V(1).Info(r.Er.Error)
 	}
 	ch := ctx.CmdContext.Pop(cmdHandle, r)
 	ch <- r

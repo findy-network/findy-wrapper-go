@@ -1,13 +1,12 @@
 package immu
 
 import (
-	"flag"
 	"os"
 	"testing"
 	"time"
 
+	"github.com/findy-network/findy-wrapper-go/plugin"
 	"github.com/golang/glog"
-	"github.com/lainio/err2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,9 +44,6 @@ const immuTxnIDForNym = "2TEvwu4PeDbfzvAy6e3HgQ"
 const immuNymDataToWrite = "UFg64enRj3o3w8arQAJn9U"
 
 func TestMain(m *testing.M) {
-	err2.Check(flag.Set("logtostderr", "true"))
-	err2.Check(flag.Set("v", "3"))
-
 	setUp()
 	code := m.Run()
 	tearDown()
@@ -70,19 +66,19 @@ func TestImmuLedger_Open(t *testing.T) {
 func TestImmuLedger_CRedDef(t *testing.T) {
 	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
 	assert.True(t, ok)
-	err := immuLedger.Write(immuTxnIDForClaim, immuClaimDataToWrite)
+	err := immuLedger.Write(plugin.TxCredDef, immuTxnIDForClaim, immuClaimDataToWrite)
 	assert.NoError(t, err)
 
 	// clear MemCache to test reading from ImmuDB / mocked Immu
 	immuLedger.ResetMemCache()
-	name, _, err := immuLedger.Read(immuTxnIDForClaim)
+	name, _, err := immuLedger.Read(plugin.TxCredDef, immuTxnIDForClaim)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForClaim, name)
 	firstCount := getOkCount(immuLedger.client)
 
 	// Read from mem cache
 	for i := 0; i < 10; i++ {
-		name, _, err := immuLedger.Read(immuTxnIDForClaim)
+		name, _, err := immuLedger.Read(plugin.TxCredDef, immuTxnIDForClaim)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForClaim, name)
 		count := getOkCount(immuLedger.client)
@@ -95,18 +91,18 @@ func TestImmuLedger_CRedDef(t *testing.T) {
 func TestImmuLedger_Schema(t *testing.T) {
 	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
 	assert.True(t, ok)
-	err := immuLedger.Write(immuTxnIDForSchema, immuSchemaDataToWrite)
+	err := immuLedger.Write(plugin.TxSchema, immuTxnIDForSchema, immuSchemaDataToWrite)
 	assert.NoError(t, err)
 	// clear MemCache to test reading from ImmuDB / mocked Immu
 	immuLedger.ResetMemCache()
-	name, _, err := immuLedger.Read(immuTxnIDForSchema)
+	name, _, err := immuLedger.Read(plugin.TxSchema, immuTxnIDForSchema)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForSchema, name)
 	firstCount := getOkCount(immuLedger.client)
 
 	// Read from mem cache
 	for i := 0; i < 10; i++ {
-		name, _, err := immuLedger.Read(immuTxnIDForSchema)
+		name, _, err := immuLedger.Read(plugin.TxSchema, immuTxnIDForSchema)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForSchema, name)
 		count := getOkCount(immuLedger.client)
@@ -119,18 +115,18 @@ func TestImmuLedger_Schema(t *testing.T) {
 func TestImmuLedger_Nym(t *testing.T) {
 	ok := immuLedger.Open("FINDY_IMMUDB_LEDGER")
 	assert.True(t, ok)
-	err := immuLedger.Write(immuTxnIDForNym, immuNymDataToWrite)
+	err := immuLedger.Write(plugin.TxDID, immuTxnIDForNym, immuNymDataToWrite)
 	assert.NoError(t, err)
 	// clear MemCache to test reading from ImmuDB / mocked Immu
 	immuLedger.ResetMemCache()
-	name, _, err := immuLedger.Read(immuTxnIDForNym)
+	name, _, err := immuLedger.Read(plugin.TxDID, immuTxnIDForNym)
 	assert.NoError(t, err)
 	assert.Equal(t, immuTxnIDForNym, name)
 	firstCount := getOkCount(immuLedger.client)
 
 	// Read from mem cache
 	for i := 0; i < 10; i++ {
-		name, _, err := immuLedger.Read(immuTxnIDForNym)
+		name, _, err := immuLedger.Read(plugin.TxDID, immuTxnIDForNym)
 		assert.NoError(t, err)
 		assert.Equal(t, immuTxnIDForNym, name)
 		count := getOkCount(immuLedger.client)
@@ -148,19 +144,19 @@ func TestImmuLedger_ErrorMockFunction(t *testing.T) {
 		return
 	}
 
-	err := immuLedger.Write(immuTxnIDForNym, immuNymDataToWrite)
+	err := immuLedger.Write(plugin.TxDID, immuTxnIDForNym, immuNymDataToWrite)
 	assert.NoError(t, err)
 	// clear cache to achive real DB call (mock)
 	immuLedger.ResetMemCache()
 	setErrorCount(immuLedger.client, 3)
-	_, _, err = immuLedger.Read(immuTxnIDForNym)
+	_, _, err = immuLedger.Read(plugin.TxDID, immuTxnIDForNym)
 	assert.Error(t, err)
-	_, _, err = immuLedger.Read(immuTxnIDForNym)
+	_, _, err = immuLedger.Read(plugin.TxDID, immuTxnIDForNym)
 	assert.Error(t, err)
-	_, _, err = immuLedger.Read(immuTxnIDForNym)
+	_, _, err = immuLedger.Read(plugin.TxDID, immuTxnIDForNym)
 	assert.Error(t, err)
 
-	_, _, err = immuLedger.Read(immuTxnIDForNym)
+	_, _, err = immuLedger.Read(plugin.TxDID, immuTxnIDForNym)
 	assert.NoError(t, err)
 	immuLedger.Close()
 }
@@ -172,7 +168,7 @@ func TestImmuLedger_RetryOnError(t *testing.T) {
 		return
 	}
 	setErrorCount(immuLedger.client, 2)
-	err := immuLedger.Write(immuTxnIDForNym, immuNymDataToWrite)
+	err := immuLedger.Write(plugin.TxDID, immuTxnIDForNym, immuNymDataToWrite)
 	assert.NoError(t, err)
 	glog.Info("---------- time stamp to log")
 	time.Sleep(1300 * time.Millisecond)

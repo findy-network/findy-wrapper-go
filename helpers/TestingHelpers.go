@@ -20,14 +20,22 @@ func OpenTestPool(t *testing.T) int {
 		t.Fatal("Cannot set pool protocol version")
 	}
 
+	const memLedgerName = "FINDY_MEM_LEDGER"
 	const maxTimeout = 5 * time.Second
+	var poolNames []string
+
 	poolName := os.Getenv("FINDY_POOL")
 	if poolName == "" {
-		poolName = "FINDY_MEM_LEDGER"
+		poolName = memLedgerName
+		poolNames = make([]string, 2)
+		poolNames[0] = poolName
+		poolNames[1] = ""
+	} else {
+		poolNames = pool.ConvertPluginArgs(poolName)
 	}
 
 	select {
-	case r = <-pool.OpenLedger(poolName):
+	case r = <-pool.OpenLedger(poolNames...):
 		if r.Err() != nil {
 			t.Fatal("Cannot open pool")
 		}

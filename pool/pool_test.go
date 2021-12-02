@@ -32,7 +32,7 @@ func TestSetProtocolVersion(t *testing.T) {
 }
 
 func TestOpenLedger(t *testing.T) {
-	r := <-pool.OpenLedger("FINDY_MEM_LEDGER", "FINDY_ECHO_LEDGER")
+	r := <-pool.OpenLedger("FINDY_MEM_LEDGER", "", "FINDY_ECHO_LEDGER", "")
 	assert.NoError(t, r.Err())
 	h1 := r.Handle()
 	assert.Equal(t, h1, -2)
@@ -42,25 +42,71 @@ func TestOpenLedger(t *testing.T) {
 }
 
 func TestCloseLedger(t *testing.T) {
-	r := <-pool.OpenLedger("FINDY_MEM_LEDGER", "FINDY_ECHO_LEDGER")
+	r := <-pool.OpenLedger("FINDY_MEM_LEDGER", "", "FINDY_ECHO_LEDGER", "")
 	assert.NoError(t, r.Err())
 	h1 := r.Handle()
 	assert.Equal(t, h1, -2)
 	r = <-pool.CloseLedger(h1)
 	assert.NoError(t, r.Err())
 
-	r = <-pool.OpenLedger("FINDY_MEM_LEDGER")
+	r = <-pool.OpenLedger("FINDY_MEM_LEDGER", "")
 	assert.NoError(t, r.Err())
 	h2 := r.Handle()
 	assert.Equal(t, h2, -1)
 }
 
-func TestListPlugins(t *testing.T) {
-	names := pool.ListPlugins()
-	assert.Len(t, names, 4)
-}
-
 func TestList(t *testing.T) {
 	r := <-pool.List()
 	assert.NoError(t, r.Err())
+}
+
+func TestConverPluginArgs(t *testing.T) {
+	tests := []struct {
+		name   string
+		arg    string
+		result []string
+	}{
+		{"only real ledger name",
+			"von",
+			[]string{"von"}},
+		{"plugin and name",
+			"FINDY_LEDGER,von",
+			[]string{"FINDY_LEDGER", "von"}},
+		{"plugin and name",
+			"FINDY_LEDGER,von,FINDY_MEM_LEDGER,cache",
+			[]string{"FINDY_LEDGER", "von", "FINDY_MEM_LEDGER", "cache"},
+		},
+	}
+	for _, tt := range tests {
+		pools := pool.ConvertPluginArgs(tt.arg)
+		assert.Equal(t, tt.result, pools)
+	}
+}
+
+func TestBuildLegacyPluginArgs(t *testing.T) {
+	tests := []struct {
+		name   string
+		arg    []string
+		result []string
+	}{
+		{"only real ledger name",
+			[]string{"test"},
+			[]string{"FINDY_LEDGER", "test"},
+		},
+		{"only real ledger name",
+			[]string{"von"},
+			[]string{"FINDY_LEDGER", "von"},
+		},
+		{"plugin and name",
+			[]string{"FINDY_LEDGER", "von"},
+			[]string{"FINDY_LEDGER", "von"}},
+		{"plugin and name",
+			[]string{"FINDY_LEDGER", "von", "FINDY_MEM_LEDGER", "cache"},
+			[]string{"FINDY_LEDGER", "von", "FINDY_MEM_LEDGER", "cache"},
+		},
+	}
+	for _, tt := range tests {
+		pools := pool.BuildLegacyPluginArgs(tt.arg)
+		assert.Equal(t, tt.result, pools)
+	}
 }

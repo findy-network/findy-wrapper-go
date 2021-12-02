@@ -23,12 +23,25 @@ multiple ledger pool names at once.
 package pool
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/findy-network/findy-wrapper-go/dto"
 	"github.com/findy-network/findy-wrapper-go/internal/c2go"
 	"github.com/findy-network/findy-wrapper-go/internal/ctx"
 	"github.com/findy-network/findy-wrapper-go/plugin"
 	"github.com/golang/glog"
+	"github.com/lainio/err2"
+	"github.com/lainio/err2/assert"
 )
+
+type readChan chan readInfo
+
+type readInfo struct {
+	id     string
+	result string
+	err    error
+}
 
 var (
 	// Counter for plugin handles. It gives unique handles for plugins.
@@ -69,28 +82,82 @@ func ListPlugins() []string {
 
 // OpenLedger opens all ledger types given. The original indy SDK function takes
 // only one pool configuration name as an argument. This wrapper takes many pool
-// names where one can be an original indy pool and the rest can be any of the
-// plugins compiled into the binary running. ListPlugins() returns all of the
-// available ones.
+// plugin name-argument pairs. ListPlugins() returns all of the available ones.
 func OpenLedger(names ...string) ctx.Channel {
-	realName := ""
-	for _, name := range names {
-		if r, ok := registeredPlugins[name]; ok && r.Open(name) {
+	// first round of checks, if caller cannot yet use variadic function
+	if len(names) == 1 {
+		names = ConvertPluginArgs(names[0])
+	}
+
+	names = BuildLegacyPluginArgs(names)
+
+	for i := 0; i < len(names); i += 2 {
+		name := names[i]
+		extra := names[i+1]
+		lstr := fmt.Sprintf("open plugin:%s(%s)", name, extra)
+		if r, ok := registeredPlugins[name]; ok && r.Open(extra) {
 			openPlugins[pluginHandles] = r
 			pluginHandles--
+			lstr += " ==> OK"
 		} else {
-			if realName != "" {
-				glog.Warning(
-					"trying open multiple real ledgers",
-					realName, " and", name, "using", name)
-			}
-			realName = name
+			lstr += " ==> ERR"
 		}
-	}
-	if realName != "" {
-		return c2go.PoolOpenLedger(realName)
+		glog.V(1).Infoln(lstr)
 	}
 	return makeHandleResult(pluginHandles + 1)
+}
+
+func BuildLegacyPluginArgs(names []string) (ns []string) {
+	_, startsWithPluginName := registeredPlugins[names[0]]
+	legacy := len(names) == 1 && !startsWithPluginName
+
+	// only one argument is given, as legacy mode was
+	if !legacy {
+		glog.V(3).Infoln("pluginName is NOT legacy")
+		return names
+	}
+	glog.V(3).Infoln("pluginName is legacy")
+	// default is that incoming argument is Indy pool name only
+	pluginName := "FINDY_LEDGER"
+	pluginArg := names[0]
+
+	if startsWithPluginName {
+		pluginName = names[0]
+		pluginArg = ""
+	}
+	ns = make([]string, 2)
+	ns[0] = pluginName
+	ns[1] = pluginArg
+	return ns
+}
+
+// ConvertPluginArgs converts pool name to list of config pairs if it's possible
+func ConvertPluginArgs(poolName string) []string {
+	glog.V(3).Infoln("convert plugin args for:", poolName)
+
+	pools := strings.Split(poolName, ",")
+	pluginsLen := len(pools)
+	if pluginsLen == 1 {
+		_, startsWithPluginName := registeredPlugins[poolName]
+		if !startsWithPluginName {
+			return []string{poolName}
+		}
+
+		pluginsLen++
+		pools = append(pools, "")
+	}
+	glog.V(1).Infof("Using env var defined %d ledger plugin(s)", pluginsLen)
+
+	poolNames := make([]string, pluginsLen)
+	for i := 0; i < pluginsLen; i += 2 {
+		poolNames[i] = pools[i]
+		poolNames[i+1] = pools[i+1]
+	}
+	if pluginsLen >= 2 && glog.V(1) {
+		glog.Infoln("Using two ledger plugins")
+	}
+
+	return poolNames
 }
 
 // CloseLedger is exchanged indy SDK wrapper function. It closes all currently
@@ -121,12 +188,13 @@ func IsIndyLedgerOpen(handle int) bool {
 
 // Write writes data to all of the plugin ledgers. Note! The original indy
 // ledger is not one of the plugin ledgers, at least not yet.
-func Write(ID, data string) {
+func Write(tx plugin.TxInfo, ID, data string) {
 	for _, ledger := range openPlugins {
-		ledger := ledger
+		l := ledger
 		go func() {
-			if err := ledger.Write(ID, data); err != nil {
-				glog.Error("error in writing ledger:", err)
+			if err := l.Write(tx, ID, data); err != nil {
+				glog.Errorln("-- writing err ledger:", tx, ID, "data:\n", data)
+				glog.Errorln("-- error:", err)
 			}
 		}()
 	}
@@ -134,15 +202,91 @@ func Write(ID, data string) {
 
 // Read reads data from all of the plugin ledgers. Note! The original indy
 // ledger is not one of the plugin ledgers, at least not yet.
-func Read(ID string) (string, string, error) {
-	for _, ledger := range openPlugins {
-		if name, value, err := ledger.Read(ID); err != nil {
-			glog.Error("error in ledger read:", err)
-		} else {
-			return name, value, err
-		}
+func Read(tx plugin.TxInfo, ID string) (string, string, error) {
+	switch len(openPlugins) {
+	case 0:
+		assert.D.True(false, "no plugins open")
+	case 1:
+		return openPlugins[-1].Read(tx, ID)
+	case 2:
+		return readFrom2(tx, ID)
+	default:
+		assert.D.True(false, "amount of open plugins is not supported")
 	}
 	return "", "", nil
+}
+
+func readFrom2(tx plugin.TxInfo, ID string) (id string, val string, err error) {
+	defer err2.Annotate("reading cached ledger", &err)
+
+	const (
+		indyLedger  = -1
+		cacheLedger = -2
+	)
+	var (
+		result    string
+		readCount int
+	)
+
+	ch1 := asyncRead(indyLedger, tx, ID)
+	ch2 := asyncRead(cacheLedger, tx, ID)
+
+loop:
+	for {
+		select {
+		case r1 := <-ch1:
+			exist := !err2.FilterTry(plugin.ErrNotExist, r1.err)
+
+			readCount++
+			glog.V(5).Infof("---- %d. winner -1 (exist=%v) ----",
+				readCount, exist)
+			result = r1.result
+
+			// Currently first plugin is the Indy ledger, if we are
+			// here, we must write data to cache ledger
+			if readCount >= 2 && exist {
+				glog.V(5).Infoln("--- update cache plugin:", r1.id, r1.result)
+				tmpTx := tx
+				tx.Update = true
+				err := openPlugins[cacheLedger].Write(tmpTx, ID, r1.result)
+				if err != nil {
+					glog.Errorln("error cache update", err)
+				}
+			}
+			break loop
+
+		case r2 := <-ch2:
+			notExist := err2.FilterTry(plugin.ErrNotExist, r2.err)
+
+			readCount++
+			glog.V(5).Infof("---- %d. winner -2 (notExist=%v, result=%s) ----",
+				readCount, notExist, r2.result)
+			result = r2.result
+
+			if notExist {
+				glog.V(5).Infoln("--- NO CACHE HIT:", ID, readCount)
+				continue loop
+			}
+			break loop
+		}
+	}
+	return ID, result, nil
+}
+
+func asyncRead(i int, tx plugin.TxInfo, ID string) readChan {
+	ch := make(readChan)
+	go func() {
+		name, value, err := openPlugins[i].Read(tx, ID)
+		if err != nil {
+			glog.Errorf("error in value: %s, ledger reading: %s", name, err)
+		}
+		ch <- readInfo{
+			id:     name,
+			result: value,
+			err:    err,
+		}
+	}()
+	return ch
 }
 
 // registeredPlugins keeps track of the all of leger plugins installed in the

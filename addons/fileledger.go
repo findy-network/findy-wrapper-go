@@ -6,9 +6,12 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 	"sync"
 
+	"github.com/findy-network/findy-wrapper-go/plugin"
 	"github.com/findy-network/findy-wrapper-go/pool"
+	"github.com/golang/glog"
 	"github.com/lainio/err2"
 )
 
@@ -20,97 +23,96 @@ var filename = fullFilename(fileName)
 // ledger data to JSON file and reads it from there. It's convenient for unit
 // test and some development cases.
 type file struct {
-	mem struct {
-		sync.RWMutex
-		ory map[string]string
-	}
+	Mem
 }
 
 func (m *file) Close() {
-	//resetMemory()
+	// nothing to do in this version
 }
 
-func (m *file) Open(name string) bool {
-	filename = fullFilename(name)
+func (m *file) Open(name ...string) bool {
+	if strings.Contains(name[0], "=") {
+		sub := strings.Split(name[0], "=")
+		m.Mem.Open(sub[1])
+		name[0] = sub[0]
+	} else {
+		m.Mem.Open("")
+	}
+
+	filename = fullFilename(name[0])
+	glog.V(3).Infoln("-- file ledger:", filename)
+
 	if fileExists() {
 		err2.Check(m.load(filename))
-	} else {
-		resetMemory()
 	}
 	return true
 }
 
-func (m *file) Write(ID, data string) (err error) {
+func (m *file) Write(tx plugin.TxInfo, ID, data string) (err error) {
 	defer err2.Return(&err)
-	m.mem.Lock()
-	defer m.mem.Unlock()
-	m.mem.ory[ID] = data
+
+	err2.Check(m.Mem.Write(tx, ID, data))
 	err2.Check(m.save(filename))
+
 	return nil
 }
 
-func (m *file) Read(ID string) (name string, value string, err error) {
-	m.mem.RLock()
-	defer m.mem.RUnlock()
-	return ID, m.mem.ory[ID], nil
+func (m *file) Read(tx plugin.TxInfo, ID string) (name string, value string, err error) {
+	return m.Mem.Read(tx, ID)
 }
 
-func (m *file) load(filename string) error {
-	m.mem.Lock()
-	defer m.mem.Unlock()
+func (m *file) load(filename string) (err error) {
+	defer err2.Return(&err)
+
+	m.Mem.Mem.Lock()
+	defer m.Mem.Mem.Unlock()
+
 	if filename == "" {
-		m.mem.ory = make(map[string]string)
+		m.Mem.Mem.Ory = make(map[string]string)
 		return nil
 	}
-	data, err := readJSONFile(filename)
-	if err != nil {
-		return err
-	}
-	m.mem.ory = *newFromData(data)
+
+	data := err2.Bytes.Try(ioutil.ReadFile(filename))
+	m.Mem.Mem.Ory = *newFromData(data)
+
 	return nil
 }
 
 func (m *file) save(filename string) (err error) {
-	var data []byte
-	if data, err = json.MarshalIndent(m.mem.ory, "", "\t"); err != nil {
-		return err
-	}
+	defer err2.Return(&err)
+
+	data := err2.Bytes.Try(json.MarshalIndent(m.Mem.Mem.Ory, "", "\t"))
 	return writeJSONFile(filename, data)
 }
 
 func newFromData(data []byte) (r *map[string]string) {
 	r = new(map[string]string)
-	err := json.Unmarshal(data, r)
-	if err != nil {
-		panic(err)
-	}
-	return
+	err2.Check(json.Unmarshal(data, r))
+	return r
 }
 
-var fileLedger = &file{mem: struct {
-	sync.RWMutex
-	ory map[string]string
-}{}}
+var fileLedger = &file{
+	Mem: Mem{
+		Mem: struct {
+			sync.Mutex
+			Ory map[string]string
+		}{},
+		Seq: struct {
+			sync.Mutex
+			No uint
+		}{
+			No: 4, // Just installed empty Indy ledger starts about from here
+		},
+	},
+}
 
 func init() {
 	pool.RegisterPlugin(fileName, fileLedger)
 }
 
-func resetMemory() {
-	fileLedger.mem.ory = make(map[string]string)
-}
-
 func writeJSONFile(name string, json []byte) error {
 	err := ioutil.WriteFile(name, json, 0644)
 	return err
-}
-
-func readJSONFile(name string) ([]byte, error) {
-	result, err := ioutil.ReadFile(name)
-	if err != nil {
-		return nil, err
-	}
-	return result, err
 }
 
 func fileExists() bool {
