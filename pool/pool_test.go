@@ -59,3 +59,54 @@ func TestList(t *testing.T) {
 	r := <-pool.List()
 	assert.NoError(t, r.Err())
 }
+
+func TestConverPluginArgs(t *testing.T) {
+	tests := []struct {
+		name   string
+		arg    string
+		result []string
+	}{
+		{"only real ledger name",
+			"von",
+			[]string{"von"}},
+		{"plugin and name",
+			"FINDY_LEDGER,von",
+			[]string{"FINDY_LEDGER", "von"}},
+		{"plugin and name",
+			"FINDY_LEDGER,von,FINDY_MEM_LEDGER,cache",
+			[]string{"FINDY_LEDGER", "von", "FINDY_MEM_LEDGER", "cache"},
+		},
+	}
+	for _, tt := range tests {
+		pools := pool.ConvertPluginArgs(tt.arg)
+		assert.Equal(t, tt.result, pools)
+	}
+}
+
+func TestBuildLegacyPluginArgs(t *testing.T) {
+	tests := []struct {
+		name   string
+		arg    []string
+		result []string
+	}{
+		{"only real ledger name",
+			[]string{"test"},
+			[]string{"FINDY_LEDGER", "test"},
+		},
+		{"only real ledger name",
+			[]string{"von"},
+			[]string{"FINDY_LEDGER", "von"},
+		},
+		{"plugin and name",
+			[]string{"FINDY_LEDGER", "von"},
+			[]string{"FINDY_LEDGER", "von"}},
+		{"plugin and name",
+			[]string{"FINDY_LEDGER", "von", "FINDY_MEM_LEDGER", "cache"},
+			[]string{"FINDY_LEDGER", "von", "FINDY_MEM_LEDGER", "cache"},
+		},
+	}
+	for _, tt := range tests {
+		pools := pool.BuildLegacyPluginArgs(tt.arg)
+		assert.Equal(t, tt.result, pools)
+	}
+}

@@ -89,23 +89,7 @@ func OpenLedger(names ...string) ctx.Channel {
 		names = ConvertPluginArgs(names[0])
 	}
 
-	_, startsWithPluginName := registeredPlugins[names[0]]
-	legacy := len(names) == 1
-
-	// only one argument is given, as legacy mode was
-	if legacy {
-		// default is that incoming argument is Indy pool name only
-		pluginName := "FINDY_LEDGER"
-		pluginArg := names[0]
-
-		if startsWithPluginName {
-			pluginName = names[0]
-			pluginArg = ""
-		}
-		names = make([]string, 2)
-		names[0] = pluginName
-		names[1] = pluginArg
-	}
+	names = BuildLegacyPluginArgs(names)
 
 	for i := 0; i < len(names); i += 2 {
 		name := names[i]
@@ -123,11 +107,42 @@ func OpenLedger(names ...string) ctx.Channel {
 	return makeHandleResult(pluginHandles + 1)
 }
 
+func BuildLegacyPluginArgs(names []string) (ns []string) {
+	_, startsWithPluginName := registeredPlugins[names[0]]
+	legacy := len(names) == 1 && !startsWithPluginName
+
+	// only one argument is given, as legacy mode was
+	if !legacy {
+		glog.V(3).Infoln("pluginName is NOT legacy")
+		return names
+	}
+	glog.V(3).Infoln("pluginName is legacy")
+	// default is that incoming argument is Indy pool name only
+	pluginName := "FINDY_LEDGER"
+	pluginArg := names[0]
+
+	if startsWithPluginName {
+		pluginName = names[0]
+		pluginArg = ""
+	}
+	ns = make([]string, 2)
+	ns[0] = pluginName
+	ns[1] = pluginArg
+	return ns
+}
+
 // ConvertPluginArgs converts pool name to list of config pairs if it's possible
 func ConvertPluginArgs(poolName string) []string {
+	glog.V(3).Infoln("convert plugin args for:", poolName)
+
 	pools := strings.Split(poolName, ",")
 	pluginsLen := len(pools)
 	if pluginsLen == 1 {
+		_, startsWithPluginName := registeredPlugins[poolName]
+		if !startsWithPluginName {
+			return []string{poolName}
+		}
+
 		pluginsLen++
 		pools = append(pools, "")
 	}
