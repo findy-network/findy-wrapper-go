@@ -60,12 +60,25 @@ func (m *Mem) Write(tx plugin.TxInfo, ID, data string) error {
 	return nil
 }
 
-func (m *Mem) Read(tx plugin.TxInfo, ID string) (name string, value string, err error) {
+// Read reads ID specific data from memory ledger. If data doesn't exist
+// plugin.ErrNotExist error value is returned.
+func (m *Mem) Read(
+	tx plugin.TxInfo,
+	ID string,
+) (
+	name string,
+	value string,
+	err error,
+) {
 	m.Mem.Lock()
 	defer m.Mem.Unlock()
 
 	seqNo := m.SeqNo()
-	curval := m.Mem.Ory[ID]
+
+	curval, find := m.Mem.Ory[ID]
+	if !find {
+		return ID, "", plugin.ErrNotExist
+	}
 
 	// if reading first time ("null" exists in "seqNo:"), replace it with the
 	// current seqNo. This mimics indy ledger behaviour

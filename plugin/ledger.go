@@ -49,6 +49,8 @@ var (
 // implementations.
 type Mapper interface {
 	Write(tx TxInfo, ID, data string) error
+
+	// Read follows ErrNotExist semantics
 	Read(tx TxInfo, ID string) (string, string, error)
 }
 
