@@ -59,3 +59,15 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           files: ./coverage1.txt, ./coverage2.txt
+
+      - name: Collect docker logs
+        if: ${{ failure() }}
+        uses: jwalton/gh-docker-logs@v2.0.2
+        with:
+          dest: "./docker-logs"
+      - name: archive logs
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: docker-logs
+          path: docker-logs
