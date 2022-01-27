@@ -12,6 +12,8 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.42
+          args: --timeout=5m
+
   test:
     runs-on: ubuntu-latest
     steps:
@@ -21,6 +23,12 @@ jobs:
           repository: "bcgov/von-network"
       - name: start indy ledger
         run: ./manage build && ./manage start
+      - name: create pool handle
+        run: |
+          curl http://localhost:9000/genesis > genesis
+          sudo apt-get install -y indy-cli
+          printf "pool create test gen_txn_file=genesis" | indy-cli | tee /tmp/indy_cli_output.txt
+          echo
 
       - name: setup
         uses: actions/setup-go@v2
