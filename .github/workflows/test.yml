@@ -25,9 +25,9 @@ jobs:
         run: ./manage build && ./manage start
       - name: create pool handle
         run: |
-          curl http://localhost:9000/genesis > genesis
+          curl http://localhost:9000/genesis > gen_txn_file
           sudo apt-get install -y indy-cli
-          printf "pool create test gen_txn_file=genesis" | indy-cli | tee /tmp/indy_cli_output.txt
+          printf "pool create test gen_txn_file=gen_txn_file" | indy-cli | tee /tmp/indy_cli_output.txt
           echo
 
       - name: setup
@@ -48,6 +48,7 @@ jobs:
         run: make test_cov_out COV_FILE=coverage2.txt
         env:
           FINDY_POOL: "FINDY_LEDGER,test"
+
       - name: upload coverage
         uses: codecov/codecov-action@v2
         with:
