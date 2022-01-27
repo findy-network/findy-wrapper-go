@@ -41,11 +41,6 @@ test_cov_out:
 test_cov: test_cov_out
 	go tool cover -html=coverage.txt
 
-# note: do not expose any secret environment variables
-# to this 3rd party coverage uploader
-test_cov_upload: test_cov_out $(eval SHELL:=/bin/bash)
-	bash <(curl -s https://codecov.io/bash)
-
 check: check_fmt vet shadow
 
 lint: lint_ci
