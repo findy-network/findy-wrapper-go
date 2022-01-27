@@ -24,8 +24,6 @@ jobs:
           ref: "92e4960b7b36cf06381184f8df4ef59d137145eb"
       - name: start indy ledger
         run: ./manage build && ./manage start
-      - name: install indy-cli
-        run: sudo apt-get install -y indy-cli
 
       - name: setup
         uses: actions/setup-go@v2
@@ -34,7 +32,9 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: install indy
-        run: make indy_to_debian
+        run: |
+          make indy_to_debian
+          sudo apt-get install -y indy-cli
 
       # test with internal ledger
       - name: test and measure coverage
@@ -51,6 +51,7 @@ jobs:
         env:
           FINDY_POOL: "FINDY_LEDGER,test"
 
+      # upload code coverage results
       - name: upload coverage
         uses: codecov/codecov-action@v2
         with:
