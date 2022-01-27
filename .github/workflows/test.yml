@@ -23,7 +23,9 @@ jobs:
           repository: "bcgov/von-network"
           ref: "92e4960b7b36cf06381184f8df4ef59d137145eb"
       - name: start indy ledger
-        run: ./manage build && ./manage start
+        run: |
+          ./manage build
+          ./manage start
 
       - name: setup
         uses: actions/setup-go@v2
@@ -43,10 +45,11 @@ jobs:
       # test with indy ledger
       - name: create pool handle
         run: |
+          ./${GITHUB_WORKSPACE}/.github/workflows/wait-for-ledger.sh
           curl http://localhost:9000/genesis > gen_txn_file
           printf "pool create test gen_txn_file=gen_txn_file" | indy-cli | tee /tmp/indy_cli_output.txt
           echo
-      - name: test and measure coverage
+      - name: test and measure coverage with indy
         run: make test_cov_out COV_FILE=coverage2.txt
         env:
           FINDY_POOL: "FINDY_LEDGER,test"

@@ -38,7 +38,7 @@ logged_test:
 	go test -v -p 1 -failfast ./... -args -logtostderr=true -v=10
 
 test_cov_out:
-	go test -v -p 1 -failfast -coverprofile=$(COV_FILE) ./...
+	go test -v -coverprofile=$(COV_FILE) ./...
 
 test_cov: test_cov_out
 	go tool cover -html=$(COV_FILE)
