@@ -21,14 +21,11 @@ jobs:
       - uses: actions/checkout@v2
         with:
           repository: "bcgov/von-network"
+          ref: "92e4960b7b36cf06381184f8df4ef59d137145eb"
       - name: start indy ledger
         run: ./manage build && ./manage start
-      - name: create pool handle
-        run: |
-          curl http://localhost:9000/genesis > gen_txn_file
-          sudo apt-get install -y indy-cli
-          printf "pool create test gen_txn_file=gen_txn_file" | indy-cli | tee /tmp/indy_cli_output.txt
-          echo
+      - name: install indy-cli
+        run: sudo apt-get install -y indy-cli
 
       - name: setup
         uses: actions/setup-go@v2
@@ -44,6 +41,11 @@ jobs:
         run: make test_cov_out COV_FILE=coverage1.txt
 
       # test with indy ledger
+      - name: create pool handle
+        run: |
+          curl http://localhost:9000/genesis > gen_txn_file
+          printf "pool create test gen_txn_file=gen_txn_file" | indy-cli | tee /tmp/indy_cli_output.txt
+          echo
       - name: test and measure coverage
         run: make test_cov_out COV_FILE=coverage2.txt
         env:
