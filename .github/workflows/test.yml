@@ -15,6 +15,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      # setup indy ledger
+      - uses: actions/checkout@v2
+        with:
+          repository: "bcgov/von-network"
+      - name: start indy ledger
+        run: ./manage build && ./manage start
+
       - name: setup
         uses: actions/setup-go@v2
         with:
@@ -23,9 +30,17 @@ jobs:
         uses: actions/checkout@v2
       - name: install indy
         run: make indy_to_debian
+
+      # test with internal ledger
       - name: test and measure coverage
-        run: make test_cov_out
+        run: make test_cov_out COV_FILE=coverage1.txt
+
+      # test with indy ledger
+      - name: test and measure coverage
+        run: make test_cov_out COV_FILE=coverage2.txt
+        env:
+          FINDY_POOL: "FINDY_LEDGER,test"
       - name: upload coverage
         uses: codecov/codecov-action@v2
         with:
-          files: ./coverage.txt
+          files: ./coverage1.txt, ./coverage2.txt

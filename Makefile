@@ -1,3 +1,5 @@
+COV_FILE:=coverage.txt
+
 deps:
 	go get -t ./...
 
@@ -36,10 +38,10 @@ logged_test:
 	go test -v -p 1 -failfast ./... -args -logtostderr=true -v=10
 
 test_cov_out:
-	go test -v -p 1 -failfast -coverprofile=coverage.txt ./...
+	go test -v -p 1 -failfast -coverprofile=$(COV_FILE) ./...
 
 test_cov: test_cov_out
-	go tool cover -html=coverage.txt
+	go tool cover -html=$(COV_FILE)
 
 check: check_fmt vet shadow
 
