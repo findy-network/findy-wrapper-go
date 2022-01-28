@@ -50,7 +50,6 @@ jobs:
       # test with indy ledger
       - name: create pool handle
         run: |
-          ./.github/workflows/wait-for-ledger.sh
           curl http://localhost:9000/genesis > gen_txn_file
           printf "pool create test gen_txn_file=gen_txn_file" | indy-cli | tee /tmp/indy_cli_output.txt
           echo
