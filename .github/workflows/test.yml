@@ -64,7 +64,7 @@ jobs:
         with:
           files: ./coverage1.txt, ./coverage2.txt
 
-      - name: Collect docker logs
+      - name: collect docker logs
         if: ${{ failure() }}
         uses: jwalton/gh-docker-logs@v2.0.2
         with:
