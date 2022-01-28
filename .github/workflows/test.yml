@@ -22,6 +22,11 @@ jobs:
         with:
           repository: "bcgov/von-network"
           ref: "92e4960b7b36cf06381184f8df4ef59d137145eb"
+      - name: skip setting volumes for web server
+        run: |
+          sed '/      - .\/config:\/home\/indy\/config/d' docker-compose.yml > docker-compose.yml.tmp
+          sed '/      - .\/server:\/home\/indy\/server/d' docker-compose.yml.tmp > docker-compose.yml
+
       - name: start indy ledger
         run: |
           ./manage build
