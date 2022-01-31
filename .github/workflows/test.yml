@@ -12,9 +12,26 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.42
+          args: --timeout=5m
+
   test:
     runs-on: ubuntu-latest
     steps:
+      # setup indy ledger
+      - uses: actions/checkout@v2
+        with:
+          repository: "bcgov/von-network"
+          ref: "92e4960b7b36cf06381184f8df4ef59d137145eb"
+      - name: skip setting volumes for web server
+        run: |
+          sed '/      - .\/config:\/home\/indy\/config/d' docker-compose.yml > docker-compose.yml.tmp
+          sed '/      - .\/server:\/home\/indy\/server/d' docker-compose.yml.tmp > docker-compose.yml
+
+      - name: start indy ledger
+        run: |
+          ./manage build
+          ./manage start
+
       - name: setup
         uses: actions/setup-go@v2
         with:
@@ -22,10 +39,39 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: install indy
-        run: make indy_to_debian
+        run: |
+          make indy_to_debian
+          sudo apt-get install -y indy-cli
+
+      # test with internal ledger
       - name: test and measure coverage
-        run: make test_cov_out
+        run: make test_cov_out COV_FILE=coverage1.txt
+
+      # test with indy ledger
+      - name: create pool handle
+        run: |
+          curl http://localhost:9000/genesis > gen_txn_file
+          printf "pool create test gen_txn_file=gen_txn_file" | indy-cli | tee /tmp/indy_cli_output.txt
+          echo
+      - name: test and measure coverage with indy
+        run: make test_cov_out COV_FILE=coverage2.txt
+        env:
+          FINDY_POOL: "FINDY_LEDGER,test,FINDY_MEM_LEDGER,"
+
+      # upload code coverage results
       - name: upload coverage
         uses: codecov/codecov-action@v2
         with:
-          files: ./coverage.txt
+          files: ./coverage1.txt, ./coverage2.txt
+
+      - name: collect docker logs
+        if: ${{ failure() }}
+        uses: jwalton/gh-docker-logs@v2.0.2
+        with:
+          dest: "./docker-logs"
+      - name: archive logs
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: docker-logs
+          path: docker-logs
