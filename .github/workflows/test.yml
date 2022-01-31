@@ -56,7 +56,7 @@ jobs:
       - name: test and measure coverage with indy
         run: make test_cov_out COV_FILE=coverage2.txt
         env:
-          FINDY_POOL: "FINDY_LEDGER,test"
+          FINDY_POOL: "FINDY_LEDGER,test,FINDY_MEM_LEDGER,"
 
       # upload code coverage results
       - name: upload coverage
