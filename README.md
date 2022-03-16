@@ -1,7 +1,7 @@
 # findy-wrapper-go
 
 [![test](https://github.com/findy-network/findy-wrapper-go/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/findy-network/findy-wrapper-go/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/findy-network/findy-wrapper-go/branch/master/graph/badge.svg?token=2OPADTJQJ3)](https://codecov.io/gh/findy-network/findy-wrapper-go)
+[![codecov](https://codecov.io/gh/findy-network/findy-wrapper-go/branch/dev/graph/badge.svg?token=2OPADTJQJ3)](https://codecov.io/gh/findy-network/findy-wrapper-go)
 
 This is a Go wrapper for [indy-sdk](https://github.com/hyperledger/indy-sdk). It
 wraps most of the **libindy**'s functions and data types, but it doesn't try to be
