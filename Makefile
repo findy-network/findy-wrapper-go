@@ -38,10 +38,14 @@ logged_test:
 	go test -v -p 1 -failfast ./... -args -logtostderr=true -v=10
 
 test_cov_out:
-	go test -v -coverprofile=$(COV_FILE) ./...
+	go test \
+		-coverpkg=github.com/findy-network/findy-wrapper-go/... \
+		-coverprofile=coverage.txt  \
+		-covermode=atomic \
+		./...
 
 test_cov: test_cov_out
-	go tool cover -html=$(COV_FILE)
+	go tool cover -html=coverage.txt
 
 check: check_fmt vet shadow
 
