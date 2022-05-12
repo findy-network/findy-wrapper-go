@@ -3,7 +3,7 @@ module github.com/findy-network/findy-wrapper-go
 go 1.18
 
 require (
-	github.com/codenotary/immudb v1.0.5
+	github.com/codenotary/immudb v1.2.4
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529
 	github.com/lainio/err2 v0.8.5
 	github.com/stretchr/testify v1.7.1
@@ -20,7 +20,6 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
-	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
@@ -35,7 +34,6 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.29.0 // indirect
 	github.com/prometheus/procfs v0.7.1 // indirect
-	github.com/rakyll/statik v0.1.7 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/rs/xid v1.3.0 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
