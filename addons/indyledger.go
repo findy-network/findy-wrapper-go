@@ -11,6 +11,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
 	"github.com/lainio/err2/assert"
+	"github.com/lainio/err2/try"
 )
 
 const indyLedgerAddonName = "FINDY_LEDGER"
@@ -40,7 +41,7 @@ func (ao *Indy) Open(name ...string) (ok bool) {
 	})
 
 	r := <-c2go.PoolOpenLedger(poolName)
-	err2.Check(r.Err())
+	try.To(r.Err())
 	ao.handle = r.Handle()
 	return true
 }
@@ -90,16 +91,16 @@ func (ao *Indy) ReadCredDef(
 	glog.V(100).Infoln("submitter:", tx.SubmitterDID)
 
 	r := <-ledger.BuildGetCredDefRequest(tx.SubmitterDID, credDefID)
-	err2.Check(r.Err())
+	try.To(r.Err())
 
 	r = <-ledger.SubmitRequest(ao.handle, r.Str1())
-	err2.Check(r.Err())
+	try.To(r.Err())
 
 	lresp := r.Str1()
 
 	// parse ledger response to credDefID and credDef
 	r = <-ledger.ParseGetCredDefResponse(lresp)
-	err2.Check(r.Err())
+	try.To(r.Err())
 
 	name = r.Str1()
 	assert.P.True(name == credDefID)
@@ -117,15 +118,15 @@ func (ao *Indy) ReadSchema(
 	glog.V(100).Infoln("submitter:", tx.SubmitterDID)
 
 	r := <-ledger.BuildGetSchemaRequest(tx.SubmitterDID, ID)
-	err2.Check(r.Err())
+	try.To(r.Err())
 
 	gsr := r.Str1()
 	r = <-ledger.SubmitRequest(ao.handle, gsr)
-	err2.Check(r.Err())
+	try.To(r.Err())
 
 	gsr = r.Str1()
 	r = <-ledger.ParseGetSchemaResponse(gsr)
-	err2.Check(r.Err())
+	try.To(r.Err())
 
 	readSchemaID := r.Str1()
 	scJSON := r.Str2()
@@ -143,12 +144,12 @@ func (ao *Indy) WriteDID(
 	glog.V(1).Infoln("submitter:", tx.SubmitterDID)
 
 	r := <-ledger.BuildNymRequest(tx.SubmitterDID, data, tx.VerKey, tx.Alias, tx.Role)
-	err2.Check(r.Err())
+	try.To(r.Err())
 
 	req := r.Str1()
 	r = <-ledger.SignAndSubmitRequest(ao.handle, tx.Wallet, tx.SubmitterDID, req)
-	err2.Check(r.Err())
-	err2.Check(checkWriteResponse(r.Str1()))
+	try.To(r.Err())
+	try.To(checkWriteResponse(r.Str1()))
 
 	return nil
 }
@@ -163,13 +164,13 @@ func (ao *Indy) WriteSchema(
 	glog.V(1).Infoln("submitter:", tx.SubmitterDID)
 
 	r := <-ledger.BuildSchemaRequest(tx.SubmitterDID, data)
-	err2.Check(r.Err())
+	try.To(r.Err())
 
 	srq := r.Str1()
 	r = <-ledger.SignAndSubmitRequest(ao.handle, tx.Wallet, tx.SubmitterDID, srq)
-	err2.Check(r.Err())
+	try.To(r.Err())
 
-	err2.Check(checkWriteResponse(r.Str1()))
+	try.To(checkWriteResponse(r.Str1()))
 	return nil
 }
 
@@ -183,11 +184,11 @@ func (ao *Indy) WriteCredDef(
 	glog.V(1).Infoln("submitter:", tx.SubmitterDID)
 
 	r := <-ledger.BuildCredDefRequest(tx.SubmitterDID, data)
-	err2.Check(r.Err())
+	try.To(r.Err())
 
 	r = <-ledger.SignAndSubmitRequest(ao.handle, tx.Wallet, tx.SubmitterDID, r.Str1())
-	err2.Check(r.Err())
-	err2.Check(checkWriteResponse(r.Str1()))
+	try.To(r.Err())
+	try.To(checkWriteResponse(r.Str1()))
 	return nil
 }
 

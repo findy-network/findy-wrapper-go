@@ -11,6 +11,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
 	"github.com/lainio/err2/assert"
+	"github.com/lainio/err2/try"
 )
 
 const (
@@ -84,11 +85,9 @@ func envExists(name string) bool {
 func (cfg *Cfg) Connect() (c im.ImmuClient, token string, err error) {
 	defer err2.Return(&err)
 
-	client, err := cfg.newImmuClient()
-	err2.Check(err)
+	client := try.To1(cfg.newImmuClient())
 
-	token, err = cfg.login(client)
-	err2.Check(err)
+	token = try.To1(cfg.login(client))
 
 	createTokenDir() // for immuDB bug, to allow Logout()
 	return client, token, nil
@@ -99,8 +98,7 @@ func (cfg *Cfg) login(client im.ImmuClient) (token string, err error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	lr, err := client.Login(ctx, []byte(cfg.UserName), []byte(cfg.Password))
-	err2.Check(err)
+	lr := try.To1(client.Login(ctx, []byte(cfg.UserName), []byte(cfg.Password)))
 
 	return lr.Token, nil
 }
