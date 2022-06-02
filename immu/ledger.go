@@ -43,8 +43,7 @@ func (i *immu) Open(name ...string) bool {
 	i.ResetMemCache() // for tests at the moment
 
 	cfg := NewImmuCfg(name[0])
-	c, token, err := cfg.Connect()
-	try.To(err)
+	c, token := try.To2(cfg.Connect())
 
 	i.cfg = cfg
 	i.client = c
