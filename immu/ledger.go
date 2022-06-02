@@ -96,8 +96,7 @@ func (i *immu) oneWrite(ID, data string) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	ctx = i.buildCtx(ctx)
-	_, err = i.client.Set(ctx, []byte(ID), []byte(data))
-	try.To(err)
+	_ = try.To1(i.client.Set(ctx, []byte(ID), []byte(data)))
 	return nil
 }
 
@@ -115,8 +114,7 @@ func (i *immu) Read(tx plugin.TxInfo, ID string) (name string, value string, err
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	ctx = i.buildCtx(ctx)
-	dataFromImmu, err := i.client.Get(ctx, []byte(ID))
-	try.To(err)
+	dataFromImmu := try.To1(i.client.Get(ctx, []byte(ID)))
 
 	_ = i.cache.Write(tx, ID, string(dataFromImmu.Value))
 	return ID, string(dataFromImmu.Value), nil

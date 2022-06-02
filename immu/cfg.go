@@ -85,11 +85,9 @@ func envExists(name string) bool {
 func (cfg *Cfg) Connect() (c im.ImmuClient, token string, err error) {
 	defer err2.Return(&err)
 
-	client, err := cfg.newImmuClient()
-	try.To(err)
+	client := try.To1(cfg.newImmuClient())
 
-	token, err = cfg.login(client)
-	try.To(err)
+	token = try.To1(cfg.login(client))
 
 	createTokenDir() // for immuDB bug, to allow Logout()
 	return client, token, nil
@@ -100,8 +98,7 @@ func (cfg *Cfg) login(client im.ImmuClient) (token string, err error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	lr, err := client.Login(ctx, []byte(cfg.UserName), []byte(cfg.Password))
-	try.To(err)
+	lr := try.To1(client.Login(ctx, []byte(cfg.UserName), []byte(cfg.Password)))
 
 	return lr.Token, nil
 }
