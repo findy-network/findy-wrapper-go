@@ -10,6 +10,7 @@ import (
 	"github.com/findy-network/findy-wrapper-go/plugin"
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
+	"github.com/lainio/err2/try"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -30,7 +31,7 @@ func (i *immu) Close() {
 	defer cancel()
 
 	ctx = i.buildCtx(ctx)
-	err2.Check(i.client.Logout(ctx))
+	try.To(i.client.Logout(ctx))
 
 	i.client = nil
 }
@@ -43,7 +44,7 @@ func (i *immu) Open(name ...string) bool {
 
 	cfg := NewImmuCfg(name[0])
 	c, token, err := cfg.Connect()
-	err2.Check(err)
+	try.To(err)
 
 	i.cfg = cfg
 	i.client = c
@@ -67,7 +68,7 @@ func (i *immu) Write(tx plugin.TxInfo, ID, data string) (err error) {
 	})
 
 	_ = i.cache.Write(tx, ID, data)
-	err2.Check(i.oneWrite(ID, data))
+	try.To(i.oneWrite(ID, data))
 	return nil
 }
 
@@ -97,7 +98,7 @@ func (i *immu) oneWrite(ID, data string) (err error) {
 	defer cancel()
 	ctx = i.buildCtx(ctx)
 	_, err = i.client.Set(ctx, []byte(ID), []byte(data))
-	err2.Check(err)
+	try.To(err)
 	return nil
 }
 
@@ -116,7 +117,7 @@ func (i *immu) Read(tx plugin.TxInfo, ID string) (name string, value string, err
 	defer cancel()
 	ctx = i.buildCtx(ctx)
 	dataFromImmu, err := i.client.Get(ctx, []byte(ID))
-	err2.Check(err)
+	try.To(err)
 
 	_ = i.cache.Write(tx, ID, string(dataFromImmu.Value))
 	return ID, string(dataFromImmu.Value), nil

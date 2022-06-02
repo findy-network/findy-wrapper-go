@@ -8,6 +8,7 @@ import (
 	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
+	"github.com/lainio/err2/try"
 )
 
 const maxTimeout = 30 * time.Second
@@ -57,14 +58,14 @@ func (m *myClient) Start() {
 		defer err2.CatchTrace(func(err error) {
 			glog.Errorln("fatal error in read", err)
 		})
-		key, value := err2.StrStr.Try(m.immu.Read(get.TxInfo, get.key))
+		key, value := try.To2(m.immu.Read(get.TxInfo, get.key))
 		get.reply <- data{get.TxInfo, key, value}
 	}
 	write := func(set data) {
 		defer err2.CatchTrace(func(err error) {
 			glog.Errorln("fatal error in write", err)
 		})
-		err2.Check(m.immu.Write(set.TxInfo, set.key, set.value))
+		try.To(m.immu.Write(set.TxInfo, set.key, set.value))
 	}
 
 	go func() {
@@ -100,7 +101,7 @@ func (m *myClient) refreshToken() {
 
 	if m.needRefresh() {
 		glog.V(3).Infoln("refresh login")
-		err2.Check(m.login())
+		try.To(m.login())
 	}
 }
 
@@ -113,7 +114,7 @@ func (m *myClient) needRefresh() bool {
 func (m *myClient) login() (err error) {
 	defer err2.Return(&err)
 	glog.V(1).Infoln("++ login")
-	err2.Check(m.immu.login())
+	try.To(m.immu.login())
 	m.loginTS = time.Now()
 	return nil
 }

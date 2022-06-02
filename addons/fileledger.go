@@ -13,6 +13,7 @@ import (
 	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
+	"github.com/lainio/err2/try"
 )
 
 const fileName = "FINDY_FILE_LEDGER"
@@ -43,7 +44,7 @@ func (m *file) Open(name ...string) bool {
 	glog.V(3).Infoln("-- file ledger:", filename)
 
 	if fileExists() {
-		err2.Check(m.load(filename))
+		try.To(m.load(filename))
 	}
 	return true
 }
@@ -51,8 +52,8 @@ func (m *file) Open(name ...string) bool {
 func (m *file) Write(tx plugin.TxInfo, ID, data string) (err error) {
 	defer err2.Return(&err)
 
-	err2.Check(m.Mem.Write(tx, ID, data))
-	err2.Check(m.save(filename))
+	try.To(m.Mem.Write(tx, ID, data))
+	try.To(m.save(filename))
 
 	return nil
 }
@@ -87,7 +88,7 @@ func (m *file) save(filename string) (err error) {
 
 func newFromData(data []byte) (r *map[string]string) {
 	r = new(map[string]string)
-	err2.Check(json.Unmarshal(data, r))
+	try.To(json.Unmarshal(data, r))
 	return r
 }
 
@@ -130,7 +131,7 @@ func fullFilename(fn ...string) string {
 
 	// first make sure we have proper base folder for our file
 	pathBase := filepath.Join(args...)
-	err2.Check(os.MkdirAll(pathBase, os.ModePerm)) // this panics if err
+	try.To(os.MkdirAll(pathBase, os.ModePerm)) // this panics if err
 
 	// second build the whole file name by adding our filename args
 	args = append(args, fn...)
@@ -142,7 +143,7 @@ func fullFilename(fn ...string) string {
 func homeDir() string {
 	currentUser, err := user.Current()
 	if err != nil {
-		err2.Check(err)
+		try.To(err)
 	}
 	return currentUser.HomeDir
 }

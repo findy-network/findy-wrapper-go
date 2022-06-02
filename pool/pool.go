@@ -33,6 +33,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/lainio/err2"
 	"github.com/lainio/err2/assert"
+	"github.com/lainio/err2/try"
 )
 
 type readChan chan readInfo
@@ -235,7 +236,7 @@ loop:
 	for {
 		select {
 		case r1 := <-ch1:
-			exist := !err2.FilterTry(plugin.ErrNotExist, r1.err)
+			exist := !try.Is(r1.err, plugin.ErrNotExist)
 
 			readCount++
 			glog.V(5).Infof("---- %d. winner -1 (exist=%v) ----",
@@ -256,7 +257,7 @@ loop:
 			break loop
 
 		case r2 := <-ch2:
-			notExist := err2.FilterTry(plugin.ErrNotExist, r2.err)
+			notExist := try.Is(r2.err, plugin.ErrNotExist)
 
 			readCount++
 			glog.V(5).Infof("---- %d. winner -2 (notExist=%v, result=%s) ----",
