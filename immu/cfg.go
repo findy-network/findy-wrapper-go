@@ -64,7 +64,7 @@ func cfgFromEnv() (cfg *Cfg) {
 
 	tmpCfg := &Cfg{
 		URL:      os.Getenv(envImmuURL),
-		Port:     err2.Int.Try(strconv.Atoi(os.Getenv(envImmuPort))),
+		Port:     try.To1(strconv.Atoi(os.Getenv(envImmuPort))),
 		UserName: os.Getenv(envImmuUser),
 		Password: os.Getenv(envImmuPwd),
 	}

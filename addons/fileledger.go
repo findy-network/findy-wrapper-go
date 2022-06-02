@@ -73,7 +73,7 @@ func (m *file) load(filename string) (err error) {
 		return nil
 	}
 
-	data := err2.Bytes.Try(ioutil.ReadFile(filename))
+	data := try.To1(ioutil.ReadFile(filename))
 	m.Mem.Mem.Ory = *newFromData(data)
 
 	return nil
@@ -82,7 +82,7 @@ func (m *file) load(filename string) (err error) {
 func (m *file) save(filename string) (err error) {
 	defer err2.Return(&err)
 
-	data := err2.Bytes.Try(json.MarshalIndent(m.Mem.Mem.Ory, "", "\t"))
+	data := try.To1(json.MarshalIndent(m.Mem.Mem.Ory, "", "\t"))
 	return writeJSONFile(filename, data)
 }
 
