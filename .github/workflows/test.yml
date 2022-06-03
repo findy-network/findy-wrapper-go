@@ -62,7 +62,7 @@ jobs:
       - name: upload coverage
         uses: codecov/codecov-action@v2
         with:
-          files: ./coverage1.txt, ./coverage2.txt
+          files: ./coverage1.txt,./coverage2.txt
 
       - name: collect docker logs
         if: ${{ failure() }}
