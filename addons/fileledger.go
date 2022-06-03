@@ -124,7 +124,7 @@ func fileExists() bool {
 func fullFilename(fn ...string) string {
 	const workerSubPath = "/.indy_client/"
 
-	home := homeDir()
+	home := try.To1(user.Current()).HomeDir
 	args := make([]string, len(fn)+2)
 	args[0] = home
 	args[1] = workerSubPath
@@ -138,12 +138,4 @@ func fullFilename(fn ...string) string {
 	base := filepath.Join(args...)
 	base += ".json"
 	return base
-}
-
-func homeDir() string {
-	currentUser, err := user.Current()
-	if err != nil {
-		try.To(err)
-	}
-	return currentUser.HomeDir
 }
