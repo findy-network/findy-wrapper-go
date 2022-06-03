@@ -122,7 +122,7 @@ func (i *immu) Read(tx plugin.TxInfo, ID string) (name string, value string, err
 
 func (i *immu) login() (err error) {
 	defer err2.Return(&err)
-	i.token = err2.String.Try(i.cfg.login(i.client))
+	i.token = try.To1(i.cfg.login(i.client))
 	return nil
 }
 

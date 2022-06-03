@@ -73,7 +73,7 @@ func (m *file) load(filename string) (err error) {
 		return nil
 	}
 
-	data := err2.Bytes.Try(ioutil.ReadFile(filename))
+	data := try.To1(ioutil.ReadFile(filename))
 	m.Mem.Mem.Ory = *newFromData(data)
 
 	return nil
@@ -82,7 +82,7 @@ func (m *file) load(filename string) (err error) {
 func (m *file) save(filename string) (err error) {
 	defer err2.Return(&err)
 
-	data := err2.Bytes.Try(json.MarshalIndent(m.Mem.Mem.Ory, "", "\t"))
+	data := try.To1(json.MarshalIndent(m.Mem.Mem.Ory, "", "\t"))
 	return writeJSONFile(filename, data)
 }
 
@@ -124,7 +124,7 @@ func fileExists() bool {
 func fullFilename(fn ...string) string {
 	const workerSubPath = "/.indy_client/"
 
-	home := homeDir()
+	home := try.To1(user.Current()).HomeDir
 	args := make([]string, len(fn)+2)
 	args[0] = home
 	args[1] = workerSubPath
@@ -138,12 +138,4 @@ func fullFilename(fn ...string) string {
 	base := filepath.Join(args...)
 	base += ".json"
 	return base
-}
-
-func homeDir() string {
-	currentUser, err := user.Current()
-	if err != nil {
-		try.To(err)
-	}
-	return currentUser.HomeDir
 }
