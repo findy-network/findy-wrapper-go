@@ -40,12 +40,12 @@ logged_test:
 test_cov_out:
 	go test \
 		-coverpkg=github.com/findy-network/findy-wrapper-go/... \
-		-coverprofile=coverage.txt  \
+		-coverprofile=$(COV_FILE)  \
 		-covermode=atomic \
 		./...
 
 test_cov: test_cov_out
-	go tool cover -html=coverage.txt
+	go tool cover -html=$(COV_FILE)
 
 check: check_fmt vet shadow
 
