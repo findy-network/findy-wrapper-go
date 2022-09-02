@@ -201,7 +201,11 @@ type PredicateInfo struct {
 
 // AttrInfo is wrapper struct for libindy's corresponding JSON type.
 type AttrInfo struct {
+	// attribute names, (case insensitive and ignore spaces)
+	// indy-sdk NOTE: should either be "name" or "names", not both and not none of them.
+	// Use "names" to specify several attributes that have to match a single credential.
 	Name         string            `json:"name"`
+	Names        []string          `json:"names"`
 	Restrictions []Filter          `json:"restrictions,omitempty"`
 	NonRevoked   *NonRevocInterval `json:"non_revoked,omitempty"`
 }
@@ -395,9 +399,10 @@ func ProverSearchCredentialsForProofReq(wallet int, proofReqJSON, extraQueryJSON
 
 // ProverFetchCredentialsForProofReq fetches next credentials for the requested
 // item using proof request search handle
-//  searchHandle: Search handle created by ProverSearchCredentialsForProofReq
-//  itemRef: Referent of attribute/predicate in the proof request
-//  count: Count of credentials to fetch
+//
+//	searchHandle: Search handle created by ProverSearchCredentialsForProofReq
+//	itemRef: Referent of attribute/predicate in the proof request
+//	count: Count of credentials to fetch
 func ProverFetchCredentialsForProofReq(searchHandle int, itemRef string, count int) ctx.Channel {
 	return c2go.FindyProverFetchCredentialsForProofReq(searchHandle, itemRef, count)
 }
