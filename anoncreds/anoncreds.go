@@ -205,7 +205,7 @@ type AttrInfo struct {
 	// indy-sdk NOTE: should either be "name" or "names", not both and not none of them.
 	// Use "names" to specify several attributes that have to match a single credential.
 	Name         string            `json:"name"`
-	Names        []string          `json:"names"`
+	Names        []string          `json:"names,omitempty"`
 	Restrictions []Filter          `json:"restrictions,omitempty"`
 	NonRevoked   *NonRevocInterval `json:"non_revoked,omitempty"`
 }
