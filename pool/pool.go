@@ -217,7 +217,7 @@ func Read(tx plugin.TxInfo, ID string) (string, string, error) {
 }
 
 func readFrom2(tx plugin.TxInfo, ID string) (id string, val string, err error) {
-	defer err2.Annotate("reading cached ledger", &err)
+	defer err2.Returnf(&err, "reading cached ledger")
 
 	const (
 		indyLedger  = -1
