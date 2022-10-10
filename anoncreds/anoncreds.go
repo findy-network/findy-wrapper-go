@@ -100,7 +100,8 @@ import (
 ///             ...,
 ///         },
 ///         "requested_predicates": {
-///             "requested_predicates": [{ cred_info: <credential_info>, timestamp: Optional<integer> }, { cred_info: <credential_2_info>, timestamp: Optional<integer> }],
+///             "requested_predicates": [{ cred_info: <credential_info>, timestamp: Optional<integer> },
+///                 { cred_info: <credential_2_info>, timestamp: Optional<integer> }],
 ///             "requested_predicate_2_referent": [{ cred_info: <credential_2_info>, timestamp: Optional<integer> }]
 ///         }
 ///     }, where credential is
@@ -395,9 +396,10 @@ func ProverSearchCredentialsForProofReq(wallet int, proofReqJSON, extraQueryJSON
 
 // ProverFetchCredentialsForProofReq fetches next credentials for the requested
 // item using proof request search handle
-//  searchHandle: Search handle created by ProverSearchCredentialsForProofReq
-//  itemRef: Referent of attribute/predicate in the proof request
-//  count: Count of credentials to fetch
+//
+//	searchHandle: Search handle created by ProverSearchCredentialsForProofReq
+//	itemRef: Referent of attribute/predicate in the proof request
+//	count: Count of credentials to fetch
 func ProverFetchCredentialsForProofReq(searchHandle int, itemRef string, count int) ctx.Channel {
 	return c2go.FindyProverFetchCredentialsForProofReq(searchHandle, itemRef, count)
 }

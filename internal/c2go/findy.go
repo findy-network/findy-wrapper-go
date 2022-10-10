@@ -127,7 +127,9 @@ func FindySetRuntimeConfig(config string) int {
 }
 
 // todo: consider moving these helper functions to internal package there are no need that they are visible
-//		at least this moment. when we have rest api things might change.
+//
+//	at least this moment. when we have rest api things might change.
+//
 // MARK: pool helper functions
 func PoolCreateConfig(name, configJSON string) ctx.Channel {
 	nameInC := C.CString(name)
