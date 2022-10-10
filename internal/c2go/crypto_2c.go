@@ -31,7 +31,8 @@ func FindyCryptoVerify(signerVerKey string, rawMsg, rawSignature []byte) ctx.Cha
 	defer C.free(mBytes)
 	defer C.free(sBytes)
 	cmdHandle, ch := ctx.CmdContext.NamedPush("FindyCryptoVerify")
-	C.findy_crypto_verify(C.int(cmdHandle), signerVerKeyInC, (*C.uchar)(mBytes), C.uint(len(rawMsg)), (*C.uchar)(sBytes), C.uint(len(rawSignature)))
+	C.findy_crypto_verify(C.int(cmdHandle), signerVerKeyInC, (*C.uchar)(mBytes),
+		C.uint(len(rawMsg)), (*C.uchar)(sBytes), C.uint(len(rawSignature)))
 	return ch
 }
 
@@ -53,7 +54,8 @@ func CryptoAuthCrypt(wallet int, senderKey, recipientKey string, msgBytes []byte
 	defer C.free(unsafe.Pointer(senderKeyInC))
 	defer C.free(bytePtr)
 	cmdHandle, ch := ctx.CmdContext.NamedPush("AuthCrypt")
-	C.findy_crypto_auth_crypt(C.int(cmdHandle), C.int(wallet), senderKeyInC, recipientKeyInC, (*C.uchar)(bytePtr), C.uint(len(msgBytes)))
+	C.findy_crypto_auth_crypt(C.int(cmdHandle), C.int(wallet), senderKeyInC,
+		recipientKeyInC, (*C.uchar)(bytePtr), C.uint(len(msgBytes)))
 	return ch
 }
 

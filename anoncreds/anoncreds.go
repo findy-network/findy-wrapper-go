@@ -100,7 +100,8 @@ import (
 ///             ...,
 ///         },
 ///         "requested_predicates": {
-///             "requested_predicates": [{ cred_info: <credential_info>, timestamp: Optional<integer> }, { cred_info: <credential_2_info>, timestamp: Optional<integer> }],
+///             "requested_predicates": [{ cred_info: <credential_info>, timestamp: Optional<integer> },
+///                 { cred_info: <credential_2_info>, timestamp: Optional<integer> }],
 ///             "requested_predicate_2_referent": [{ cred_info: <credential_2_info>, timestamp: Optional<integer> }]
 ///         }
 ///     }, where credential is

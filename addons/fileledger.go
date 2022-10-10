@@ -2,7 +2,6 @@ package addons
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -73,7 +72,7 @@ func (m *file) load(filename string) (err error) {
 		return nil
 	}
 
-	data := try.To1(ioutil.ReadFile(filename))
+	data := try.To1(os.ReadFile(filename))
 	m.Mem.Mem.Ory = *newFromData(data)
 
 	return nil
@@ -112,8 +111,7 @@ func init() {
 }
 
 func writeJSONFile(name string, json []byte) error {
-	err := ioutil.WriteFile(name, json, 0644)
-	return err
+	return os.WriteFile(name, json, 0644)
 }
 
 func fileExists() bool {

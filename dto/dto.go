@@ -94,9 +94,10 @@ func ToGOB(dto interface{}) []byte {
 
 // FromGOB reads object from bytes. Remember pass a pointer to preallocated
 // object of the right type.
-//  p := &PSM{}
-//  dto.FromGOB(d, p)
-//  return p
+//
+//	p := &PSM{}
+//	dto.FromGOB(d, p)
+//	return p
 func FromGOB(data []byte, dto interface{}) {
 	network := bytes.NewReader(data)
 	dec := gob.NewDecoder(network)

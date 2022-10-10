@@ -6,14 +6,14 @@ of the wrapper functions follow the libindy as well. They use same JSON objects.
 However, you doesn't need to give JSON strings as an input arguments but similar
 Go structures.
 
-About The Documentation
+# About The Documentation
 
 The Go documentation is minimal. We considered to paste libindy's documentation
 from Rust source files but thought that was not necessary. We suggest you to
 read indy SKD's documentation in cases the documentation in this wrapper is not
 enough.
 
-Return Types
+# Return Types
 
 The return type is Channel, which transfers dto.Result Go structures. These
 structures work similarly to C unions, which means that we can use one type for
@@ -37,7 +37,6 @@ When a null string is needed for an argument, the predefined type must be used.
 
 	r = <-annoncreds.IssuerCreateAndStoreCredentialDef(w1, w1DID, scJSON,
 		"MY_FIRMS_CRED_DEF", findy.NullString, findy.NullString)
-
 */
 package findy
 

@@ -201,8 +201,7 @@ func Write(tx plugin.TxInfo, ID, data string) {
 	}
 }
 
-// Read reads data from all of the plugin ledgers. Note! The original indy
-// ledger is not one of the plugin ledgers, at least not yet.
+// Read reads data from all of the plugin ledgers.
 func Read(tx plugin.TxInfo, ID string) (string, string, error) {
 	switch len(openPlugins) {
 	case 0:
@@ -218,7 +217,7 @@ func Read(tx plugin.TxInfo, ID string) (string, string, error) {
 }
 
 func readFrom2(tx plugin.TxInfo, ID string) (id string, val string, err error) {
-	defer err2.Annotate("reading cached ledger", &err)
+	defer err2.Returnf(&err, "reading cached ledger")
 
 	const (
 		indyLedger  = -1
