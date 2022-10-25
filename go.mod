@@ -7,7 +7,7 @@ require (
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529
 	github.com/lainio/err2 v0.8.11
 	github.com/stretchr/testify v1.8.1
-	google.golang.org/grpc v1.49.0
+	google.golang.org/grpc v1.50.1
 )
 
 require (
