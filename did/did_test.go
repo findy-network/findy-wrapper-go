@@ -7,10 +7,12 @@ import (
 	"testing"
 
 	"github.com/findy-network/findy-wrapper-go/helpers"
-	"github.com/stretchr/testify/assert"
+	"github.com/lainio/err2/assert"
 )
 
 func TestCreateAndStore(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	//p := helpers.OpenTestPool(t)
 	w, wn := helpers.CreateAndOpenTestWallet(t)
 
@@ -29,6 +31,8 @@ func TestCreateAndStore(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			assert.PushTester(t)
+			defer assert.PopTester()
 			r := <-CreateAndStore(tt.args.wallet, tt.args.did)
 			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("CreateAndStore() = %v, want %v", got, tt.want)
@@ -51,16 +55,18 @@ func TestCreateAndStore(t *testing.T) {
 }
 
 func TestKey(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	w, wn := helpers.CreateAndOpenTestWallet(t)
 
 	r := <-CreateAndStore(w, Did{Seed: ""})
-	assert.NoError(t, r.Err())
+	assert.NoError(r.Err())
 	did := r.Str1()
 	vk := r.Str2()
 
 	r = <-Key(-1, w, did)
-	assert.NoError(t, r.Err())
-	assert.Equal(t, vk, r.Str1())
+	assert.NoError(r.Err())
+	assert.Equal(vk, r.Str1())
 
 	helpers.CloseAndDeleteTestWallet(w, wn, t)
 }

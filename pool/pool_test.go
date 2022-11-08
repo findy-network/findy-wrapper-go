@@ -6,10 +6,12 @@ import (
 
 	_ "github.com/findy-network/findy-wrapper-go/addons"
 	"github.com/findy-network/findy-wrapper-go/pool"
-	"github.com/stretchr/testify/assert"
+	"github.com/lainio/err2/assert"
 )
 
 func TestSetProtocolVersion(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	type args struct {
 		version uint64
 	}
@@ -24,6 +26,8 @@ func TestSetProtocolVersion(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			assert.PushTester(t)
+			defer assert.PopTester()
 			if got := (<-pool.SetProtocolVersion(tt.args.version)).ErrCode(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("SetProtocolVersion() = %v, want %v", got, tt.want)
 			}
@@ -32,35 +36,43 @@ func TestSetProtocolVersion(t *testing.T) {
 }
 
 func TestOpenLedger(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	r := <-pool.OpenLedger("FINDY_MEM_LEDGER", "", "FINDY_ECHO_LEDGER", "")
-	assert.NoError(t, r.Err())
+	assert.NoError(r.Err())
 	h1 := r.Handle()
-	assert.Equal(t, h1, -2)
+	assert.Equal(h1, -2)
 
 	r = <-pool.CloseLedger(h1)
-	assert.NoError(t, r.Err())
+	assert.NoError(r.Err())
 }
 
 func TestCloseLedger(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	r := <-pool.OpenLedger("FINDY_MEM_LEDGER", "", "FINDY_ECHO_LEDGER", "")
-	assert.NoError(t, r.Err())
+	assert.NoError(r.Err())
 	h1 := r.Handle()
-	assert.Equal(t, h1, -2)
+	assert.Equal(h1, -2)
 	r = <-pool.CloseLedger(h1)
-	assert.NoError(t, r.Err())
+	assert.NoError(r.Err())
 
 	r = <-pool.OpenLedger("FINDY_MEM_LEDGER", "")
-	assert.NoError(t, r.Err())
+	assert.NoError(r.Err())
 	h2 := r.Handle()
-	assert.Equal(t, h2, -1)
+	assert.Equal(h2, -1)
 }
 
 func TestList(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	r := <-pool.List()
-	assert.NoError(t, r.Err())
+	assert.NoError(r.Err())
 }
 
 func TestConverPluginArgs(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	tests := []struct {
 		name   string
 		arg    string
@@ -79,11 +91,13 @@ func TestConverPluginArgs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		pools := pool.ConvertPluginArgs(tt.arg)
-		assert.Equal(t, tt.result, pools)
+		assert.DeepEqual(tt.result, pools)
 	}
 }
 
 func TestBuildLegacyPluginArgs(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	tests := []struct {
 		name   string
 		arg    []string
@@ -107,6 +121,6 @@ func TestBuildLegacyPluginArgs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		pools := pool.BuildLegacyPluginArgs(tt.arg)
-		assert.Equal(t, tt.result, pools)
+		assert.DeepEqual(tt.result, pools)
 	}
 }
