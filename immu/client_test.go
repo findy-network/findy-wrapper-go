@@ -5,27 +5,29 @@ import (
 	"time"
 
 	"github.com/findy-network/findy-wrapper-go/plugin"
-	"github.com/stretchr/testify/assert"
+	"github.com/lainio/err2/assert"
 )
 
 func TestSetAndGet(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	ok := immuLedgerImpl.Open("FINDY_IMMUDB_LEDGER")
-	assert.True(t, ok)
+	assert.That(ok)
 	c := newClient(immuLedgerImpl)
 	c.Start()
 
 	err := c.Write(plugin.TxDID, "key1", "value1")
-	assert.NoError(t, err)
+	assert.NoError(err)
 
 	err = c.Write(plugin.TxDID, "key2", "value2")
-	assert.NoError(t, err)
+	assert.NoError(err)
 
 	c.ResetMemCache()
 
 	val := ""
 	_, val, err = c.Read(plugin.TxDID, "key1")
-	assert.NoError(t, err)
-	assert.Equal(t, "value1", val)
+	assert.NoError(err)
+	assert.Equal("value1", val)
 
 	mock, isMock := c.client.(*mockImmuClient)
 	loginCount := 0
@@ -36,11 +38,11 @@ func TestSetAndGet(t *testing.T) {
 	time.Sleep(5 * time.Millisecond)
 
 	_, val, err = c.Read(plugin.TxDID, "key2")
-	assert.NoError(t, err)
-	assert.Equal(t, "value2", val)
+	assert.NoError(err)
+	assert.Equal("value2", val)
 	if isMock {
 		loginCount2 := mock.loginOkCount
-		assert.Equal(t, loginCount+1, loginCount2)
+		assert.Equal(loginCount+1, loginCount2)
 	}
 	c.Stop()
 	time.Sleep(3 * time.Millisecond)
@@ -48,14 +50,16 @@ func TestSetAndGet(t *testing.T) {
 }
 
 func TestNeedRefresh(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	c := immuLedger
 	c.loginTS = time.Now()
 	delta = 4 * time.Millisecond
 	time.Sleep(1 * time.Millisecond)
-	assert.False(t, c.needRefresh())
+	assert.ThatNot(c.needRefresh())
 
 	c.loginTS = time.Now()
 	delta = 1 * time.Millisecond
 	time.Sleep(4 * time.Millisecond)
-	assert.True(t, c.needRefresh())
+	assert.That(c.needRefresh())
 }

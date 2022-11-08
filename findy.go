@@ -21,15 +21,15 @@ all of the wrapper functions. To access the actual data, you have to know the ac
 type. pool.OpenLedger() returns Handle type.
 
 	r = <-pool.OpenLedger("FINDY_MEM_LEDGER")
-	assert.NoError(t, r.Err())
+	assert.NoError(r.Err())
 	h2 := r.Handle()
-	assert.Equal(t, h2, -1)
+	assert.Equal(h2, -1)
 
 did.CreateAndStore() returns two strings: did and verkey. Please note the use of
 did.Did struct instead of the JSON string.
 
 	r := <-did.CreateAndStore(w, did.Did{Seed: ""})
-	assert.NoError(t, r.Err())
+	assert.NoError(r.Err())
 	did := r.Str1()
 	vk := r.Str2()
 

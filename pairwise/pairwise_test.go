@@ -9,10 +9,12 @@ import (
 	"github.com/findy-network/findy-wrapper-go/dto"
 	"github.com/findy-network/findy-wrapper-go/helpers"
 	"github.com/findy-network/findy-wrapper-go/ledger"
-	"github.com/stretchr/testify/assert"
+	"github.com/lainio/err2/assert"
 )
 
 func TestCreateAndExists(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	p := helpers.OpenTestPool(t)
 	w1, wn1 := helpers.CreateAndOpenTestWallet(t)
 	w2, wn2 := helpers.CreateAndOpenTestWallet(t)
@@ -29,6 +31,8 @@ func TestCreateAndExists(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			assert.PushTester(t)
+			defer assert.PopTester()
 			// Create DIDs
 			r := <-did.CreateAndStore(w1, did.Did{Seed: "000000000000000000000000Steward1"})
 			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
@@ -49,7 +53,7 @@ func TestCreateAndExists(t *testing.T) {
 			// commit 1st DID to ledger to publish it's data
 			err := ledger.WriteDID(p, w1, w1DID, w1DID, w1Key,
 				findy.NullString, findy.NullString)
-			assert.NoError(t, err)
+			assert.NoError(err)
 
 			// create 2nd DID to wallet 2
 			r = <-did.CreateAndStore(w2, did.Did{Seed: ""})

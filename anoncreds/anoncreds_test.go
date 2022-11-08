@@ -8,7 +8,7 @@ import (
 
 	"github.com/findy-network/findy-wrapper-go/dto"
 	"github.com/golang/glog"
-	"github.com/stretchr/testify/assert"
+	"github.com/lainio/err2/assert"
 
 	"github.com/findy-network/findy-wrapper-go"
 	"github.com/findy-network/findy-wrapper-go/did"
@@ -17,6 +17,8 @@ import (
 )
 
 func TestIssuerCreateSchema(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	ut := time.Now().Unix() - 1558884840
 	schemaName := fmt.Sprintf("NEW_SCHEMA_%v", ut)
 
@@ -61,22 +63,24 @@ func TestIssuerCreateSchema(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			assert.PushTester(t)
+			defer assert.PopTester()
 			// ==============================================================
 			// Build and publish CRED SCHEMA, could be issuer or who ever
 			r := <-IssuerCreateSchema(tt.args.did, tt.args.name, tt.args.version, tt.args.attrNames)
-			assert.NoError(t, r.Err())
+			assert.NoError(r.Err())
 			sid := r.Str1()
 			scJSON := r.Str2()
 
 			err = ledger.WriteSchema(pool, w1, stewardDID, scJSON)
-			assert.NoError(t, err)
+			assert.NoError(err)
 
 			glog.V(2).Infoln("<<====IN SchemaID:", sid, "waiting before read schema")
 			time.Sleep(5 * time.Second) // let ledger build everything ready
 
 			// Read SCHEMA from Ledger
 			sid, scJSON, err = ledger.ReadSchema(pool, stewardDID, sid)
-			assert.NoError(t, err)
+			assert.NoError(err)
 			glog.V(2).Infoln("=====================> OUT SchemaID:", sid)
 			glog.V(2).Infoln("==== getting from ledger for schema:", scJSON)
 
@@ -89,7 +93,7 @@ func TestIssuerCreateSchema(t *testing.T) {
 			// we can reuse schemas in cred defs, use tag for naming
 			r = <-IssuerCreateAndStoreCredentialDef(w1, stewardDID, scJSON,
 				"MY_FIRMS_CRED_DEF", findy.NullString, findy.NullString)
-			assert.NoError(t, r.Err())
+			assert.NoError(r.Err())
 			// note! that in normal PROTOCOL this should be read from ledger on
 			// the prover side, but now we just transfer it to there with this
 			// variable.
@@ -106,7 +110,7 @@ func TestIssuerCreateSchema(t *testing.T) {
 			// Write CRED DEF to ledger = todo should be after creation =====
 			glog.V(2).Infoln("<<==================== IN CredDefID:", cdid)
 			err = ledger.WriteCredDef(pool, w1, stewardDID, cd)
-			assert.NoError(t, err)
+			assert.NoError(err)
 
 			// =================================================================
 			// === switch to other side of the table, credential receiver ======
@@ -124,7 +128,7 @@ func TestIssuerCreateSchema(t *testing.T) {
 
 			// Get CRED DEF from the ledger
 			credDefID, credDef, err := ledger.ReadCredDef(pool, w2DID, cdid)
-			assert.NoError(t, err)
+			assert.NoError(err)
 			glog.V(2).Infoln("<<==================== OUT CredDef:", credDefID)
 
 			// build credential request to send to back to issuer
@@ -251,6 +255,8 @@ func TestIssuerCreateSchema(t *testing.T) {
 }
 
 func TestCredDefAttr_SetRawAries(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	type fields struct {
 		Raw     string
 		Encoded string
@@ -274,6 +280,8 @@ func TestCredDefAttr_SetRawAries(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			assert.PushTester(t)
+			defer assert.PopTester()
 			a := &CredDefAttr{
 				Raw:     tt.fields.Raw,
 				Encoded: tt.fields.Encoded,
@@ -286,6 +294,8 @@ func TestCredDefAttr_SetRawAries(t *testing.T) {
 }
 
 func TestCredDefAttr_SetRaw(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	type fields struct {
 		Raw     string
 		Encoded string
@@ -307,6 +317,8 @@ func TestCredDefAttr_SetRaw(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			assert.PushTester(t)
+			defer assert.PopTester()
 			a := &CredDefAttr{
 				Raw:     tt.fields.Raw,
 				Encoded: tt.fields.Encoded,
@@ -319,6 +331,8 @@ func TestCredDefAttr_SetRaw(t *testing.T) {
 }
 
 func TestCredDefAttr_SetEncoded(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	type fields struct {
 		Raw     string
 		Encoded string
@@ -340,6 +354,8 @@ func TestCredDefAttr_SetEncoded(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			assert.PushTester(t)
+			defer assert.PopTester()
 			a := &CredDefAttr{
 				Raw:     tt.fields.Raw,
 				Encoded: tt.fields.Encoded,
@@ -352,6 +368,8 @@ func TestCredDefAttr_SetEncoded(t *testing.T) {
 }
 
 func TestProofReq(t *testing.T) {
+	assert.PushTester(t)
+	defer assert.PopTester()
 	proofReqJSON := `
 {
   "name": "Proof of Education",
