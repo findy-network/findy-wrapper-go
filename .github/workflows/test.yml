@@ -41,7 +41,7 @@ jobs:
       - name: install indy
         run: |
           make indy_to_debian
-          sudo apt-get install -y indy-cli
+          sudo apt-get install -y indy-cli libtinfo5
 
       # test with internal ledger
       - name: test and measure coverage
