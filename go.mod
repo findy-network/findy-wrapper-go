@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/codenotary/immudb v1.0.5
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529
-	github.com/lainio/err2 v0.8.11
+	github.com/lainio/err2 v0.8.12
 	google.golang.org/grpc v1.50.1
 )
 
