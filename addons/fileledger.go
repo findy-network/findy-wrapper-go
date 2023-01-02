@@ -81,6 +81,9 @@ func (m *file) load(filename string) (err error) {
 func (m *file) save(filename string) (err error) {
 	defer err2.Return(&err)
 
+	m.Mem.Mem.Lock()
+	defer m.Mem.Mem.Unlock()
+
 	data := try.To1(json.MarshalIndent(m.Mem.Mem.Ory, "", "\t"))
 	return writeJSONFile(filename, data)
 }
