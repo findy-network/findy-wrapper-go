@@ -112,7 +112,7 @@ func (m *myClient) needRefresh() bool {
 }
 
 func (m *myClient) login() (err error) {
-	defer err2.Return(&err)
+	defer err2.Handle(&err)
 	glog.V(1).Infoln("++ login")
 	try.To(m.immu.login())
 	m.loginTS = time.Now()

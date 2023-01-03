@@ -101,7 +101,7 @@ func (i *immu) oneWrite(ID, data string) (err error) {
 }
 
 func (i *immu) Read(tx plugin.TxInfo, ID string) (name string, value string, err error) {
-	defer err2.Return(&err)
+	defer err2.Handle(&err)
 
 	if _, value, err = i.cache.Read(tx, ID); err == nil && value != "" {
 		glog.V(1).Info("----- cache hit")
@@ -121,7 +121,7 @@ func (i *immu) Read(tx plugin.TxInfo, ID string) (name string, value string, err
 }
 
 func (i *immu) login() (err error) {
-	defer err2.Return(&err)
+	defer err2.Handle(&err)
 	i.token = try.To1(i.cfg.login(i.client))
 	return nil
 }

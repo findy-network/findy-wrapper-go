@@ -86,7 +86,7 @@ func (ao *Indy) ReadCredDef(
 	tx plugin.TxInfo,
 	credDefID string,
 ) (name string, value string, err error) {
-	defer err2.Return(&err)
+	defer err2.Handle(&err)
 
 	glog.V(100).Infoln("submitter:", tx.SubmitterDID)
 
@@ -113,7 +113,7 @@ func (ao *Indy) ReadSchema(
 	tx plugin.TxInfo,
 	ID string,
 ) (name string, value string, err error) {
-	defer err2.Return(&err)
+	defer err2.Handle(&err)
 
 	glog.V(100).Infoln("submitter:", tx.SubmitterDID)
 
@@ -139,7 +139,7 @@ func (ao *Indy) WriteDID(
 	ID string,
 	data string,
 ) (err error) {
-	defer err2.Return(&err)
+	defer err2.Handle(&err)
 
 	glog.V(1).Infoln("submitter:", tx.SubmitterDID)
 
@@ -159,7 +159,7 @@ func (ao *Indy) WriteSchema(
 	ID string,
 	data string,
 ) (err error) {
-	defer err2.Return(&err)
+	defer err2.Handle(&err)
 
 	glog.V(1).Infoln("submitter:", tx.SubmitterDID)
 
@@ -179,7 +179,7 @@ func (ao *Indy) WriteCredDef(
 	ID string,
 	data string,
 ) (err error) {
-	defer err2.Return(&err)
+	defer err2.Handle(&err)
 
 	glog.V(1).Infoln("submitter:", tx.SubmitterDID)
 
