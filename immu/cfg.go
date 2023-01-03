@@ -83,7 +83,7 @@ func envExists(name string) bool {
 }
 
 func (cfg *Cfg) Connect() (c im.ImmuClient, token string, err error) {
-	defer err2.Return(&err)
+	defer err2.Handle(&err)
 
 	client := try.To1(cfg.newImmuClient())
 
@@ -94,7 +94,7 @@ func (cfg *Cfg) Connect() (c im.ImmuClient, token string, err error) {
 }
 
 func (cfg *Cfg) login(client im.ImmuClient) (token string, err error) {
-	defer err2.Return(&err)
+	defer err2.Handle(&err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
