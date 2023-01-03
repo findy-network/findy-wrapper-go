@@ -34,7 +34,7 @@ func WriteCredDef(
 	submitter,
 	credDef string,
 ) (err error) {
-	defer err2.Returnf(&err, "write cred def")
+	defer err2.Handle(&err, "write cred def")
 
 	writePluginLedgers(
 		plugin.TxInfo{
@@ -73,7 +73,7 @@ func WriteSchema(
 	submitter string,
 	scJSON string,
 ) (err error) {
-	defer err2.Returnf(&err, "write schema")
+	defer err2.Handle(&err, "write schema")
 
 	writePluginLedgers(
 		plugin.TxInfo{
@@ -98,7 +98,7 @@ func WriteDID(
 	alias,
 	role string,
 ) (err error) {
-	defer err2.Returnf(&err, "write DID")
+	defer err2.Handle(&err, "write DID")
 
 	pool.Write(
 		plugin.TxInfo{
