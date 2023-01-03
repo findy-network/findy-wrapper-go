@@ -49,7 +49,7 @@ func (m *file) Open(name ...string) bool {
 }
 
 func (m *file) Write(tx plugin.TxInfo, ID, data string) (err error) {
-	defer err2.Return(&err)
+	defer err2.Handle(&err)
 
 	try.To(m.Mem.Write(tx, ID, data))
 	try.To(m.save(filename))
@@ -62,7 +62,7 @@ func (m *file) Read(tx plugin.TxInfo, ID string) (name string, value string, err
 }
 
 func (m *file) load(filename string) (err error) {
-	defer err2.Return(&err)
+	defer err2.Handle(&err)
 
 	m.Mem.Mem.Lock()
 	defer m.Mem.Mem.Unlock()
@@ -79,7 +79,7 @@ func (m *file) load(filename string) (err error) {
 }
 
 func (m *file) save(filename string) (err error) {
-	defer err2.Return(&err)
+	defer err2.Handle(&err)
 
 	m.Mem.Mem.Lock()
 	defer m.Mem.Mem.Unlock()
