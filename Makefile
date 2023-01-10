@@ -56,3 +56,6 @@ lint_ci:
 
 indy_to_debian:
 	./scripts/debian-libindy/install-indy.sh
+release:
+	gh workflow run do-release.yml
+
