@@ -177,8 +177,8 @@ type CredentialInfo struct {
 	Attrs     map[string]string `json:"attrs"`
 	SchemaID  string            `json:"schema_id"`
 	CredDefID string            `json:"cred_def_id"`
-	RevRegID  int               `json:"rev_reg_id,omitempty"`
-	CredRevID int               `json:"cred_rev_id,omitempty"`
+	RevRegID  string            `json:"rev_reg_id,omitempty"`
+	CredRevID string            `json:"cred_rev_id,omitempty"`
 }
 
 // ProofRequest is wrapper struct for libindy's corresponding JSON type.
