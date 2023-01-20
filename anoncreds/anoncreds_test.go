@@ -2,7 +2,6 @@ package anoncreds
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
@@ -55,11 +54,11 @@ func TestIssuerCreateSchema(t *testing.T) {
 		attrNames string
 	}
 	tests := []struct {
-		name string
-		args args
-		want error
+		name  string
+		args  args
+		noErr bool
 	}{
-		{"1st", args{stewardDID, schemaName, "1.0", "[\"email\"]"}, nil},
+		{"1st", args{stewardDID, schemaName, "1.0", "[\"email\"]"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -102,8 +101,11 @@ func TestIssuerCreateSchema(t *testing.T) {
 			cd := r.Str2()
 			// BUILD CRED_DEF OFFER
 			r = <-IssuerCreateCredentialOffer(w1, cdid)
-			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("IssuerCreateCredentialOffer() = %v, want %v", got, tt.want)
+			err = r.Err()
+			if tt.noErr {
+				assert.NoError(err)
+			} else {
+				assert.Error(err)
 			}
 			credOffer := r.Str1()
 
@@ -119,8 +121,11 @@ func TestIssuerCreateSchema(t *testing.T) {
 			// Create master secret to wallet
 			msid := "findy_master_secret"
 			r = <-ProverCreateMasterSecret(w2, msid)
-			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ProverCreateMasterSecret() = %v, want %v", got, tt.want)
+			err = r.Err()
+			if tt.noErr {
+				assert.NoError(err)
+			} else {
+				assert.Error(err)
 			}
 			msid = r.Str1()
 
@@ -133,8 +138,11 @@ func TestIssuerCreateSchema(t *testing.T) {
 
 			// build credential request to send to back to issuer
 			r = <-ProverCreateCredentialReq(w2, w2DID, credOffer, credDef, msid)
-			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ProverCreateCredentialReq() = %v, want %v", got, tt.want)
+			err = r.Err()
+			if tt.noErr {
+				assert.NoError(err)
+			} else {
+				assert.Error(err)
 			}
 			crDefReq := r.Str1() // --> would send to to other side
 			crDefReqMeta := r.Str2()
@@ -153,8 +161,11 @@ func TestIssuerCreateSchema(t *testing.T) {
 			values := dto.ToJSON(emailCred)
 
 			r = <-IssuerCreateCredential(w1, credOffer, crDefReq, values, findy.NullString, findy.NullHandle)
-			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("IssuerCreateCredential() = %v, want %v", got, tt.want)
+			err = r.Err()
+			if tt.noErr {
+				assert.NoError(err)
+			} else {
+				assert.Error(err)
 			}
 			cred := r.Str1()
 
@@ -163,8 +174,11 @@ func TestIssuerCreateSchema(t *testing.T) {
 			// =================================================================
 
 			r = <-ProverStoreCredential(w2, findy.NullString, crDefReqMeta, cred, credDef, findy.NullString)
-			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ProverStoreCredential() = %v, want %v", got, tt.want)
+			err = r.Err()
+			if tt.noErr {
+				assert.NoError(err)
+			} else {
+				assert.Error(err)
 			}
 
 			// =================================================================
@@ -188,22 +202,31 @@ func TestIssuerCreateSchema(t *testing.T) {
 			}
 			pReqStr := dto.ToJSON(pReq)
 			r = <-ProverSearchCredentialsForProofReq(w2, pReqStr, findy.NullString)
-			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ProverSearchCredentialsForProofReq() = %v, want %v", got, tt.want)
+			err = r.Err()
+			if tt.noErr {
+				assert.NoError(err)
+			} else {
+				assert.Error(err)
 			}
 			searchHandle := r.Handle()
 			const fetchMax = 2
 			r = <-ProverFetchCredentialsForProofReq(searchHandle, "attr1_referent", fetchMax)
-			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ProverFetchCredentialsForProofReq() = %v, want %v", got, tt.want)
+			err = r.Err()
+			if tt.noErr {
+				assert.NoError(err)
+			} else {
+				assert.Error(err)
 			}
 			credentials := r.Str1()
 			// Needs to be slice, len() tells how much we did read
 			credInfo := make([]Credentials, fetchMax)
 			dto.FromJSONStr(credentials, &credInfo)
 			r = <-ProverCloseCredentialsSearchForProofReq(searchHandle)
-			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ProverCloseCredentialsSearchForProofReq() = %v, want %v", got, tt.want)
+			err = r.Err()
+			if tt.noErr {
+				assert.NoError(err)
+			} else {
+				assert.Error(err)
 			}
 			schemaObject := map[string]interface{}{}
 			dto.FromJSONStr(scJSON, &schemaObject)
@@ -232,14 +255,20 @@ func TestIssuerCreateSchema(t *testing.T) {
 			}
 			reqCredJSON := dto.ToJSON(reqCred)
 			r = <-ProverCreateProof(w2, pReqStr, reqCredJSON, msid, schemasJSON, credDefsJSON, "{}")
-			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ProverCreateProof() = %v, want %v", got, tt.want)
+			err = r.Err()
+			if tt.noErr {
+				assert.NoError(err)
+			} else {
+				assert.Error(err)
 			}
 			proofJS := r.Str1()
 
 			r = <-VerifierVerifyProof(pReqStr, proofJS, schemasJSON, credDefsJSON, "{}", "{}")
-			if got := r.Err(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("VerifierVerifyProof() = %v, want %v", got, tt.want)
+			err = r.Err()
+			if tt.noErr {
+				assert.NoError(err)
+			} else {
+				assert.Error(err)
 			}
 			var proof Proof
 			dto.FromJSONStr(proofJS, &proof)
