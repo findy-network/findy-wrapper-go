@@ -1,20 +1,27 @@
 name: test
 on: push
 jobs:
-  golangci:
-    name: lint
+  check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: install indy
-        run: make indy_to_debian
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+      - name: setup go and lint
+        uses: findy-network/setup-go-action@master
         with:
-          version: v1.45
-          args: --timeout=5m
+          linter-config-path: ".golangci.yml"
+          setup-script: "make indy_to_debian"
+          skip-scan: "true"
 
-  test:
+      # test with internal ledger
+      - name: test and measure coverage
+        run: make test_cov_out COV_FILE=coverage1.txt
+      - name: store coverage file
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.sha }}-coverage1.txt
+          path: ./coverage1.txt
+          retention-days: 1
+
+  test-with-indy-ledger:
     runs-on: ubuntu-latest
     steps:
       # setup indy ledger
@@ -32,20 +39,15 @@ jobs:
           ./manage build
           ./manage start
 
-      - name: setup
-        uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: 1.18.x
-      - name: checkout
-        uses: actions/checkout@v3
-      - name: install indy
+          go-version-file: './go.mod'
+
+      - name: install indy cli
         run: |
           make indy_to_debian
           sudo apt-get install -y indy-cli libtinfo5
-
-      # test with internal ledger
-      - name: test and measure coverage
-        run: make test_cov_out COV_FILE=coverage1.txt
 
       # test with indy ledger
       - name: create pool handle
@@ -57,21 +59,77 @@ jobs:
         run: make test_cov_out COV_FILE=coverage2.txt
         env:
           FINDY_POOL: "FINDY_LEDGER,test,FINDY_MEM_LEDGER,"
-
-      # upload code coverage results
-      - name: upload coverage
-        uses: codecov/codecov-action@v2
+      - name: store coverage file
+        uses: actions/upload-artifact@v3
         with:
-          files: ./coverage1.txt,./coverage2.txt
+          name: ${{ github.sha }}-coverage2.txt
+          path: ./coverage2.txt
+          retention-days: 1
 
       - name: collect docker logs
         if: ${{ failure() }}
-        uses: jwalton/gh-docker-logs@v2.0.2
+        uses: jwalton/gh-docker-logs@v2
         with:
           dest: "./docker-logs"
       - name: archive logs
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: docker-logs
           path: docker-logs
+
+  service-test:
+    runs-on: ubuntu-latest
+    steps:
+    # install indy
+    - uses: actions/checkout@v3
+    - name: install indy
+      run: make indy_to_debian
+    - uses: actions/checkout@v3
+      with:
+        repository: "findy-network/findy-agent"
+        ref: dev
+        path: './target'
+    - uses: actions/setup-go@v3
+      with:
+        go-version-file: './go.mod'
+    - name: test with core service
+      run: |
+        cd ./target
+        go mod edit -replace github.com/findy-network/findy-wrapper-go=../
+        go mod tidy -e
+        go test -p 1 -failfast -timeout=1200s \
+          -coverpkg=github.com/findy-network/findy-wrapper-go/... \
+          -coverprofile=coverage3.txt  \
+        	-covermode=atomic \
+          ./...
+    - name: store coverage file
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ github.sha }}-coverage3.txt
+        path: ./target/coverage3.txt
+        retention-days: 1
+
+  upload-coverage:
+    runs-on: ubuntu-latest
+    needs: [check, test-with-indy-ledger, service-test]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: download coverage file 1
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.sha }}-coverage1.txt
+      - name: download coverage file 2
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.sha }}-coverage2.txt
+      - name: download coverage file 3
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.sha }}-coverage3.txt
+      - name: upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage1.txt,./coverage2.txt,./coverage3.txt
+          fail_ci_if_error: true
