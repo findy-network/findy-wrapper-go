@@ -23,11 +23,9 @@ jobs:
         uses: findy-network/setup-go-action@master
         with:
           linter-config-path: ".golangci.yml"
-          skip-scan: "true"
           setup-script: "make indy_to_debian"
+          skip-scan: "true"
 
-      - name: checkout
-        uses: actions/checkout@v3
       - name: install indy cli
         run: |
           sudo apt-get install -y indy-cli libtinfo5
