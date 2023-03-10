@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/codenotary/immudb v1.0.5
 	github.com/golang/glog v1.0.0
-	github.com/lainio/err2 v0.8.13
+	github.com/lainio/err2 v0.8.14
 	google.golang.org/grpc v1.53.0
 )
 
@@ -44,6 +44,7 @@ require (
 	github.com/stretchr/testify v1.8.1 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
+	golang.org/x/exp v0.0.0-20230105202349-8879d0199aa3 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/term v0.5.0 // indirect

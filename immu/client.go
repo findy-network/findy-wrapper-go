@@ -55,14 +55,14 @@ func (m *myClient) Start() {
 	//	}()
 
 	read := func(get getData) {
-		defer err2.CatchTrace(func(err error) {
+		defer err2.Catch(func(err error) {
 			glog.Errorln("fatal error in read", err)
 		})
 		key, value := try.To2(m.immu.Read(get.TxInfo, get.key))
 		get.reply <- data{get.TxInfo, key, value}
 	}
 	write := func(set data) {
-		defer err2.CatchTrace(func(err error) {
+		defer err2.Catch(func(err error) {
 			glog.Errorln("fatal error in write", err)
 		})
 		try.To(m.immu.Write(set.TxInfo, set.key, set.value))
@@ -95,7 +95,7 @@ func (m *myClient) Stop() {
 }
 
 func (m *myClient) refreshToken() {
-	defer err2.CatchTrace(func(err error) {
+	defer err2.Catch(func(err error) {
 		glog.Errorln("fatal error in refresh token", err)
 	})
 
