@@ -25,6 +25,7 @@ package pool
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/findy-network/findy-wrapper-go/dto"
 	"github.com/findy-network/findy-wrapper-go/internal/c2go"
@@ -187,18 +188,30 @@ func IsIndyLedgerOpen(handle int) bool {
 	return handle > 0
 }
 
-// Write writes data to all of the plugin ledgers. Note! The original indy
-// ledger is not one of the plugin ledgers, at least not yet.
-func Write(tx plugin.TxInfo, ID, data string) {
+// Write writes data to all of the plugin ledgers, and waits their results.
+func Write(tx plugin.TxInfo, ID, data string) (err error) {
+	var wg sync.WaitGroup
 	for _, ledger := range openPlugins {
 		l := ledger
+		wg.Add(1)
 		go func() {
-			if err := l.Write(tx, ID, data); err != nil {
+			defer wg.Done()
+			defer err2.Catch(func(er error) {
 				glog.Errorln("-- writing err ledger:", tx, ID, "data:\n", data)
-				glog.Errorln("-- error:", err)
-			}
+				glog.Errorln("-- error:", er)
+				if err != nil {
+					// if there was previous error, get them both
+					err = fmt.Errorf("plugin write error: %w: %w", err, er)
+				} else {
+					// other report just current error (er)
+					err = fmt.Errorf("plugin write error: %w", er)
+				}
+			})
+			try.To(l.Write(tx, ID, data))
 		}()
 	}
+	wg.Wait()
+	return err
 }
 
 // Read reads data from all of the plugin ledgers.
