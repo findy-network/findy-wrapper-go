@@ -33,6 +33,12 @@ func TestIssuerCreateSchema(t *testing.T) {
 
 	err := ledger.WriteDID(pool, w1, stewardDID, stewardDID, w1Key, findy.NullString,
 		findy.NullString)
+	assert.NoError(err)
+
+	// second write should fail!
+	err = ledger.WriteDID(pool, w1, stewardDID, stewardDID, w1Key, findy.NullString,
+		findy.NullString)
+	assert.Error(err)
 
 	w2, name2 := helpers.CreateAndOpenTestWallet(t)
 	r = <-did.Create(w2)
@@ -42,10 +48,11 @@ func TestIssuerCreateSchema(t *testing.T) {
 	w2DID := r.Str1()
 	w2Key := r.Str2()
 
-	// try to write prover's DID to ledger even it's not need and that's why
-	// we don't care the error status
-	_ = ledger.WriteDID(pool, w1, stewardDID, w2DID, w2Key, findy.NullString,
+	err = ledger.WriteDID(pool, w1, stewardDID, w2DID, w2Key, findy.NullString,
 		findy.NullString)
+	// try to write prover's DID to ledger even it's not need and that's why
+	// we KNOW that there should be error. Ledger writes aren't updates!
+	assert.Error(err)
 
 	type args struct {
 		did       string
