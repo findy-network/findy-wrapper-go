@@ -43,7 +43,7 @@ func getOkCount(c im.ImmuClient) int {
 }
 
 // setOkCount sets the mock's setOkCount, if mock exists.
-func _(c im.ImmuClient) int {
+func _(_ im.ImmuClient) int {
 	mock, ok := immuLedger.client.(*mockImmuClient)
 	if ok {
 		return mock.setOkCount
@@ -69,7 +69,7 @@ func setErrorCount(c im.ImmuClient, count int) {
 }
 
 // Override the real immuclient.Set() function. Can be used to return also errors if needed
-func (m *mockImmuClient) Set(ctx context.Context, key []byte, value []byte) (*schema.TxMetadata, error) {
+func (m *mockImmuClient) Set(_ context.Context, key []byte, value []byte) (*schema.TxMetadata, error) {
 	if m.errorCount > 0 {
 		m.errorCount--
 		return nil, errors.New("mock error")
@@ -90,7 +90,7 @@ func (m *mockImmuClient) Set(ctx context.Context, key []byte, value []byte) (*sc
 }
 
 // Override the real immuclient.Get() function. Can be used to return also errors if needed
-func (m *mockImmuClient) Get(ctx context.Context, key []byte) (*schema.Entry, error) {
+func (m *mockImmuClient) Get(_ context.Context, key []byte) (*schema.Entry, error) {
 	if m.errorCount > 0 {
 		m.errorCount--
 		return nil, errors.New("mock error")
@@ -106,7 +106,7 @@ func (m *mockImmuClient) Get(ctx context.Context, key []byte) (*schema.Entry, er
 }
 
 func (m *mockImmuClient) Login(
-	ctx context.Context,
+	_ context.Context,
 	user []byte,
 	pass []byte,
 ) (*schema.LoginResponse, error) {
@@ -121,7 +121,7 @@ func (m *mockImmuClient) Login(
 	return lr, nil
 }
 
-func (m *mockImmuClient) Logout(ctx context.Context) error {
+func (m *mockImmuClient) Logout(_ context.Context) error {
 	if m.errorCount > 0 {
 		m.errorCount--
 		return errors.New("mock error")
