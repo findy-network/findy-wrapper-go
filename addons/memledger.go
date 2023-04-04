@@ -57,7 +57,7 @@ func (m *Mem) Write(_ plugin.TxInfo, ID, data string) error {
 	defer m.Mem.Unlock()
 	_, ok := m.Mem.Ory[ID]
 	if ok {
-		return err2.Exist
+		return err2.ErrAlreadyExist
 	}
 
 	m.IncSeqNo()
