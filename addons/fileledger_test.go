@@ -1,9 +1,11 @@
 package addons
 
 import (
+	"os"
 	"testing"
 
 	"github.com/findy-network/findy-wrapper-go/plugin"
+	"github.com/golang/glog"
 	"github.com/lainio/err2/assert"
 )
 
@@ -38,7 +40,7 @@ func TestFileLedger_Read(t *testing.T) {
 	defer assert.PopTester()
 	ok := fileLedger.Open("FINDY_FILE_LEDGER_TEST")
 	assert.That(ok)
-	err := fileLedger.Write(plugin.TxDID, "testID", "testData")
+	err := fileLedger.Write(plugin.TxDID, "testID3", "testData3")
 	assert.NoError(err)
 
 	for i := 0; i < 100; i++ {
@@ -47,4 +49,23 @@ func TestFileLedger_Read(t *testing.T) {
 		assert.Equal("testID", name)
 		assert.Equal("testData", value)
 	}
+}
+
+func TestMain(m *testing.M) {
+	setUp()
+	code := m.Run()
+	tearDown()
+	os.Exit(code)
+}
+
+func setUp() {
+	filename = fullFilename("FINDY_FILE_LEDGER_TEST")
+	os.Remove(filename)
+	glog.V(1).Infoln("cleanup", filename)
+}
+
+func tearDown() {
+	filename = fullFilename("FINDY_FILE_LEDGER_TEST")
+	os.Remove(filename)
+	glog.V(1).Infoln("cleanup", filename)
 }

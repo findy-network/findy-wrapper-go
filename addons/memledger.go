@@ -8,6 +8,7 @@ import (
 	"github.com/findy-network/findy-wrapper-go/plugin"
 	"github.com/findy-network/findy-wrapper-go/pool"
 	"github.com/golang/glog"
+	"github.com/lainio/err2"
 )
 
 const memName = "FINDY_MEM_LEDGER"
@@ -46,7 +47,7 @@ func (m *Mem) Open(name ...string) bool {
 	return true
 }
 
-func (m *Mem) Write(tx plugin.TxInfo, ID, data string) error {
+func (m *Mem) Write(_ plugin.TxInfo, ID, data string) error {
 	//	if !tx.Update && tx.TxType == plugin.TxTypeSchema {
 	//		glog.V(1).Infoln("----------- debugging -------")
 	//		return nil
@@ -54,6 +55,10 @@ func (m *Mem) Write(tx plugin.TxInfo, ID, data string) error {
 
 	m.Mem.Lock()
 	defer m.Mem.Unlock()
+	_, ok := m.Mem.Ory[ID]
+	if ok {
+		return err2.Exist
+	}
 
 	m.IncSeqNo()
 	m.Mem.Ory[ID] = data
@@ -111,7 +116,7 @@ func (m *Mem) resetMem() {
 	m.Mem.Lock()
 	defer m.Mem.Unlock()
 
-	glog.V(3).Infoln("memLedger reset mem")
+	glog.V(3).Infoln("-- memLedger reset mem")
 	m.Mem.Ory = make(map[string]string)
 }
 
