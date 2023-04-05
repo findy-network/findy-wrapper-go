@@ -26,7 +26,7 @@ lint_e:
 	@$(GOPATH)/bin/golint ./... | grep -v export | cat
 
 testv:
-	go test -v -p 1 -failfast ./...
+	go test -v -p 1 -failfast ./... -args -logtostderr=true -v=3
 
 test:
 	go test -p 1 -failfast ./...

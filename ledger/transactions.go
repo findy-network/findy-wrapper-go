@@ -10,7 +10,7 @@ import (
 // ReadCredDef reads cred def from ledgers by cred def ID. If multiple ledger
 // plugins is used, it returns where it can find data first.
 func ReadCredDef(
-	handle int,
+	_ int,
 	submitter,
 	credDefID string,
 ) (
@@ -29,33 +29,32 @@ func ReadCredDef(
 // WriteCredDef writes cred def to ledger. If multiple ledger plugins is in use,
 // it writes data to all of them.
 func WriteCredDef(
-	handle,
+	_,
 	wallet int,
 	submitter,
 	credDef string,
 ) (err error) {
-	defer err2.Handle(&err, "write cred def")
+	defer err2.Handle(&err)
 
-	writePluginLedgers(
+	return writePluginLedgers(
 		plugin.TxInfo{
 			TxType:       plugin.TxTypeCredDef,
 			Wallet:       wallet,
 			SubmitterDID: submitter,
 		},
 		credDef)
-	return nil
 }
 
-func writePluginLedgers(tx plugin.TxInfo, data string) {
+func writePluginLedgers(tx plugin.TxInfo, data string) error {
 	var raw map[string]interface{}
 	dto.FromJSONStr(data, &raw)
 	dataID := raw["id"].(string)
-	pool.Write(tx, dataID, data)
+	return pool.Write(tx, dataID, data)
 }
 
 // ReadSchema reads schema from ledgers by ID. If multiple ledger plugins is
 // used, it returns where it can find data first.
-func ReadSchema(handle int, submitter, ID string) (sID, s string, err error) {
+func ReadSchema(_ int, submitter, ID string) (sID, s string, err error) {
 	return pool.Read(
 		plugin.TxInfo{
 			TxType:       plugin.TxTypeSchema,
@@ -68,21 +67,20 @@ func ReadSchema(handle int, submitter, ID string) (sID, s string, err error) {
 // WriteSchema writes schema to ledger. If multiple ledger plugins is in use, it
 // writes to all of them.
 func WriteSchema(
-	handle int,
+	_ int,
 	wallet int,
 	submitter string,
 	scJSON string,
 ) (err error) {
-	defer err2.Handle(&err, "write schema")
+	defer err2.Handle(&err)
 
-	writePluginLedgers(
+	return writePluginLedgers(
 		plugin.TxInfo{
 			TxType:       plugin.TxTypeSchema,
 			Wallet:       wallet,
 			SubmitterDID: submitter,
 		},
 		scJSON)
-	return nil
 }
 
 // WriteDID writes DID to ledger. If multiple ledger plugins in in use, it
@@ -90,7 +88,7 @@ func WriteSchema(
 // explicitly. Some of the indy SDK functions read ledger implicitly like
 // did_get_key().
 func WriteDID(
-	handle,
+	_,
 	wallet int,
 	submitterDID,
 	targetDID,
@@ -98,9 +96,9 @@ func WriteDID(
 	alias,
 	role string,
 ) (err error) {
-	defer err2.Handle(&err, "write DID")
+	defer err2.Handle(&err)
 
-	pool.Write(
+	return pool.Write(
 		plugin.TxInfo{
 			TxType:       plugin.TxTypeDID,
 			Wallet:       wallet,
@@ -110,6 +108,4 @@ func WriteDID(
 			Role:         role,
 		},
 		submitterDID, targetDID)
-
-	return nil
 }

@@ -136,7 +136,7 @@ func (ao *Indy) ReadSchema(
 
 func (ao *Indy) WriteDID(
 	tx plugin.TxInfo,
-	ID string,
+	_ string,
 	data string,
 ) (err error) {
 	defer err2.Handle(&err)
@@ -156,7 +156,7 @@ func (ao *Indy) WriteDID(
 
 func (ao *Indy) WriteSchema(
 	tx plugin.TxInfo,
-	ID string,
+	_ string,
 	data string,
 ) (err error) {
 	defer err2.Handle(&err)
@@ -176,7 +176,7 @@ func (ao *Indy) WriteSchema(
 
 func (ao *Indy) WriteCredDef(
 	tx plugin.TxInfo,
-	ID string,
+	_ string,
 	data string,
 ) (err error) {
 	defer err2.Handle(&err)

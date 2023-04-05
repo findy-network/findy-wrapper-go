@@ -21,6 +21,8 @@ func TestMemLedger_Write(t *testing.T) {
 	assert.That(ok)
 	err := memLedger.Write(plugin.TxDID, "testID", "testData")
 	assert.NoError(err)
+	err = memLedger.Write(plugin.TxDID, "testID", "testData")
+	assert.NoError(err, "update is fine for now")
 	name, value, err := memLedger.Read(plugin.TxDID, "testID")
 	assert.NoError(err)
 	assert.Equal("testID", name)
