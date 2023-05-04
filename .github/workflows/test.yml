@@ -22,6 +22,13 @@ jobs:
           retention-days: 1
 
   test-with-indy-ledger:
+    strategy:
+      matrix:
+        include:
+          - pool_config: "FINDY_LEDGER,test"
+            coverage_file: "coverage-indy-ledger"
+          - pool_config: "FINDY_LEDGER,test,FINDY_MEM_LEDGER,cache"
+            coverage_file: "coverage-indy-ledger-cache"
     runs-on: ubuntu-latest
     steps:
       # setup indy ledger
@@ -56,14 +63,14 @@ jobs:
           printf "pool create test gen_txn_file=gen_txn_file" | indy-cli | tee /tmp/indy_cli_output.txt
           echo
       - name: test and measure coverage with indy
-        run: make test_cov_out COV_FILE=coverage2.txt
+        run: make test_cov_out COV_FILE=${{ matrix.coverage_file }}.txt
         env:
-          FINDY_POOL: "FINDY_LEDGER,test"
+          FINDY_POOL: ${{ matrix.pool_config }}
       - name: store coverage file
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ github.sha }}-coverage2.txt
-          path: ./coverage2.txt
+          name: ${{ github.sha }}-${{ matrix.coverage_file }}.txt
+          path: ./${{ matrix.coverage_file }}.txt
           retention-days: 1
 
       - name: collect docker logs
@@ -120,10 +127,14 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ github.sha }}-coverage1.txt
-      - name: download coverage file 2
+      - name: download coverage file with indy ledger
         uses: actions/download-artifact@v3
         with:
-          name: ${{ github.sha }}-coverage2.txt
+          name: ${{ github.sha }}-coverage-indy-ledger.txt
+      - name: download coverage file with indy ledger and cache
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.sha }}-coverage-indy-ledger-cache.txt
       - name: download coverage file 3
         uses: actions/download-artifact@v3
         with:
@@ -131,5 +142,5 @@ jobs:
       - name: upload coverage
         uses: codecov/codecov-action@v3
         with:
-          files: ./coverage1.txt,./coverage2.txt,./coverage3.txt
+          files: ./coverage1.txt,./coverage-indy-ledger.txt,./coverage-indy-ledger-cache.txt,./coverage3.txt
           fail_ci_if_error: true
