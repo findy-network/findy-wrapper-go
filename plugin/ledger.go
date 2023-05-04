@@ -34,7 +34,11 @@ type TxInfo struct {
 }
 
 func (ti TxInfo) String() string {
-	return ti.TxType.String()
+	updateMode := ""
+	if ti.Update {
+		updateMode = "|updateMode"
+	}
+	return ti.TxType.String() + updateMode
 }
 
 var (
