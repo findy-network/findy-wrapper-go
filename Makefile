@@ -1,4 +1,5 @@
 COV_FILE:=coverage.txt
+TEST_LOG ?= test.log
 
 deps:
 	go get -t ./...
@@ -33,6 +34,24 @@ test:
 
 ledger_test:
 	go test -v -p 1 -failfast ./anoncreds/... -args -logtostderr=true -v=10
+
+ledger_testr0:
+	go test -race -count=1 -failfast ./anoncreds/... | tee $(TEST_LOG)
+
+ledger_test_cov:
+	go test \
+		-coverpkg=github.com/findy-network/findy-wrapper-go/anoncreds/... \
+		-coverprofile=$(COV_FILE)  \
+		-covermode=atomic ./anoncreds/... 
+
+ledger_test0:
+	go test -v -count 1 -failfast ./anoncreds/... -args -logtostderr -v=3 | tee $(TEST_LOG)
+
+ledger_testr1:
+	go test -race -v -p 1 -failfast ./anoncreds/... -args -logtostderr=true -v=1 | tee $(TEST_LOG)
+
+ledger_testr:
+	go test -race -v -p 1 -failfast ./anoncreds/... -args -logtostderr=true -v=10 | tee $(TEST_LOG)
 
 logged_test:
 	go test -v -p 1 -failfast ./... -args -logtostderr=true -v=10
