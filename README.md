@@ -26,7 +26,7 @@ needed persistence. Currently implemented ledger add-ons are:
 
 ## Get Started
 
-Ubuntu 20.04 is preferred development environment but macOS is also an option.
+Ubuntu 20.04< is preferred development environment but macOS is also an option.
 Please make sure that Go and git are both installed and working properly.
 
 ### Linux and Ubuntu
