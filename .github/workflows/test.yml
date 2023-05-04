@@ -58,7 +58,7 @@ jobs:
       - name: test and measure coverage with indy
         run: make test_cov_out COV_FILE=coverage2.txt
         env:
-          FINDY_POOL: "FINDY_LEDGER,test,FINDY_MEM_LEDGER,cache"
+          FINDY_POOL: "FINDY_LEDGER,test"
       - name: store coverage file
         uses: actions/upload-artifact@v3
         with:
