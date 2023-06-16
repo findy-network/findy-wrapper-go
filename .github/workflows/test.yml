@@ -49,7 +49,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
-          go-version-file: './go.mod'
+          go-version-file: "./go.mod"
 
       - name: install indy cli
         run: |
@@ -88,34 +88,34 @@ jobs:
   service-test:
     runs-on: ubuntu-latest
     steps:
-    # install indy
-    - uses: actions/checkout@v3
-    - name: install indy
-      run: make indy_to_debian
-    - uses: actions/checkout@v3
-      with:
-        repository: "findy-network/findy-agent"
-        ref: dev
-        path: './target'
-    - uses: actions/setup-go@v3
-      with:
-        go-version-file: './go.mod'
-    - name: test with core service
-      run: |
-        cd ./target
-        go mod edit -replace github.com/findy-network/findy-wrapper-go=../
-        go mod tidy -e
-        go test -p 1 -failfast -timeout=1200s \
-          -coverpkg=github.com/findy-network/findy-wrapper-go/... \
-          -coverprofile=coverage3.txt  \
-        	-covermode=atomic \
-          ./...
-    - name: store coverage file
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ github.sha }}-coverage3.txt
-        path: ./target/coverage3.txt
-        retention-days: 1
+      # install indy
+      - uses: actions/checkout@v3
+      - name: install indy
+        run: make indy_to_debian
+      - uses: actions/checkout@v3
+        with:
+          repository: "findy-network/findy-agent"
+          ref: dev
+          path: "./target"
+      - uses: actions/setup-go@v3
+        with:
+          go-version-file: "./go.mod"
+      - name: test with core service
+        run: |
+          cd ./target
+          go mod edit -replace github.com/findy-network/findy-wrapper-go=../
+          go mod tidy -e
+          go test -p 1 -failfast -timeout=1200s \
+            -coverpkg=github.com/findy-network/findy-wrapper-go/... \
+            -coverprofile=coverage3.txt  \
+          	-covermode=atomic \
+            ./...
+      - name: store coverage file
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.sha }}-coverage3.txt
+          path: ./target/coverage3.txt
+          retention-days: 1
 
   upload-coverage:
     runs-on: ubuntu-latest
@@ -143,4 +143,4 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage1.txt,./coverage-indy-ledger.txt,./coverage-indy-ledger-cache.txt,./coverage3.txt
-          fail_ci_if_error: true
+          fail_ci_if_error: ${{ github.ref_name != 'dev' }}

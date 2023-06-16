@@ -1,4 +1,10 @@
 linters-settings:
+  depguard:
+    rules:
+      main:
+        deny:
+          - pkg: "io/ioutil"
+            desc: "ioutil is deprecated starting with Go 1.16"
   dupl:
     threshold: 100
   funlen:
