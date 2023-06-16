@@ -65,7 +65,7 @@ func (ao *Indy) Write(tx plugin.TxInfo, ID, data string) error {
 func (ao *Indy) Read(tx plugin.TxInfo, ID string) (name string, value string, err error) {
 	switch tx.TxType {
 	case plugin.TxTypeDID:
-		assert.D.True(false, "we don't support DID reading from ledger")
+		assert.That(false, "we don't support DID reading from ledger")
 
 	case plugin.TxTypeSchema:
 		return ao.ReadSchema(tx, ID)
@@ -103,7 +103,7 @@ func (ao *Indy) ReadCredDef(
 	try.To(r.Err())
 
 	name = r.Str1()
-	assert.P.True(name == credDefID)
+	assert.That(name == credDefID)
 
 	credDef := r.Str2()
 	return credDefID, credDef, nil
