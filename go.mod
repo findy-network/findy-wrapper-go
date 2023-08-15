@@ -1,6 +1,6 @@
 module github.com/findy-network/findy-wrapper-go
 
-go 1.20
+go 1.21
 
 require (
 	github.com/codenotary/immudb v1.0.5
