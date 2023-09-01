@@ -218,13 +218,13 @@ func Write(tx plugin.TxInfo, ID, data string) (err error) {
 func Read(tx plugin.TxInfo, ID string) (string, string, error) {
 	switch len(openPlugins) {
 	case 0:
-		assert.D.True(false, "no plugins open")
+		assert.That(false, "no plugins open")
 	case 1:
 		return openPlugins[-1].Read(tx, ID)
 	case 2:
 		return readFrom2(tx, ID)
 	default:
-		assert.D.True(false, "amount of open plugins is not supported")
+		assert.That(false, "amount of open plugins is not supported")
 	}
 	return "", "", nil
 }

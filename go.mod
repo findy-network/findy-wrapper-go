@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/codenotary/immudb v1.0.5
 	github.com/golang/glog v1.1.2
-	github.com/lainio/err2 v0.9.0
+	github.com/lainio/err2 v0.9.41
 	google.golang.org/grpc v1.57.0
 )
 

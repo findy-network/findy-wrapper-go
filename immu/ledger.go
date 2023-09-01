@@ -24,9 +24,9 @@ type immu struct {
 }
 
 func (i *immu) Close() {
-	defer err2.Catch(func(err error) {
+	defer err2.Catch(err2.Err(func(err error) {
 		glog.Errorf("error immu db ledger addon Close(): %v", err)
-	})
+	}))
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -37,9 +37,9 @@ func (i *immu) Close() {
 }
 
 func (i *immu) Open(name ...string) bool {
-	defer err2.Catch(func(err error) {
+	defer err2.Catch(err2.Err(func(err error) {
 		glog.Errorf("error immu db ledger addon Open(): %v", err)
-	})
+	}))
 	i.ResetMemCache() // for tests at the moment
 
 	cfg := NewImmuCfg(name[0])
@@ -60,10 +60,11 @@ func (i *immu) buildCtx(context context.Context) context.Context {
 }
 
 func (i *immu) Write(tx plugin.TxInfo, ID, data string) (err error) {
-	defer err2.Handle(&err, func() {
+	defer err2.Handle(&err, func(err error) error {
 		glog.Errorln("write error:", err)
 		err = nil // suspend error for now and retry
 		go i.writeRetry(ID, data)
+		return err
 	})
 
 	_ = i.cache.Write(tx, ID, data)
@@ -89,14 +90,15 @@ func (i *immu) writeRetry(ID, data string) {
 }
 
 func (i *immu) oneWrite(ID, data string) (err error) {
-	defer err2.Handle(&err, func() {
+	defer err2.Handle(&err, func(err error) error {
 		glog.Errorf("retry db write: %v", err)
+		return err
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	ctx = i.buildCtx(ctx)
-	_ = try.To1(i.client.Set(ctx, []byte(ID), []byte(data)))
+	try.To1(i.client.Set(ctx, []byte(ID), []byte(data)))
 	return nil
 }
 
