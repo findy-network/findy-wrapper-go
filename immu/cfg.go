@@ -57,10 +57,10 @@ func NewImmuCfg(_ string) (cfg *Cfg) {
 }
 
 func cfgFromEnv() (cfg *Cfg) {
-	assert.D.True(envExists(envImmuURL), "immu URL must exist")
-	assert.D.True(envExists(envImmuPort), "immu port must exist")
-	assert.D.True(envExists(envImmuUser), "immu user name must exists")
-	assert.D.True(envExists(envImmuPwd), "immu password must exist")
+	assert.That(envExists(envImmuURL), "immu URL must exist")
+	assert.That(envExists(envImmuPort), "immu port must exist")
+	assert.That(envExists(envImmuUser), "immu user name must exists")
+	assert.That(envExists(envImmuPwd), "immu password must exist")
 
 	tmpCfg := &Cfg{
 		URL:      os.Getenv(envImmuURL),
@@ -69,10 +69,10 @@ func cfgFromEnv() (cfg *Cfg) {
 		Password: os.Getenv(envImmuPwd),
 	}
 
-	assert.D.True(tmpCfg.URL != "", "immu URL cannot be empty")
-	assert.D.True(tmpCfg.Port != 0, "immu port cannot be 0")
-	assert.D.True(tmpCfg.UserName != "", "immu user name cannot be empty")
-	assert.D.True(tmpCfg.Password != "", "immu password cannot be empty")
+	assert.That(tmpCfg.URL != "", "immu URL cannot be empty")
+	assert.That(tmpCfg.Port != 0, "immu port cannot be 0")
+	assert.That(tmpCfg.UserName != "", "immu user name cannot be empty")
+	assert.That(tmpCfg.Password != "", "immu password cannot be empty")
 
 	return tmpCfg
 }
