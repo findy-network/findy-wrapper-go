@@ -2,6 +2,8 @@ module github.com/findy-network/findy-wrapper-go
 
 go 1.21
 
+toolchain go1.21.0
+
 require (
 	github.com/codenotary/immudb v1.0.5
 	github.com/golang/glog v1.1.2
