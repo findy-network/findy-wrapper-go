@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # setup indy ledger
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: "bcgov/von-network"
           ref: "92e4960b7b36cf06381184f8df4ef59d137145eb"
@@ -46,7 +46,7 @@ jobs:
           ./manage build
           ./manage start
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v3
         with:
           go-version-file: "./go.mod"
@@ -89,10 +89,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # install indy
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install indy
         run: make indy_to_debian
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: "findy-network/findy-agent"
           ref: dev
@@ -122,7 +122,7 @@ jobs:
     needs: [check, test-with-indy-ledger, service-test]
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: download coverage file 1
         uses: actions/download-artifact@v3
         with:
