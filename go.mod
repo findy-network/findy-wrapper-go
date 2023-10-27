@@ -7,7 +7,7 @@ toolchain go1.21.0
 require (
 	github.com/codenotary/immudb v1.0.5
 	github.com/golang/glog v1.1.2
-	github.com/lainio/err2 v0.9.41
+	github.com/lainio/err2 v0.9.51
 	google.golang.org/grpc v1.59.0
 )
 
