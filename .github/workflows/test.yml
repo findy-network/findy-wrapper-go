@@ -15,7 +15,7 @@ jobs:
       - name: test and measure coverage
         run: make test_cov_out COV_FILE=coverage1.txt
       - name: store coverage file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ github.sha }}-coverage1.txt
           path: ./coverage1.txt
@@ -67,7 +67,7 @@ jobs:
         env:
           FINDY_POOL: ${{ matrix.pool_config }}
       - name: store coverage file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ github.sha }}-${{ matrix.coverage_file }}.txt
           path: ./${{ matrix.coverage_file }}.txt
@@ -80,7 +80,7 @@ jobs:
           dest: "./docker-logs"
       - name: archive logs
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-logs
           path: docker-logs
@@ -111,7 +111,7 @@ jobs:
           	-covermode=atomic \
             ./...
       - name: store coverage file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ github.sha }}-coverage3.txt
           path: ./target/coverage3.txt
