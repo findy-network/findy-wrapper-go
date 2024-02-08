@@ -140,8 +140,9 @@ jobs:
         with:
           name: ${{ github.sha }}-coverage3.txt
       - name: upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./coverage1.txt,./coverage-indy-ledger.txt,./coverage-indy-ledger-cache.txt,./coverage3.txt
           fail_ci_if_error: ${{ github.ref_name != 'dev' }}
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
