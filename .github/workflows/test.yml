@@ -145,3 +145,4 @@ jobs:
           files: ./coverage1.txt,./coverage-indy-ledger.txt,./coverage-indy-ledger-cache.txt,./coverage3.txt
           fail_ci_if_error: ${{ github.ref_name != 'dev' }}
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
