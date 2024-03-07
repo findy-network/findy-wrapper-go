@@ -95,7 +95,7 @@ func handleU32Handler(cmdHandle uint32, err, handle int32, len uint32) {
 
 //export handler
 func handler(cmdHandle uint32, err int32) {
-	buildResult(cmdHandle, err, func(r *dto.Result) {
+	buildResult(cmdHandle, err, func(*dto.Result) {
 		// nothing to set in this version
 	})
 }
