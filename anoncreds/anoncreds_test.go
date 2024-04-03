@@ -8,12 +8,15 @@ import (
 	"github.com/findy-network/findy-wrapper-go/dto"
 	"github.com/golang/glog"
 	"github.com/lainio/err2/assert"
+	"github.com/lainio/err2/try"
 
 	"github.com/findy-network/findy-wrapper-go"
 	"github.com/findy-network/findy-wrapper-go/did"
 	"github.com/findy-network/findy-wrapper-go/helpers"
 	"github.com/findy-network/findy-wrapper-go/ledger"
 )
+
+const ledgerWaitTimer = 1 * time.Second
 
 func TestIssuerCreateSchema(t *testing.T) {
 	assert.PushTester(t)
@@ -68,9 +71,19 @@ func TestIssuerCreateSchema(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.PushTester(t)
-			defer assert.PopTester()
+			defer assert.PushTester(t)()
+
 			// ==============================================================
+			// Holder side:
+			// Create master secret to wallet for Holder wallet
+			msid := "findy_master_secret"
+			r = <-ProverCreateMasterSecret(w2, msid)
+			try.To(r.Err())
+			msid = r.Str1()
+			// ==============================================================
+
+			// ==============================================================
+			// Issuer side:
 			// Build and publish CRED SCHEMA, could be issuer or who ever
 			r := <-IssuerCreateSchema(tt.args.did, tt.args.name, tt.args.version, tt.args.attrNames)
 			assert.NoError(r.Err())
@@ -81,17 +94,13 @@ func TestIssuerCreateSchema(t *testing.T) {
 			assert.NoError(err)
 
 			glog.V(2).Infoln("<<====IN SchemaID:", sid, "waiting before read schema")
-			time.Sleep(5 * time.Second) // let ledger build everything ready
+			time.Sleep(ledgerWaitTimer) // let ledger build everything ready
 
 			// Read SCHEMA from Ledger
 			sid, scJSON, err = ledger.ReadSchema(pool, stewardDID, sid)
 			assert.NoError(err)
 			glog.V(2).Infoln("=====================> OUT SchemaID:", sid)
 			glog.V(2).Infoln("==== getting from ledger for schema:", scJSON)
-
-			// ===========================================================
-			// === start from the issuer side of the table
-			// ===========================================================
 
 			// -----------------------------------------------------
 			// Build CRED DEF from the schema: CredDef n : 1 Schema
@@ -103,88 +112,61 @@ func TestIssuerCreateSchema(t *testing.T) {
 			// the prover side, but now we just transfer it to there with this
 			// variable.
 			cdid := r.Str1()
-
 			cd := r.Str2()
-			// BUILD CRED_DEF OFFER
-			r = <-IssuerCreateCredentialOffer(w1, cdid)
-			err = r.Err()
-			if tt.noErr {
-				assert.NoError(err)
-			} else {
-				assert.Error(err)
-			}
-			credOffer := r.Str1()
-
-			// Write CRED DEF to ledger = todo should be after creation =====
+			// Write CRED DEF to ledger
 			glog.V(2).Infoln("<<==================== IN CredDefID:", cdid)
-			err = ledger.WriteCredDef(pool, w1, stewardDID, cd)
-			assert.NoError(err)
+			try.To(ledger.WriteCredDef(pool, w1, stewardDID, cd))
+
+			// ==============================================================
+			// == BUILD CRED_DEF OFFER
+			// ==============================================================
+			r = <-IssuerCreateCredentialOffer(w1, cdid)
+			try.To(r.Err())
+			credOffer := r.Str1()
 
 			// =================================================================
 			// === switch to other side of the table, credential receiver ======
 			// =================================================================
 
-			// Create master secret to wallet
-			msid := "findy_master_secret"
-			r = <-ProverCreateMasterSecret(w2, msid)
-			err = r.Err()
-			if tt.noErr {
-				assert.NoError(err)
-			} else {
-				assert.Error(err)
-			}
-			msid = r.Str1()
-
-			time.Sleep(5 * time.Second) // let ledger build everything ready
+			time.Sleep(ledgerWaitTimer) // let ledger build everything ready
 
 			// Get CRED DEF from the ledger
 			credDefID, credDef, err := ledger.ReadCredDef(pool, w2DID, cdid)
 			assert.NoError(err)
 			glog.V(2).Infoln("<<==================== OUT CredDef:", credDefID)
 
-			// build credential request to send to back to issuer
-			r = <-ProverCreateCredentialReq(w2, w2DID, credOffer, credDef, msid)
-			err = r.Err()
-			if tt.noErr {
-				assert.NoError(err)
-			} else {
-				assert.Error(err)
-			}
-			crDefReq := r.Str1() // --> would send to to other side
-			crDefReqMeta := r.Str2()
-
 			// Send cred_req to other side as response to offer -->
 			// =================================================================
 			// === switch to other side of the table, credential issuer   ======
 			// =================================================================
 
-			type EmailCred struct {
-				Email CredDefAttr `json:"email"`
-			}
-			emailCred := EmailCred{}
-			emailToVerify := "some.dude@findy.net"
-			emailCred.Email.SetRaw(emailToVerify)
-			values := dto.ToJSON(emailCred)
+			var emailToVerify string
+			for i := range 2 {
+				// build credential REQUEST to send to back to issuer
+				r = <-ProverCreateCredentialReq(w2, w2DID, credOffer, credDef, msid)
+				try.To(r.Err())
+				crDefReq := r.Str1() // --> would send to to other side
+				crDefReqMeta := r.Str2()
 
-			r = <-IssuerCreateCredential(w1, credOffer, crDefReq, values, findy.NullString, findy.NullHandle)
-			err = r.Err()
-			if tt.noErr {
-				assert.NoError(err)
-			} else {
-				assert.Error(err)
-			}
-			cred := r.Str1()
+				type EmailCred struct {
+					Email CredDefAttr `json:"email"`
+				}
+				emailCred := EmailCred{}
+				emailToVerify = fmt.Sprintf("some%d.dude@findy.net", i)
+				emailCred.Email.SetRaw(emailToVerify)
+				values := dto.ToJSON(emailCred)
 
-			// =================================================================
-			// ==> to other side, credential receiver/holder/prover
-			// =================================================================
+				r = <-IssuerCreateCredential(w1, credOffer, crDefReq, values, findy.NullString, findy.NullHandle)
+				try.To(r.Err())
+				cred := r.Str1()
 
-			r = <-ProverStoreCredential(w2, findy.NullString, crDefReqMeta, cred, credDef, findy.NullString)
-			err = r.Err()
-			if tt.noErr {
-				assert.NoError(err)
-			} else {
-				assert.Error(err)
+				// =================================================================
+				// ==> to other side, credential receiver/holder/prover
+				// =================================================================
+
+				r = <-ProverStoreCredential(w2, findy.NullString, crDefReqMeta, cred, credDef, findy.NullString)
+				try.To(r.Err())
+				println("======== Credential: ", i, " ", emailToVerify)
 			}
 
 			// =================================================================
@@ -207,33 +189,28 @@ func TestIssuerCreateSchema(t *testing.T) {
 				RequestedPredicates: map[string]PredicateInfo{},
 			}
 			pReqStr := dto.ToJSON(pReq)
-			r = <-ProverSearchCredentialsForProofReq(w2, pReqStr, findy.NullString)
-			err = r.Err()
-			if tt.noErr {
-				assert.NoError(err)
-			} else {
-				assert.Error(err)
-			}
+			// todo: build WQL here
+			//wqlJSONStr := findy.NullString
+			//wql := fmt.Sprintf(`"attr::email::value": "%s"`, emailToVerify)
+			wql := fmt.Sprintf(`"attr::email::value": {"$neq": "%s"}`, emailToVerify)
+			wqlJSONStr := fmt.Sprintf(`{"email": {%s}}`, wql)
+			println("---------")
+			println("--", wqlJSONStr)
+			println("---------")
+			// "attr::<attribute name>::value": <attribute raw value>,
+			r = <-ProverSearchCredentialsForProofReq(w2, pReqStr, wqlJSONStr)
+			try.To(r.Err())
 			searchHandle := r.Handle()
-			const fetchMax = 2
+			const fetchMax = 4
 			r = <-ProverFetchCredentialsForProofReq(searchHandle, "attr1_referent", fetchMax)
-			err = r.Err()
-			if tt.noErr {
-				assert.NoError(err)
-			} else {
-				assert.Error(err)
-			}
+			try.To(r.Err())
 			credentials := r.Str1()
 			// Needs to be slice, len() tells how much we did read
-			credInfo := make([]Credentials, fetchMax)
+			credInfo := make([]Credentials, 0, fetchMax)
 			dto.FromJSONStr(credentials, &credInfo)
+			println("--> len: ", len(credInfo))
 			r = <-ProverCloseCredentialsSearchForProofReq(searchHandle)
-			err = r.Err()
-			if tt.noErr {
-				assert.NoError(err)
-			} else {
-				assert.Error(err)
-			}
+			try.To(r.Err())
 			schemaObject := map[string]interface{}{}
 			dto.FromJSONStr(scJSON, &schemaObject)
 			schemas := map[string]map[string]interface{}{
@@ -261,27 +238,15 @@ func TestIssuerCreateSchema(t *testing.T) {
 			}
 			reqCredJSON := dto.ToJSON(reqCred)
 			r = <-ProverCreateProof(w2, pReqStr, reqCredJSON, msid, schemasJSON, credDefsJSON, "{}")
-			err = r.Err()
-			if tt.noErr {
-				assert.NoError(err)
-			} else {
-				assert.Error(err)
-			}
+			try.To(r.Err())
 			proofJS := r.Str1()
 
 			r = <-VerifierVerifyProof(pReqStr, proofJS, schemasJSON, credDefsJSON, "{}", "{}")
-			err = r.Err()
-			if tt.noErr {
-				assert.NoError(err)
-			} else {
-				assert.Error(err)
-			}
+			try.To(r.Err())
 			var proof Proof
 			dto.FromJSONStr(proofJS, &proof)
-			if !r.Yes() ||
-				proof.RequestedProof.RevealedAttrs["attr1_referent"].Raw != emailToVerify {
-				t.Errorf("cannot proof!")
-			}
+			assert.That(r.Yes())
+			assert.Equal(proof.RequestedProof.RevealedAttrs["attr1_referent"].Raw, emailToVerify)
 		})
 	}
 	helpers.CloseAndDeleteTestWallet(w2, name2, t)
