@@ -35,7 +35,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: "bcgov/von-network"
-          ref: "92e4960b7b36cf06381184f8df4ef59d137145eb"
       - name: skip setting volumes for web server
         run: |
           sed '/      - .\/config:\/home\/indy\/config/d' docker-compose.yml > docker-compose.yml.tmp
