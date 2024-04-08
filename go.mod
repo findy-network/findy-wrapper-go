@@ -8,7 +8,7 @@ require (
 	github.com/codenotary/immudb v1.0.5
 	github.com/golang/glog v1.2.1
 	github.com/lainio/err2 v1.0.0
-	google.golang.org/grpc v1.63.0
+	google.golang.org/grpc v1.63.2
 )
 
 require (
