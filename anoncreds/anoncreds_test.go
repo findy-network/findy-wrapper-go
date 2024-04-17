@@ -166,7 +166,7 @@ func TestIssuerCreateSchema(t *testing.T) {
 
 				r = <-ProverStoreCredential(w2, findy.NullString, crDefReqMeta, cred, credDef, findy.NullString)
 				try.To(r.Err())
-				println("======== Credential: ", i, " ", emailToVerify)
+				glog.V(2).Infoln("======== Credential: ", i, " ", emailToVerify)
 			}
 
 			// =================================================================
@@ -189,15 +189,11 @@ func TestIssuerCreateSchema(t *testing.T) {
 				RequestedPredicates: map[string]PredicateInfo{},
 			}
 			pReqStr := dto.ToJSON(pReq)
-			// todo: build WQL here
-			//wqlJSONStr := findy.NullString
-			//wql := fmt.Sprintf(`"attr::email::value": "%s"`, emailToVerify)
-			wql := fmt.Sprintf(`"attr::email::value": {"$neq": "%s"}`, emailToVerify)
-			wqlJSONStr := fmt.Sprintf(`{"email": {%s}}`, wql)
-			println("---------")
-			println("--", wqlJSONStr)
-			println("---------")
-			// "attr::<attribute name>::value": <attribute raw value>,
+			wql := fmt.Sprintf(`"attr::email::value": "%s"`, emailToVerify)
+			wqlJSONStr := fmt.Sprintf(`{"attr1_referent": {%s}}`, wql)
+			glog.V(2).Infoln("---------")
+			glog.V(2).Infoln("--", wqlJSONStr)
+			glog.V(2).Infoln("---------")
 			r = <-ProverSearchCredentialsForProofReq(w2, pReqStr, wqlJSONStr)
 			try.To(r.Err())
 			searchHandle := r.Handle()
@@ -205,10 +201,12 @@ func TestIssuerCreateSchema(t *testing.T) {
 			r = <-ProverFetchCredentialsForProofReq(searchHandle, "attr1_referent", fetchMax)
 			try.To(r.Err())
 			credentials := r.Str1()
+			glog.V(2).Infoln(credentials)
 			// Needs to be slice, len() tells how much we did read
 			credInfo := make([]Credentials, 0, fetchMax)
 			dto.FromJSONStr(credentials, &credInfo)
-			println("--> len: ", len(credInfo))
+			assert.SLen(credInfo, 1)
+			glog.V(2).Infoln("--> len: ", len(credInfo))
 			r = <-ProverCloseCredentialsSearchForProofReq(searchHandle)
 			try.To(r.Err())
 			schemaObject := map[string]interface{}{}
