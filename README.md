@@ -3,6 +3,11 @@
 [![test](https://github.com/findy-network/findy-wrapper-go/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/findy-network/findy-wrapper-go/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/findy-network/findy-wrapper-go/branch/dev/graph/badge.svg?token=2OPADTJQJ3)](https://codecov.io/gh/findy-network/findy-wrapper-go)
 
+> Findy Agency is an open-source project for a decentralized identity agency.
+> OP Lab developed it from 2019 to 2024. The project is no longer maintained,
+> but the work will continue with new goals and a new mission.
+> Follow [the blog](https://findy-network.github.io/blog/) for updates.
+
 This is a Go wrapper for [indy-sdk](https://github.com/hyperledger/indy-sdk). It
 wraps most of the **libindy**'s functions and data types, but it doesn't try to be
 complete. We have written it incrementally and wrapped only those functions that
