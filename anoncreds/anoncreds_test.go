@@ -141,7 +141,7 @@ func TestIssuerCreateSchema(t *testing.T) {
 			// =================================================================
 
 			var emailToVerify string
-			for i := range 2 { //nolintlint
+			for i := 0; i < 2; i++ {
 				// build credential REQUEST to send to back to issuer
 				r = <-ProverCreateCredentialReq(w2, w2DID, credOffer, credDef, msid)
 				try.To(r.Err())
